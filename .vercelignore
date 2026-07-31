@@ -1,0 +1,27 @@
+.git/
+.vercel/
+node_modules/
+.next/
+out/
+coverage/
+*.log
+*.tsbuildinfo
+
+# Secrets are configured in the Vercel project settings.
+.env*
+
+# Runtime media is served from Cloudflare R2.
+public/models/
+public/images/
+public/videos/
+public/vendor-assets/
+
+# Local browser profiles, QA output, and working files.
+.edge-*/
+tmp/
+tmp_video_frames/
+inner-*.png
+
+# Local SQLite state is not deployable storage.
+prisma/dev.db
+prisma/dev.db-journal

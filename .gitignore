@@ -29,3 +29,7 @@ tmp_video_frames/
 prisma/dev.db
 prisma/dev.db-journal
 
+.vercel
+.env*
+!.env.example
+

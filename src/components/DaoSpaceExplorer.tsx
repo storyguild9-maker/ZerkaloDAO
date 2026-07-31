@@ -2641,7 +2641,7 @@ export function DaoSpaceExplorer() {
       <div className="dao-space__viewport" ref={mountRef} />
       <nav className="dao-space__nav" aria-label="РќР°РІРёРіР°С†РёСЏ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІР°">
         <Link href="/">РћСЃРЅРѕРІРЅР°СЏ</Link>
-        <Link href="/constructor">РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ</Link>
+        <Link href="/scene-constructor">РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ</Link>
         <button onClick={() => routeRef.current?.()} type="button">
           РџСѓС‚СЊ
         </button>
