@@ -1,0 +1,3966 @@
+{
+  "version": 1,
+  "updatedAt": "2026-07-07T08:41:51.469Z",
+  "items": [
+    {
+      "id": "base-table",
+      "slug": "82-council-round-marble-gold-table",
+      "label": "council round marble gold table",
+      "position": [
+        0.3,
+        0,
+        -0.12
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        16.78,
+        7.95,
+        16.78
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-01",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        -0.87,
+        0,
+        -11.77
+      ],
+      "rotation": [
+        0,
+        10,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-02",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        -6.21,
+        0,
+        -9.4
+      ],
+      "rotation": [
+        0,
+        33.67,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-03",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        -9.47,
+        0,
+        -4.35
+      ],
+      "rotation": [
+        0,
+        70,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-04",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        -9.85,
+        0,
+        3.93
+      ],
+      "rotation": [
+        0,
+        100,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-05",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        -8.01,
+        0,
+        7.56
+      ],
+      "rotation": [
+        0,
+        130,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-06",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        -3.57,
+        0,
+        9.85
+      ],
+      "rotation": [
+        0,
+        160,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-07",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        3.09,
+        0,
+        10.23
+      ],
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-08",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        8.76,
+        0,
+        4.79
+      ],
+      "rotation": [
+        0,
+        220,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-09",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        10.79,
+        0,
+        -0.73
+      ],
+      "rotation": [
+        0,
+        250,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-10",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        10.37,
+        0,
+        -4.56
+      ],
+      "rotation": [
+        0,
+        280,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-11",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        8.1,
+        0,
+        -8.33
+      ],
+      "rotation": [
+        0,
+        310,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-12",
+      "slug": "92-council-chair-v2",
+      "label": "council chair v2",
+      "position": [
+        4.08,
+        0,
+        -11.14
+      ],
+      "rotation": [
+        0,
+        340,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "floor-inlay-soft",
+      "slug": "189-circular-floor-inlay-medallion",
+      "label": "circular floor inlay medallion",
+      "position": [
+        0,
+        0,
+        -8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.4,
+        6.4,
+        6.4
+      ],
+      "opacity": 0.22,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "side-fountain-left",
+      "slug": "108-side-fountain-basin",
+      "label": "side fountain basin",
+      "position": [
+        -31,
+        0,
+        -23
+      ],
+      "rotation": [
+        0,
+        35,
+        0
+      ],
+      "scale": [
+        4.2,
+        4.2,
+        4.2
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "side-fountain-right",
+      "slug": "108-side-fountain-basin",
+      "label": "side fountain basin",
+      "position": [
+        31,
+        0,
+        -23
+      ],
+      "rotation": [
+        0,
+        -35,
+        0
+      ],
+      "scale": [
+        4.2,
+        4.2,
+        4.2
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "planter-back-left",
+      "slug": "195-botanical-planter-cluster",
+      "label": "botanical planter cluster",
+      "position": [
+        -28,
+        0,
+        -31
+      ],
+      "rotation": [
+        0,
+        20,
+        0
+      ],
+      "scale": [
+        3.4,
+        3.4,
+        3.4
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "planter-back-right",
+      "slug": "195-botanical-planter-cluster",
+      "label": "botanical planter cluster",
+      "position": [
+        28,
+        0,
+        -31
+      ],
+      "rotation": [
+        0,
+        -20,
+        0
+      ],
+      "scale": [
+        3.4,
+        3.4,
+        3.4
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "tree-front-left",
+      "slug": "164-sacred-indoor-tree-planter",
+      "label": "sacred indoor tree planter",
+      "position": [
+        -31,
+        0,
+        20
+      ],
+      "rotation": [
+        0,
+        25,
+        0
+      ],
+      "scale": [
+        3.2,
+        3.2,
+        3.2
+      ],
+      "opacity": 0.86,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "tree-front-right",
+      "slug": "164-sacred-indoor-tree-planter",
+      "label": "sacred indoor tree planter",
+      "position": [
+        31,
+        0,
+        20
+      ],
+      "rotation": [
+        0,
+        -25,
+        0
+      ],
+      "scale": [
+        3.2,
+        3.2,
+        3.2
+      ],
+      "opacity": 0.86,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "candelabrum-left",
+      "slug": "103-seven-flame-candelabrum",
+      "label": "seven flame candelabrum",
+      "position": [
+        -18,
+        0,
+        9
+      ],
+      "rotation": [
+        0,
+        22,
+        0
+      ],
+      "scale": [
+        2.2,
+        2.2,
+        2.2
+      ],
+      "opacity": 0.86,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "candelabrum-right",
+      "slug": "103-seven-flame-candelabrum",
+      "label": "seven flame candelabrum",
+      "position": [
+        18,
+        0,
+        9
+      ],
+      "rotation": [
+        0,
+        -22,
+        0
+      ],
+      "scale": [
+        2.2,
+        2.2,
+        2.2
+      ],
+      "opacity": 0.86,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "96-ceremonial-crystal-lamp-1783373813601",
+      "slug": "96-ceremonial-crystal-lamp",
+      "label": "ceremonial crystal lamp",
+      "position": [
+        9.6,
+        0,
+        -30
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.8,
+        1.8,
+        1.8
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "96-ceremonial-crystal-lamp-1783373835620",
+      "slug": "96-ceremonial-crystal-lamp",
+      "label": "ceremonial crystal lamp",
+      "position": [
+        27.9,
+        0,
+        3.65
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        8.76,
+        8.76,
+        8.76
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-left-1",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base left-1",
+      "position": [
+        -28,
+        0,
+        22
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-left-1",
+      "slug": "84-white-gold-gothic-column",
+      "label": "architectural column shaft left-1",
+      "position": [
+        -28,
+        0,
+        22
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-left-1",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital left-1",
+      "position": [
+        -28,
+        14.82,
+        22
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-left-1",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction left-1",
+      "position": [
+        -28,
+        14.82,
+        22
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-left-1",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery left-1",
+      "position": [
+        -29.25,
+        0,
+        23.4
+      ],
+      "rotation": [
+        0,
+        20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-left-2",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base left-2",
+      "position": [
+        -28,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-left-2",
+      "slug": "84-white-gold-gothic-column",
+      "label": "architectural column shaft left-2",
+      "position": [
+        -28,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-left-2",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital left-2",
+      "position": [
+        -28,
+        14.82,
+        8
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-left-2",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction left-2",
+      "position": [
+        -28,
+        14.82,
+        8
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-left-2",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery left-2",
+      "position": [
+        -29.25,
+        0,
+        9.4
+      ],
+      "rotation": [
+        0,
+        20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-left-3",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base left-3",
+      "position": [
+        -28,
+        0,
+        -6
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-left-3",
+      "slug": "84-white-gold-gothic-column",
+      "label": "architectural column shaft left-3",
+      "position": [
+        -28,
+        0,
+        -6
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-left-3",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital left-3",
+      "position": [
+        -28,
+        14.82,
+        -6
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-left-3",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction left-3",
+      "position": [
+        -28,
+        14.82,
+        -6
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-left-3",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery left-3",
+      "position": [
+        -29.25,
+        0,
+        -4.6
+      ],
+      "rotation": [
+        0,
+        20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-left-4",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base left-4",
+      "position": [
+        -28,
+        0,
+        -20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-left-4",
+      "slug": "85-black-gold-violet-crystal-column",
+      "label": "architectural column shaft left-4",
+      "position": [
+        -28,
+        0,
+        -20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-left-4",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital left-4",
+      "position": [
+        -28,
+        14.82,
+        -20
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-left-4",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction left-4",
+      "position": [
+        -28,
+        14.82,
+        -20
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-left-4",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery left-4",
+      "position": [
+        -29.25,
+        0,
+        -18.6
+      ],
+      "rotation": [
+        0,
+        20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-left-5",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base left-5",
+      "position": [
+        -28,
+        0,
+        -31
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-left-5",
+      "slug": "85-black-gold-violet-crystal-column",
+      "label": "architectural column shaft left-5",
+      "position": [
+        -28,
+        0,
+        -31
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-left-5",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital left-5",
+      "position": [
+        -28,
+        14.82,
+        -31
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-left-5",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction left-5",
+      "position": [
+        -28,
+        14.82,
+        -31
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-left-5",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery left-5",
+      "position": [
+        -29.25,
+        0,
+        -29.6
+      ],
+      "rotation": [
+        0,
+        20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-right-1",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base right-1",
+      "position": [
+        28,
+        0,
+        22
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-right-1",
+      "slug": "84-white-gold-gothic-column",
+      "label": "architectural column shaft right-1",
+      "position": [
+        28,
+        0,
+        22
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-right-1",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital right-1",
+      "position": [
+        28,
+        14.82,
+        22
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-right-1",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction right-1",
+      "position": [
+        28,
+        14.82,
+        22
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-right-1",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery right-1",
+      "position": [
+        29.25,
+        0,
+        23.4
+      ],
+      "rotation": [
+        0,
+        -20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-right-2",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base right-2",
+      "position": [
+        28,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-right-2",
+      "slug": "84-white-gold-gothic-column",
+      "label": "architectural column shaft right-2",
+      "position": [
+        28,
+        0,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-right-2",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital right-2",
+      "position": [
+        28,
+        14.82,
+        8
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-right-2",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction right-2",
+      "position": [
+        28,
+        14.82,
+        8
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-right-2",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery right-2",
+      "position": [
+        29.25,
+        0,
+        9.4
+      ],
+      "rotation": [
+        0,
+        -20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-right-3",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base right-3",
+      "position": [
+        28,
+        0,
+        -6
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-right-3",
+      "slug": "84-white-gold-gothic-column",
+      "label": "architectural column shaft right-3",
+      "position": [
+        28,
+        0,
+        -6
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-right-3",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital right-3",
+      "position": [
+        28,
+        14.82,
+        -6
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-right-3",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction right-3",
+      "position": [
+        28,
+        14.82,
+        -6
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-right-3",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery right-3",
+      "position": [
+        29.25,
+        0,
+        -4.6
+      ],
+      "rotation": [
+        0,
+        -20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-right-4",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base right-4",
+      "position": [
+        28,
+        0,
+        -20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-right-4",
+      "slug": "85-black-gold-violet-crystal-column",
+      "label": "architectural column shaft right-4",
+      "position": [
+        28,
+        0,
+        -20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-right-4",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital right-4",
+      "position": [
+        28,
+        14.82,
+        -20
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-right-4",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction right-4",
+      "position": [
+        28,
+        14.82,
+        -20
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-right-4",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery right-4",
+      "position": [
+        29.25,
+        0,
+        -18.6
+      ],
+      "rotation": [
+        0,
+        -20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-base-right-5",
+      "slug": "99-white-gold-column-base-plinth",
+      "label": "architectural column base right-5",
+      "position": [
+        28,
+        0,
+        -31
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.45,
+        3.45,
+        3.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-column-right-5",
+      "slug": "85-black-gold-violet-crystal-column",
+      "label": "architectural column shaft right-5",
+      "position": [
+        28,
+        0,
+        -31
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.25,
+        13.6,
+        6.25
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-capital-right-5",
+      "slug": "98-white-gold-column-capital",
+      "label": "architectural column capital right-5",
+      "position": [
+        28,
+        14.82,
+        -31
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.75,
+        3.75,
+        3.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-node-right-5",
+      "slug": "181-column-ceiling-junction-bracket",
+      "label": "column ceiling junction right-5",
+      "position": [
+        28,
+        14.82,
+        -31
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        4.55,
+        4.55,
+        4.55
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-greenery-right-5",
+      "slug": "229-column-base-greenery-cluster",
+      "label": "column greenery right-5",
+      "position": [
+        29.25,
+        0,
+        -29.6
+      ],
+      "rotation": [
+        0,
+        -20,
+        0
+      ],
+      "scale": [
+        2.45,
+        2.45,
+        2.45
+      ],
+      "opacity": 0.82,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-window-frame-left-1",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "side arch window frame left-1",
+      "position": [
+        -34.82,
+        7.25,
+        19
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.25,
+        6.25,
+        4.25
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-glass-left-1",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "side stained glass left-1",
+      "position": [
+        -34.82,
+        7.28,
+        19
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        3.35,
+        5.45,
+        3.35
+      ],
+      "opacity": 0.58,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-tracery-left-1",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "side window tracery left-1",
+      "position": [
+        -34.82,
+        7.3,
+        19
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        3.65,
+        5.7,
+        3.65
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-wall-rail-left-1",
+      "slug": "167-horizontal-luminous-wall-rail",
+      "label": "side luminous wall rail left-1",
+      "position": [
+        -34.82,
+        3.05,
+        19
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.8,
+        1.65,
+        2.2
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-sconce-left-1",
+      "slug": "230-ornate-wall-lantern-sconce",
+      "label": "side wall lantern left-1",
+      "position": [
+        -34.82,
+        9.8,
+        24.9
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        1.85,
+        1.85,
+        1.85
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-window-frame-left-2",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "side arch window frame left-2",
+      "position": [
+        -34.82,
+        7.25,
+        5
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.25,
+        6.25,
+        4.25
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-glass-left-2",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "side stained glass left-2",
+      "position": [
+        -34.82,
+        7.28,
+        5
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        3.35,
+        5.45,
+        3.35
+      ],
+      "opacity": 0.58,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-tracery-left-2",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "side window tracery left-2",
+      "position": [
+        -34.82,
+        7.3,
+        5
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        3.65,
+        5.7,
+        3.65
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-wall-rail-left-2",
+      "slug": "167-horizontal-luminous-wall-rail",
+      "label": "side luminous wall rail left-2",
+      "position": [
+        -34.82,
+        3.05,
+        5
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.8,
+        1.65,
+        2.2
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-sconce-left-2",
+      "slug": "230-ornate-wall-lantern-sconce",
+      "label": "side wall lantern left-2",
+      "position": [
+        -34.82,
+        9.8,
+        10.9
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        1.85,
+        1.85,
+        1.85
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-window-frame-left-3",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "side arch window frame left-3",
+      "position": [
+        -34.82,
+        7.25,
+        -9
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.25,
+        6.25,
+        4.25
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-glass-left-3",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "side stained glass left-3",
+      "position": [
+        -34.82,
+        7.28,
+        -9
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        3.35,
+        5.45,
+        3.35
+      ],
+      "opacity": 0.58,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-tracery-left-3",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "side window tracery left-3",
+      "position": [
+        -34.82,
+        7.3,
+        -9
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        3.65,
+        5.7,
+        3.65
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-wall-rail-left-3",
+      "slug": "167-horizontal-luminous-wall-rail",
+      "label": "side luminous wall rail left-3",
+      "position": [
+        -34.82,
+        3.05,
+        -9
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.8,
+        1.65,
+        2.2
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-sconce-left-3",
+      "slug": "230-ornate-wall-lantern-sconce",
+      "label": "side wall lantern left-3",
+      "position": [
+        -34.82,
+        9.8,
+        -3.0999999999999996
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        1.85,
+        1.85,
+        1.85
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-window-frame-left-4",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "side arch window frame left-4",
+      "position": [
+        -34.82,
+        7.25,
+        -23
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.25,
+        6.25,
+        4.25
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-glass-left-4",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "side stained glass left-4",
+      "position": [
+        -34.82,
+        7.28,
+        -23
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        3.35,
+        5.45,
+        3.35
+      ],
+      "opacity": 0.58,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-tracery-left-4",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "side window tracery left-4",
+      "position": [
+        -34.82,
+        7.3,
+        -23
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        3.65,
+        5.7,
+        3.65
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-wall-rail-left-4",
+      "slug": "167-horizontal-luminous-wall-rail",
+      "label": "side luminous wall rail left-4",
+      "position": [
+        -34.82,
+        3.05,
+        -23
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.8,
+        1.65,
+        2.2
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-sconce-left-4",
+      "slug": "230-ornate-wall-lantern-sconce",
+      "label": "side wall lantern left-4",
+      "position": [
+        -34.82,
+        9.8,
+        -17.1
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        1.85,
+        1.85,
+        1.85
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-window-frame-right-1",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "side arch window frame right-1",
+      "position": [
+        34.82,
+        7.25,
+        19
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.25,
+        6.25,
+        4.25
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-glass-right-1",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "side stained glass right-1",
+      "position": [
+        34.82,
+        7.28,
+        19
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        3.35,
+        5.45,
+        3.35
+      ],
+      "opacity": 0.58,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-tracery-right-1",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "side window tracery right-1",
+      "position": [
+        34.82,
+        7.3,
+        19
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        3.65,
+        5.7,
+        3.65
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-wall-rail-right-1",
+      "slug": "167-horizontal-luminous-wall-rail",
+      "label": "side luminous wall rail right-1",
+      "position": [
+        34.82,
+        3.05,
+        19
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.8,
+        1.65,
+        2.2
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-sconce-right-1",
+      "slug": "230-ornate-wall-lantern-sconce",
+      "label": "side wall lantern right-1",
+      "position": [
+        34.82,
+        9.8,
+        24.9
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        1.85,
+        1.85,
+        1.85
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-window-frame-right-2",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "side arch window frame right-2",
+      "position": [
+        34.82,
+        7.25,
+        5
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.25,
+        6.25,
+        4.25
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-glass-right-2",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "side stained glass right-2",
+      "position": [
+        34.82,
+        7.28,
+        5
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        3.35,
+        5.45,
+        3.35
+      ],
+      "opacity": 0.58,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-tracery-right-2",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "side window tracery right-2",
+      "position": [
+        34.82,
+        7.3,
+        5
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        3.65,
+        5.7,
+        3.65
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-wall-rail-right-2",
+      "slug": "167-horizontal-luminous-wall-rail",
+      "label": "side luminous wall rail right-2",
+      "position": [
+        34.82,
+        3.05,
+        5
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.8,
+        1.65,
+        2.2
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-sconce-right-2",
+      "slug": "230-ornate-wall-lantern-sconce",
+      "label": "side wall lantern right-2",
+      "position": [
+        34.82,
+        9.8,
+        10.9
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        1.85,
+        1.85,
+        1.85
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-window-frame-right-3",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "side arch window frame right-3",
+      "position": [
+        34.82,
+        7.25,
+        -9
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.25,
+        6.25,
+        4.25
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-glass-right-3",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "side stained glass right-3",
+      "position": [
+        34.82,
+        7.28,
+        -9
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        3.35,
+        5.45,
+        3.35
+      ],
+      "opacity": 0.58,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-tracery-right-3",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "side window tracery right-3",
+      "position": [
+        34.82,
+        7.3,
+        -9
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        3.65,
+        5.7,
+        3.65
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-wall-rail-right-3",
+      "slug": "167-horizontal-luminous-wall-rail",
+      "label": "side luminous wall rail right-3",
+      "position": [
+        34.82,
+        3.05,
+        -9
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.8,
+        1.65,
+        2.2
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-sconce-right-3",
+      "slug": "230-ornate-wall-lantern-sconce",
+      "label": "side wall lantern right-3",
+      "position": [
+        34.82,
+        9.8,
+        -3.0999999999999996
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        1.85,
+        1.85,
+        1.85
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-window-frame-right-4",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "side arch window frame right-4",
+      "position": [
+        34.82,
+        7.25,
+        -23
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.25,
+        6.25,
+        4.25
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-glass-right-4",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "side stained glass right-4",
+      "position": [
+        34.82,
+        7.28,
+        -23
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        3.35,
+        5.45,
+        3.35
+      ],
+      "opacity": 0.58,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-tracery-right-4",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "side window tracery right-4",
+      "position": [
+        34.82,
+        7.3,
+        -23
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        3.65,
+        5.7,
+        3.65
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-wall-rail-right-4",
+      "slug": "167-horizontal-luminous-wall-rail",
+      "label": "side luminous wall rail right-4",
+      "position": [
+        34.82,
+        3.05,
+        -23
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.8,
+        1.65,
+        2.2
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-sconce-right-4",
+      "slug": "230-ornate-wall-lantern-sconce",
+      "label": "side wall lantern right-4",
+      "position": [
+        34.82,
+        9.8,
+        -17.1
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        1.85,
+        1.85,
+        1.85
+      ],
+      "opacity": 0.9,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-main-frame",
+      "slug": "186-rear-arched-window-frame",
+      "label": "rear main arched frame",
+      "position": [
+        0,
+        7.1,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        8.4,
+        9.2,
+        8.4
+      ],
+      "opacity": 0.94,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-mountain-insert",
+      "slug": "234-distant-mountain-window-insert",
+      "label": "rear mountain vista insert",
+      "position": [
+        0,
+        7.15,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.8,
+        6.8,
+        6.8
+      ],
+      "opacity": 0.86,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-central-portal",
+      "slug": "106-inner-temple-doorway-portal",
+      "label": "rear inner portal base",
+      "position": [
+        0,
+        3.15,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.9,
+        4.5,
+        3.9
+      ],
+      "opacity": 0.76,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-side-frame-left",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "rear side arch left",
+      "position": [
+        -16.5,
+        7,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        4.6,
+        6.4,
+        4.6
+      ],
+      "opacity": 0.88,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-side-glass-left",
+      "slug": "150-gothic-jade-window-panel",
+      "label": "rear side jade glass left",
+      "position": [
+        -16.5,
+        7,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.7,
+        5.45,
+        3.7
+      ],
+      "opacity": 0.54,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-buttress-left",
+      "slug": "207-rear-wall-buttress-tower",
+      "label": "rear wall buttress left",
+      "position": [
+        -29.5,
+        6.2,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        4.5,
+        7.4,
+        4.5
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-pilaster-left",
+      "slug": "217-doorway-side-pilaster",
+      "label": "rear doorway pilaster left",
+      "position": [
+        -7.8,
+        4.35,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.8,
+        5.1,
+        2.8
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-relief-left",
+      "slug": "101-wall-relief-panel",
+      "label": "rear wall relief left",
+      "position": [
+        -24.2,
+        5.9,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.9,
+        5.2,
+        3.9
+      ],
+      "opacity": 0.62,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-side-frame-right",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "rear side arch right",
+      "position": [
+        16.5,
+        7,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        4.6,
+        6.4,
+        4.6
+      ],
+      "opacity": 0.88,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-side-glass-right",
+      "slug": "150-gothic-jade-window-panel",
+      "label": "rear side jade glass right",
+      "position": [
+        16.5,
+        7,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.7,
+        5.45,
+        3.7
+      ],
+      "opacity": 0.54,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-buttress-right",
+      "slug": "207-rear-wall-buttress-tower",
+      "label": "rear wall buttress right",
+      "position": [
+        29.5,
+        6.2,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        4.5,
+        7.4,
+        4.5
+      ],
+      "opacity": 0.92,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-pilaster-right",
+      "slug": "217-doorway-side-pilaster",
+      "label": "rear doorway pilaster right",
+      "position": [
+        7.8,
+        4.35,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.8,
+        5.1,
+        2.8
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-back-relief-right",
+      "slug": "101-wall-relief-panel",
+      "label": "rear wall relief right",
+      "position": [
+        24.2,
+        5.9,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.9,
+        5.2,
+        3.9
+      ],
+      "opacity": 0.62,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-front-column-left",
+      "slug": "84-white-gold-gothic-column",
+      "label": "front entrance column left",
+      "position": [
+        -24,
+        0,
+        31.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        5.5,
+        12.6,
+        5.5
+      ],
+      "opacity": 0.64,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-front-capital-left",
+      "slug": "98-white-gold-column-capital",
+      "label": "front entrance capital left",
+      "position": [
+        -24,
+        14.82,
+        31.5
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.25,
+        3.25,
+        3.25
+      ],
+      "opacity": 0.64,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-front-column-right",
+      "slug": "84-white-gold-gothic-column",
+      "label": "front entrance column right",
+      "position": [
+        24,
+        0,
+        31.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        5.5,
+        12.6,
+        5.5
+      ],
+      "opacity": 0.64,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-front-capital-right",
+      "slug": "98-white-gold-column-capital",
+      "label": "front entrance capital right",
+      "position": [
+        24,
+        14.82,
+        31.5
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.25,
+        3.25,
+        3.25
+      ],
+      "opacity": 0.64,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-main-mandala",
+      "slug": "95-ceiling-mandala-medallion-v2",
+      "label": "central ceiling mandala",
+      "position": [
+        0,
+        14.82,
+        -4
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        9.4,
+        9.4,
+        9.4
+      ],
+      "opacity": 0.78,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-dome-cap",
+      "slug": "180-ceiling-dome-cap-module",
+      "label": "central ceiling dome cap",
+      "position": [
+        0,
+        14.82,
+        -4
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        6.3,
+        6.3,
+        6.3
+      ],
+      "opacity": 0.6,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-star-node",
+      "slug": "209-ceiling-lockstone-star-node",
+      "label": "central ceiling lockstone",
+      "position": [
+        0,
+        14.82,
+        -4
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        3.4,
+        3.4,
+        3.4
+      ],
+      "opacity": 0.86,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-left-1",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "left ceiling buttress 1",
+      "position": [
+        -14,
+        14.82,
+        22
+      ],
+      "rotation": [
+        180,
+        0,
+        18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-right-1",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "right ceiling buttress 1",
+      "position": [
+        14,
+        14.82,
+        22
+      ],
+      "rotation": [
+        180,
+        0,
+        -18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rosette-1",
+      "slug": "136-ceiling-rosette-connector",
+      "label": "ceiling rosette 1",
+      "position": [
+        0,
+        14.82,
+        22
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        2.15,
+        2.15,
+        2.15
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-left-2",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "left ceiling buttress 2",
+      "position": [
+        -14,
+        14.82,
+        8
+      ],
+      "rotation": [
+        180,
+        0,
+        18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-right-2",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "right ceiling buttress 2",
+      "position": [
+        14,
+        14.82,
+        8
+      ],
+      "rotation": [
+        180,
+        0,
+        -18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rosette-2",
+      "slug": "136-ceiling-rosette-connector",
+      "label": "ceiling rosette 2",
+      "position": [
+        0,
+        14.82,
+        8
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        2.15,
+        2.15,
+        2.15
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-left-3",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "left ceiling buttress 3",
+      "position": [
+        -14,
+        14.82,
+        -6
+      ],
+      "rotation": [
+        180,
+        0,
+        18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-right-3",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "right ceiling buttress 3",
+      "position": [
+        14,
+        14.82,
+        -6
+      ],
+      "rotation": [
+        180,
+        0,
+        -18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rosette-3",
+      "slug": "136-ceiling-rosette-connector",
+      "label": "ceiling rosette 3",
+      "position": [
+        0,
+        14.82,
+        -6
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        2.15,
+        2.15,
+        2.15
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-left-4",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "left ceiling buttress 4",
+      "position": [
+        -14,
+        14.82,
+        -20
+      ],
+      "rotation": [
+        180,
+        0,
+        18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-right-4",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "right ceiling buttress 4",
+      "position": [
+        14,
+        14.82,
+        -20
+      ],
+      "rotation": [
+        180,
+        0,
+        -18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rosette-4",
+      "slug": "136-ceiling-rosette-connector",
+      "label": "ceiling rosette 4",
+      "position": [
+        0,
+        14.82,
+        -20
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        2.15,
+        2.15,
+        2.15
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-left-5",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "left ceiling buttress 5",
+      "position": [
+        -14,
+        14.82,
+        -31
+      ],
+      "rotation": [
+        180,
+        0,
+        18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rib-right-5",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "right ceiling buttress 5",
+      "position": [
+        14,
+        14.82,
+        -31
+      ],
+      "rotation": [
+        180,
+        0,
+        -18
+      ],
+      "scale": [
+        4.1,
+        5.1,
+        4.1
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-ceiling-rosette-5",
+      "slug": "136-ceiling-rosette-connector",
+      "label": "ceiling rosette 5",
+      "position": [
+        0,
+        14.82,
+        -31
+      ],
+      "rotation": [
+        180,
+        0,
+        0
+      ],
+      "scale": [
+        2.15,
+        2.15,
+        2.15
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "ceiling",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-left-upper-cornice-1",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "left upper cornice 1",
+      "position": [
+        -34.82,
+        12.7,
+        -27
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-right-upper-cornice-1",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "right upper cornice 1",
+      "position": [
+        34.82,
+        12.7,
+        -27
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-left-upper-cornice-2",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "left upper cornice 2",
+      "position": [
+        -34.82,
+        12.7,
+        -13
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-right-upper-cornice-2",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "right upper cornice 2",
+      "position": [
+        34.82,
+        12.7,
+        -13
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-left-upper-cornice-3",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "left upper cornice 3",
+      "position": [
+        -34.82,
+        12.7,
+        1
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-right-upper-cornice-3",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "right upper cornice 3",
+      "position": [
+        34.82,
+        12.7,
+        1
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-left-upper-cornice-4",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "left upper cornice 4",
+      "position": [
+        -34.82,
+        12.7,
+        15
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-right-upper-cornice-4",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "right upper cornice 4",
+      "position": [
+        34.82,
+        12.7,
+        15
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-left-upper-cornice-5",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "left upper cornice 5",
+      "position": [
+        -34.82,
+        12.7,
+        28
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-right-upper-cornice-5",
+      "slug": "198-upper-wall-cornice-module",
+      "label": "right upper cornice 5",
+      "position": [
+        34.82,
+        12.7,
+        28
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        4.7,
+        2.1,
+        2.1
+      ],
+      "opacity": 0.68,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-waterfall-left",
+      "slug": "235-side-waterfall-spout-basin",
+      "label": "side waterfall basin left",
+      "position": [
+        -32.2,
+        0,
+        -23
+      ],
+      "rotation": [
+        0,
+        78,
+        0
+      ],
+      "scale": [
+        2.8,
+        2.8,
+        2.8
+      ],
+      "opacity": 0.88,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-rear-planter-left",
+      "slug": "195-botanical-planter-cluster",
+      "label": "rear botanical cluster left",
+      "position": [
+        -25.5,
+        0,
+        -30.5
+      ],
+      "rotation": [
+        0,
+        18,
+        0
+      ],
+      "scale": [
+        2.9,
+        2.9,
+        2.9
+      ],
+      "opacity": 0.86,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-vine-left",
+      "slug": "216-wall-vine-bracket",
+      "label": "side vine bracket left",
+      "position": [
+        -34.82,
+        8.8,
+        -16
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        2.7,
+        3.9,
+        2.7
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-waterfall-right",
+      "slug": "235-side-waterfall-spout-basin",
+      "label": "side waterfall basin right",
+      "position": [
+        32.2,
+        0,
+        -23
+      ],
+      "rotation": [
+        0,
+        -78,
+        0
+      ],
+      "scale": [
+        2.8,
+        2.8,
+        2.8
+      ],
+      "opacity": 0.88,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-rear-planter-right",
+      "slug": "195-botanical-planter-cluster",
+      "label": "rear botanical cluster right",
+      "position": [
+        25.5,
+        0,
+        -30.5
+      ],
+      "rotation": [
+        0,
+        -18,
+        0
+      ],
+      "scale": [
+        2.9,
+        2.9,
+        2.9
+      ],
+      "opacity": 0.86,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "arch-side-vine-right",
+      "slug": "216-wall-vine-bracket",
+      "label": "side vine bracket right",
+      "position": [
+        34.82,
+        8.8,
+        -16
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        2.7,
+        3.9,
+        2.7
+      ],
+      "opacity": 0.72,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": true
+    }
+  ]
+}

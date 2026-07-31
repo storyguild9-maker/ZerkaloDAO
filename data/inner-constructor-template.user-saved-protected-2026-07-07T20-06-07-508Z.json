@@ -1,0 +1,2094 @@
+{
+  "version": 1,
+  "updatedAt": "2026-07-07T19:21:53.187Z",
+  "items": [
+    {
+      "id": "base-table",
+      "slug": "82-council-round-marble-gold-table",
+      "label": "совет круглый мрамор золото стол",
+      "position": [
+        0.3,
+        0,
+        -0.12
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        16.78,
+        7.95,
+        16.78
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-01",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        -0.87,
+        0,
+        -11.77
+      ],
+      "rotation": [
+        0,
+        10,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-02",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        -6.19,
+        0,
+        -9.4
+      ],
+      "rotation": [
+        0,
+        33.67,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-03",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        -9.47,
+        0,
+        -4.35
+      ],
+      "rotation": [
+        0,
+        70,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-04",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        -9.85,
+        0,
+        3.93
+      ],
+      "rotation": [
+        0,
+        100,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-05",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        -8.01,
+        0,
+        7.56
+      ],
+      "rotation": [
+        0,
+        130,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-06",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        -3.57,
+        0,
+        9.85
+      ],
+      "rotation": [
+        0,
+        160,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-07",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        3.09,
+        0,
+        10.23
+      ],
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-08",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        8.76,
+        0,
+        4.79
+      ],
+      "rotation": [
+        0,
+        220,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-09",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        10.79,
+        0,
+        -0.73
+      ],
+      "rotation": [
+        0,
+        250,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-10",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        10.37,
+        0,
+        -4.56
+      ],
+      "rotation": [
+        0,
+        280,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-11",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        8.1,
+        0,
+        -8.33
+      ],
+      "rotation": [
+        0,
+        310,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "base-chair-12",
+      "slug": "92-council-chair-v2",
+      "label": "совет кресло v2",
+      "position": [
+        4.08,
+        0,
+        -11.14
+      ],
+      "rotation": [
+        0,
+        340,
+        0
+      ],
+      "scale": [
+        4.45,
+        4.45,
+        4.45
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "floor-inlay-soft",
+      "slug": "189-circular-floor-inlay-medallion",
+      "label": "круговой пол инкрустация медальон",
+      "position": [
+        0,
+        0,
+        -8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.4,
+        6.4,
+        6.4
+      ],
+      "opacity": 0.22,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "wall-back-kit-wall-back-1",
+      "slug": "239-white-gold-gothic-wall-bay-kit",
+      "label": "белый золото готический стена bay kit",
+      "position": [
+        -22.96,
+        0,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0.83
+      ],
+      "scale": [
+        9.8,
+        15.35,
+        9.8
+      ],
+      "opacity": 0.98,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-240-white-gold-corner-connector-kit-1783421338855",
+      "slug": "240-white-gold-corner-connector-kit",
+      "label": "белый золото corner соединитель kit",
+      "position": [
+        -16.02,
+        0,
+        -34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        11.9,
+        14.98,
+        7.76
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-142-living-vine-arch-1783422125653",
+      "slug": "142-living-vine-arch",
+      "label": "living vine арка",
+      "position": [
+        -0.19,
+        0,
+        -35.26
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        19,
+        15.22,
+        15.22
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-164-sacred-indoor-tree-planter-1783422217413",
+      "slug": "164-sacred-indoor-tree-planter",
+      "label": "сакральный внутренний дерево кашпо",
+      "position": [
+        -0.12,
+        5.41,
+        -31.65
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.39,
+        2.39,
+        2.39
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-208-arched-window-tracery-insert-1783422759476",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "арочный окно ажур insert",
+      "position": [
+        -0.15,
+        0,
+        -34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        15.03,
+        15.03,
+        15.03
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-122-wall-alcove-niche-1783422816195",
+      "slug": "122-wall-alcove-niche",
+      "label": "стена ниша niche",
+      "position": [
+        8.72,
+        0,
+        -34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        12.17,
+        14.33,
+        1.27
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-122-wall-alcove-niche-copy-1783422898319-0",
+      "slug": "122-wall-alcove-niche",
+      "label": "стена ниша niche",
+      "position": [
+        -8.95,
+        0,
+        -34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        12.17,
+        14.33,
+        1.27
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-236-arched-ceiling-buttress-brace-1783424410281",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "арочный потолок контрфорс крепление",
+      "position": [
+        4.02,
+        1.15,
+        -34.54
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        14.01,
+        14.01,
+        14.01
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-236-arched-ceiling-buttress-brace-copy-1783424516609-0",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "арочный потолок контрфорс крепление",
+      "position": [
+        -4.47,
+        1.15,
+        -34.48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        -14.01,
+        14.01,
+        14.01
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-195-botanical-planter-cluster-1783424628401",
+      "slug": "195-botanical-planter-cluster",
+      "label": "ботаника кашпо группа",
+      "position": [
+        -9,
+        9.77,
+        -34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.24,
+        6.15,
+        7.86
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-213-rear-wall-mountain-relief-plaque-1783424827694",
+      "slug": "213-rear-wall-mountain-relief-plaque",
+      "label": "задний стена гора рельеф табличка",
+      "position": [
+        -8.8,
+        10.48,
+        -35.45
+      ],
+      "rotation": [
+        -1.39,
+        -6.77,
+        -4.28
+      ],
+      "scale": [
+        9.11,
+        12.74,
+        2.74
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-213-rear-wall-mountain-relief-plaque-copy-1783425243408-0",
+      "slug": "213-rear-wall-mountain-relief-plaque",
+      "label": "задний стена гора рельеф табличка",
+      "position": [
+        9.31,
+        10.48,
+        -35.93
+      ],
+      "rotation": [
+        -0.77,
+        -6.87,
+        0.91
+      ],
+      "scale": [
+        9.11,
+        12.74,
+        2.74
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-195-botanical-planter-cluster-copy-1783425322619-0",
+      "slug": "195-botanical-planter-cluster",
+      "label": "ботаника кашпо группа",
+      "position": [
+        8.77,
+        9.77,
+        -34.14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.24,
+        6.15,
+        7.86
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-240-white-gold-corner-connector-kit-copy-1783425424186-0",
+      "slug": "240-white-gold-corner-connector-kit",
+      "label": "белый золото corner соединитель kit",
+      "position": [
+        15.51,
+        0,
+        -34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        11.9,
+        14.98,
+        7.76
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-back-239-white-gold-gothic-wall-bay-kit-copy-1783425653981-0",
+      "slug": "239-white-gold-gothic-wall-bay-kit",
+      "label": "белый золото готический стена bay kit",
+      "position": [
+        22.57,
+        0,
+        -34.82
+      ],
+      "rotation": [
+        0,
+        0,
+        0.83
+      ],
+      "scale": [
+        9.8,
+        15.35,
+        9.8
+      ],
+      "opacity": 0.98,
+      "visible": true,
+      "surface": "back-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-kit-wall-back-1",
+      "slug": "239-white-gold-gothic-wall-bay-kit",
+      "label": "белый золото готический стена bay kit",
+      "position": [
+        34.82,
+        0,
+        -22.96
+      ],
+      "rotation": [
+        0,
+        -90,
+        0.83
+      ],
+      "scale": [
+        9.8,
+        15.35,
+        9.8
+      ],
+      "opacity": 0.98,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-240-white-gold-corner-connector-kit-1783421338855",
+      "slug": "240-white-gold-corner-connector-kit",
+      "label": "белый золото corner соединитель kit",
+      "position": [
+        34,
+        0,
+        -16.02
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        11.9,
+        14.98,
+        7.76
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-142-living-vine-arch-1783422125653",
+      "slug": "142-living-vine-arch",
+      "label": "living vine арка",
+      "position": [
+        35.26,
+        0,
+        -0.19
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        19,
+        15.22,
+        15.22
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-147-column-ceiling-brace-1783422196226",
+      "slug": "147-column-ceiling-brace",
+      "label": "колонна потолок крепление",
+      "position": [
+        30.67,
+        0,
+        -0.01
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        5.2,
+        5.2,
+        5.2
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-164-sacred-indoor-tree-planter-1783422217413",
+      "slug": "164-sacred-indoor-tree-planter",
+      "label": "сакральный внутренний дерево кашпо",
+      "position": [
+        30.29,
+        5.37,
+        -0.03
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        2.39,
+        2.39,
+        2.39
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-208-arched-window-tracery-insert-1783422759476",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "арочный окно ажур insert",
+      "position": [
+        34,
+        0,
+        -0.15
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        15.03,
+        15.03,
+        15.03
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-122-wall-alcove-niche-1783422816195",
+      "slug": "122-wall-alcove-niche",
+      "label": "стена ниша niche",
+      "position": [
+        34,
+        0,
+        8.72
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        12.17,
+        14.33,
+        1.27
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-122-wall-alcove-niche-copy-1783422898319-0",
+      "slug": "122-wall-alcove-niche",
+      "label": "стена ниша niche",
+      "position": [
+        34,
+        0,
+        -8.95
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        12.17,
+        14.33,
+        1.27
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-236-arched-ceiling-buttress-brace-1783424410281",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "арочный потолок контрфорс крепление",
+      "position": [
+        34.54,
+        1.15,
+        4.02
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        14.01,
+        14.01,
+        14.01
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-236-arched-ceiling-buttress-brace-copy-1783424516609-0",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "арочный потолок контрфорс крепление",
+      "position": [
+        34.48,
+        1.15,
+        -4.47
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        -14.01,
+        14.01,
+        14.01
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-195-botanical-planter-cluster-1783424628401",
+      "slug": "195-botanical-planter-cluster",
+      "label": "ботаника кашпо группа",
+      "position": [
+        34,
+        9.77,
+        -9
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        6.24,
+        6.15,
+        7.86
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-213-rear-wall-mountain-relief-plaque-1783424827694",
+      "slug": "213-rear-wall-mountain-relief-plaque",
+      "label": "задний стена гора рельеф табличка",
+      "position": [
+        35.45,
+        10.48,
+        -8.8
+      ],
+      "rotation": [
+        -1.39,
+        -96.77,
+        -4.28
+      ],
+      "scale": [
+        9.11,
+        12.74,
+        2.74
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-213-rear-wall-mountain-relief-plaque-copy-1783425243408-0",
+      "slug": "213-rear-wall-mountain-relief-plaque",
+      "label": "задний стена гора рельеф табличка",
+      "position": [
+        35.93,
+        10.48,
+        9.31
+      ],
+      "rotation": [
+        -0.77,
+        -96.87,
+        0.91
+      ],
+      "scale": [
+        9.11,
+        12.74,
+        2.74
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-195-botanical-planter-cluster-copy-1783425322619-0",
+      "slug": "195-botanical-planter-cluster",
+      "label": "ботаника кашпо группа",
+      "position": [
+        34.14,
+        9.77,
+        8.77
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        6.24,
+        6.15,
+        7.86
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-right-240-white-gold-corner-connector-kit-copy-1783425424186-0",
+      "slug": "240-white-gold-corner-connector-kit",
+      "label": "белый золото corner соединитель kit",
+      "position": [
+        34,
+        0,
+        15.51
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        11.9,
+        14.98,
+        7.76
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "right-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-front-142-living-vine-arch-1783422125653",
+      "slug": "142-living-vine-arch",
+      "label": "living vine арка",
+      "position": [
+        0.19,
+        0,
+        35.26
+      ],
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "scale": [
+        19,
+        15.22,
+        15.22
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "front-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-kit-column-back-row-4",
+      "slug": "238-white-gold-modular-column-kit",
+      "label": "белый золото modular колонна kit",
+      "position": [
+        -29.4,
+        0,
+        -11
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        2.55,
+        14.6,
+        2.55
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-240-white-gold-corner-connector-kit-1783421338855",
+      "slug": "240-white-gold-corner-connector-kit",
+      "label": "белый золото corner соединитель kit",
+      "position": [
+        -34,
+        0,
+        16.02
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        11.9,
+        14.98,
+        7.76
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-142-living-vine-arch-1783422125653",
+      "slug": "142-living-vine-arch",
+      "label": "living vine арка",
+      "position": [
+        -35.26,
+        0,
+        0.19
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        19,
+        15.22,
+        15.22
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-147-column-ceiling-brace-1783422196226",
+      "slug": "147-column-ceiling-brace",
+      "label": "колонна потолок крепление",
+      "position": [
+        -30.67,
+        0,
+        0.01
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        5.2,
+        5.2,
+        5.2
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-164-sacred-indoor-tree-planter-1783422217413",
+      "slug": "164-sacred-indoor-tree-planter",
+      "label": "сакральный внутренний дерево кашпо",
+      "position": [
+        -30.29,
+        5.37,
+        0.03
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        2.39,
+        2.39,
+        2.39
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-208-arched-window-tracery-insert-1783422759476",
+      "slug": "208-arched-window-tracery-insert",
+      "label": "арочный окно ажур insert",
+      "position": [
+        -34,
+        0,
+        0.15
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        15.03,
+        15.03,
+        15.03
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-122-wall-alcove-niche-1783422816195",
+      "slug": "122-wall-alcove-niche",
+      "label": "стена ниша niche",
+      "position": [
+        -34,
+        0,
+        -8.72
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        12.17,
+        14.33,
+        1.27
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-122-wall-alcove-niche-copy-1783422898319-0",
+      "slug": "122-wall-alcove-niche",
+      "label": "стена ниша niche",
+      "position": [
+        -34,
+        0,
+        8.95
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        12.17,
+        14.33,
+        1.27
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-236-arched-ceiling-buttress-brace-1783424410281",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "арочный потолок контрфорс крепление",
+      "position": [
+        -34.54,
+        1.15,
+        -4.02
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        14.01,
+        14.01,
+        14.01
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-236-arched-ceiling-buttress-brace-copy-1783424516609-0",
+      "slug": "236-arched-ceiling-buttress-brace",
+      "label": "арочный потолок контрфорс крепление",
+      "position": [
+        -34.48,
+        1.15,
+        4.47
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        -14.01,
+        14.01,
+        14.01
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-195-botanical-planter-cluster-1783424628401",
+      "slug": "195-botanical-planter-cluster",
+      "label": "ботаника кашпо группа",
+      "position": [
+        -34,
+        9.77,
+        9
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        6.24,
+        6.15,
+        7.86
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-213-rear-wall-mountain-relief-plaque-1783424827694",
+      "slug": "213-rear-wall-mountain-relief-plaque",
+      "label": "задний стена гора рельеф табличка",
+      "position": [
+        -35.45,
+        10.48,
+        8.8
+      ],
+      "rotation": [
+        -1.39,
+        83.23,
+        -4.28
+      ],
+      "scale": [
+        9.11,
+        12.74,
+        2.74
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-213-rear-wall-mountain-relief-plaque-copy-1783425243408-0",
+      "slug": "213-rear-wall-mountain-relief-plaque",
+      "label": "задний стена гора рельеф табличка",
+      "position": [
+        -35.93,
+        10.48,
+        -9.31
+      ],
+      "rotation": [
+        -0.77,
+        83.13,
+        0.91
+      ],
+      "scale": [
+        9.11,
+        12.74,
+        2.74
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-195-botanical-planter-cluster-copy-1783425322619-0",
+      "slug": "195-botanical-planter-cluster",
+      "label": "ботаника кашпо группа",
+      "position": [
+        -34.14,
+        9.77,
+        -8.77
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        6.24,
+        6.15,
+        7.86
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-240-white-gold-corner-connector-kit-copy-1783425424186-0",
+      "slug": "240-white-gold-corner-connector-kit",
+      "label": "белый золото corner соединитель kit",
+      "position": [
+        -34,
+        0,
+        -15.51
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        11.9,
+        14.98,
+        7.76
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "wall-left-239-white-gold-gothic-wall-bay-kit-copy-1783425653981-0",
+      "slug": "239-white-gold-gothic-wall-bay-kit",
+      "label": "белый золото готический стена bay kit",
+      "position": [
+        -34.82,
+        0,
+        -22.57
+      ],
+      "rotation": [
+        0,
+        90,
+        0.83
+      ],
+      "scale": [
+        9.8,
+        15.35,
+        9.8
+      ],
+      "opacity": 0.98,
+      "visible": true,
+      "surface": "left-wall",
+      "surfaceLocked": false
+    },
+    {
+      "id": "87-stained-glass-lancet-panel-1783441601033",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "stained стекло lancet панель",
+      "position": [
+        8.68,
+        0,
+        34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        11.85,
+        11.85,
+        11.85
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "86-gothic-gold-arch-window-module-1783441633780",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "готический золото арка окно модуль",
+      "position": [
+        8.69,
+        0,
+        33.7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        15.12,
+        15.12,
+        5.06
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "87-stained-glass-lancet-panel-copy-1783442079517-0",
+      "slug": "87-stained-glass-lancet-panel",
+      "label": "stained стекло lancet панель",
+      "position": [
+        -8.17,
+        0,
+        34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        11.85,
+        11.85,
+        11.85
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "86-gothic-gold-arch-window-module-copy-1783442087428-0",
+      "slug": "86-gothic-gold-arch-window-module",
+      "label": "готический золото арка окно модуль",
+      "position": [
+        -8.1,
+        0,
+        34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        15.12,
+        15.12,
+        5.06
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "159-side-arched-passage-portal-1783442207357",
+      "slug": "159-side-arched-passage-portal",
+      "label": "боковой арочный passage портал",
+      "position": [
+        0.4,
+        0,
+        34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        16.38,
+        16.24,
+        16.24
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "241-white-gold-vaulted-ceiling-bay-kit-1783442681513",
+      "slug": "241-white-gold-vaulted-ceiling-bay-kit",
+      "label": "белый золото vaulted потолок bay kit",
+      "position": [
+        8.65,
+        9.02,
+        34.71
+      ],
+      "rotation": [
+        180,
+        0,
+        180
+      ],
+      "scale": [
+        9.42,
+        9.42,
+        10.97
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": false
+    },
+    {
+      "id": "241-white-gold-vaulted-ceiling-bay-kit-copy-1783442860108-0",
+      "slug": "241-white-gold-vaulted-ceiling-bay-kit",
+      "label": "белый золото vaulted потолок bay kit",
+      "position": [
+        -8.25,
+        9.02,
+        34.13
+      ],
+      "rotation": [
+        180,
+        0,
+        180
+      ],
+      "scale": [
+        9.42,
+        9.42,
+        10.97
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": false
+    },
+    {
+      "id": "151-hanging-vine-curtain-1783443403078",
+      "slug": "151-hanging-vine-curtain",
+      "label": "подвесной vine curtain",
+      "position": [
+        -17.35,
+        0,
+        32.87
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        12.24,
+        14.68,
+        14.68
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "151-hanging-vine-curtain-copy-1783443490795-0",
+      "slug": "151-hanging-vine-curtain",
+      "label": "подвесной vine curtain",
+      "position": [
+        17.43,
+        0,
+        33.01
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        14.26,
+        14.68,
+        14.68
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "120-luminous-jade-orb-device-1783443570547",
+      "slug": "120-luminous-jade-orb-device",
+      "label": "светящийся нефрит orb device",
+      "position": [
+        15.88,
+        0,
+        -31.65
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        14.85,
+        14.85,
+        14.85
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "120-luminous-jade-orb-device-copy-1783443664203-0",
+      "slug": "120-luminous-jade-orb-device",
+      "label": "светящийся нефрит orb device",
+      "position": [
+        -15.57,
+        0,
+        -31.68
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        14.85,
+        14.85,
+        14.85
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "84-white-gold-gothic-column-1783444246371",
+      "slug": "84-white-gold-gothic-column",
+      "label": "белый золото готический колонна",
+      "position": [
+        -31.22,
+        0,
+        -31.27
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        25.96,
+        14.86,
+        25.96
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "84-white-gold-gothic-column-copy-1783444351795-0",
+      "slug": "84-white-gold-gothic-column",
+      "label": "белый золото готический колонна",
+      "position": [
+        31.01,
+        0,
+        -31.2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        25.96,
+        14.86,
+        25.96
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "84-white-gold-gothic-column-copy-1783444413615-0",
+      "slug": "84-white-gold-gothic-column",
+      "label": "белый золото готический колонна",
+      "position": [
+        31.13,
+        0,
+        31.11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        25.96,
+        14.86,
+        25.96
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "84-white-gold-gothic-column-copy-1783444427243-0",
+      "slug": "84-white-gold-gothic-column",
+      "label": "белый золото готический колонна",
+      "position": [
+        -31.17,
+        0,
+        31.4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        25.96,
+        14.86,
+        25.96
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "88-marble-gold-side-waterfall-feature-1783445531851",
+      "slug": "88-marble-gold-side-waterfall-feature",
+      "label": "мрамор золото боковой водопад элемент",
+      "position": [
+        24.69,
+        0,
+        26.77
+      ],
+      "rotation": [
+        179.44,
+        -47.66,
+        179.39
+      ],
+      "scale": [
+        17.89,
+        15.88,
+        16.26
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "147-column-ceiling-brace-1783446171983",
+      "slug": "147-column-ceiling-brace",
+      "label": "колонна потолок крепление",
+      "position": [
+        -0.05,
+        0,
+        -31.83
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        5.2,
+        5.49,
+        5.2
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "239-white-gold-gothic-wall-bay-kit-1783449556858",
+      "slug": "239-white-gold-gothic-wall-bay-kit",
+      "label": "белый золото готический стена bay kit",
+      "position": [
+        -16.47,
+        0,
+        34
+      ],
+      "rotation": [
+        -180,
+        0,
+        -180
+      ],
+      "scale": [
+        14.75,
+        15.38,
+        14.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "239-white-gold-gothic-wall-bay-kit-copy-1783449661644-0",
+      "slug": "239-white-gold-gothic-wall-bay-kit",
+      "label": "белый золото готический стена bay kit",
+      "position": [
+        16.83,
+        0,
+        34
+      ],
+      "rotation": [
+        -180,
+        0,
+        -180
+      ],
+      "scale": [
+        14.75,
+        15.32,
+        14.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "151-hanging-vine-curtain-copy-1783449829020-0",
+      "slug": "151-hanging-vine-curtain",
+      "label": "подвесной vine curtain",
+      "position": [
+        26.16,
+        0,
+        32.92
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        14.26,
+        14.68,
+        14.68
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "239-white-gold-gothic-wall-bay-kit-copy-1783449838929-0",
+      "slug": "239-white-gold-gothic-wall-bay-kit",
+      "label": "белый золото готический стена bay kit",
+      "position": [
+        26.28,
+        0,
+        34
+      ],
+      "rotation": [
+        -180,
+        0,
+        -180
+      ],
+      "scale": [
+        14.75,
+        15.32,
+        14.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "239-white-gold-gothic-wall-bay-kit-copy-1783449909741-0",
+      "slug": "239-white-gold-gothic-wall-bay-kit",
+      "label": "белый золото готический стена bay kit",
+      "position": [
+        -25.71,
+        0,
+        34
+      ],
+      "rotation": [
+        -180,
+        0,
+        -180
+      ],
+      "scale": [
+        14.75,
+        15.38,
+        14.75
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "151-hanging-vine-curtain-copy-1783449965264-0",
+      "slug": "151-hanging-vine-curtain",
+      "label": "подвесной vine curtain",
+      "position": [
+        -25.71,
+        0,
+        32.53
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        12.24,
+        14.68,
+        14.68
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    },
+    {
+      "id": "172-reflective-water-plane-tile-1783450329999",
+      "slug": "172-reflective-water-plane-tile",
+      "label": "отражающий вода plane tile",
+      "position": [
+        32.24,
+        7.4,
+        24.47
+      ],
+      "rotation": [
+        90,
+        0,
+        92.02
+      ],
+      "scale": [
+        11.71,
+        21.69,
+        25.4
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": false
+    },
+    {
+      "id": "133-emerald-chair-cushion-module-1783450807416",
+      "slug": "133-emerald-chair-cushion-module",
+      "label": "изумрудный кресло cushion модуль",
+      "position": [
+        -8.02,
+        0.31,
+        -30.64
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6.76,
+        6.76,
+        6.76
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": false
+    },
+    {
+      "id": "239-white-gold-gothic-wall-bay-kit-copy-1783451666440-0",
+      "slug": "239-white-gold-gothic-wall-bay-kit",
+      "label": "белый золото готический стена bay kit",
+      "position": [
+        31.1,
+        0,
+        21.96
+      ],
+      "rotation": [
+        -180,
+        -89.94,
+        -180
+      ],
+      "scale": [
+        14.75,
+        15.32,
+        2.77
+      ],
+      "opacity": 1,
+      "visible": true,
+      "surface": "floor",
+      "surfaceLocked": true
+    }
+  ]
+}

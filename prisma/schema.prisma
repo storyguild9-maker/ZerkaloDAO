@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model CandidateSession {
+  id              String        @id @default(cuid())
+  status          String        @default("created")
+  startedAt       DateTime      @default(now())
+  completedAt     DateTime?
+  currentGateId   String?
+  userAgent       String?
+  locale          String        @default("ru")
+  optionalEmail   String?
+  isProspect      Boolean       @default(false)
+  consentAccepted Boolean       @default(false)
+  seed            String
+
+  attempts GateAttempt[]
+  events   SessionEvent[]
+  profile  ScoreProfile?
+  notes    AdminNote[]
+}
+
+model GateAttempt {
+  id             String        @id @default(cuid())
+  sessionId      String
+  gateId         String
+  startedAt      DateTime      @default(now())
+  completedAt    DateTime?
+  status         String        @default("started")
+  primaryChoice  String?
+  reflectionText String?
+  trapTriggered  Boolean       @default(false)
+  scoreDelta     String
+  metadata       String?
+
+  session CandidateSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([gateId])
+}
+
+model SessionEvent {
+  id        String    @id @default(cuid())
+  sessionId String
+  gateId    String?
+  eventType String
+  timestamp DateTime  @default(now())
+  elapsedMs Int?
+  payload   String?
+
+  session CandidateSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([gateId])
+  @@index([eventType])
+}
+
+model ScoreProfile {
+  id          String      @id @default(cuid())
+  sessionId   String      @unique
+  createdAt   DateTime    @default(now())
+  metrics     String
+  archetype   String
+  accessLevel String
+  summary     String
+  strengths   String
+  shadows     String
+  practices   String
+  riskFlags   String
+  manualAccessLevel String?
+  accessConfirmed Boolean     @default(false)
+
+  session CandidateSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model AdminNote {
+  id        String   @id @default(cuid())
+  sessionId String
+  createdAt DateTime @default(now())
+  note      String
+  reviewer  String?
+
+  session CandidateSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
