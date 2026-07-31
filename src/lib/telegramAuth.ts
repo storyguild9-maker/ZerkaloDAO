@@ -34,7 +34,6 @@ export function validateTelegramInitData(
   if (!receivedHash) throw new Error("Telegram hash is missing");
 
   params.delete("hash");
-  params.delete("signature");
   const dataCheckString = [...params.entries()]
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([key, value]) => `${key}=${value}`)
