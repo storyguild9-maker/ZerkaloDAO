@@ -99,7 +99,7 @@ export function TelegramMiniAppShell() {
   if (entered && user) {
     return (
       <div className="telegram-mini-app telegram-mini-app--entered">
-        <MeshySceneConstructor plain telegram />
+        <MeshySceneConstructor plain telegram telegramUserId={user.id} />
       </div>
     );
   }

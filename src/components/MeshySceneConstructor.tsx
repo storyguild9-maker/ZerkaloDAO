@@ -7,6 +7,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { assetUrl } from "@/lib/assetUrl";
+import { getTelegramAvatarId, getTelegramAvatarMotion, isTelegramSceneAsset } from "@/lib/telegramScene";
 
 type MeshyAsset = {
   slug: string;
@@ -992,7 +993,7 @@ const snapshotObject = (placed: PlacedAsset, object: THREE.Object3D): PlacedAsse
   visible: object.visible
 });
 
-export function MeshySceneConstructor({ plain = false, telegram = false }: { plain?: boolean; telegram?: boolean } = {}) {
+export function MeshySceneConstructor({ plain = false, telegram = false, telegramUserId }: { plain?: boolean; telegram?: boolean; telegramUserId?: number } = {}) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -1001,6 +1002,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
   const transformRef = useRef<TransformControls | null>(null);
   const loaderRef = useRef<GLTFLoader | null>(null);
   const sourceCacheRef = useRef(new Map<string, THREE.Object3D>());
+  const assetsRef = useRef<MeshyAsset[]>([]);
   const objectRefs = useRef(new Map<string, THREE.Group>());
   const selectedIdRef = useRef<string | null>(null);
   const selectedIdsRef = useRef<string[]>([]);
@@ -1052,9 +1054,9 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
   const [avatarSeatAdjustments, setAvatarSeatAdjustments] = useState<Record<string, AvatarSeatAdjustment>>(DEFAULT_AVATAR_SEAT_ADJUSTMENTS);
   const [seatEditorAvatarId, setSeatEditorAvatarId] = useState(DEFAULT_CONTROLLED_AVATAR_ID);
   const [initiateAvatars, setInitiateAvatars] = useState<InitiateAvatar[]>([]);
-  const [controlledAvatarId, setControlledAvatarId] = useState(DEFAULT_CONTROLLED_AVATAR_ID);
-  const [avatarMotion, setAvatarMotion] = useState("daily-walk-loop");
-  const avatarMotionRef = useRef("daily-walk-loop");
+  const [controlledAvatarId, setControlledAvatarId] = useState<string>(() => telegram ? getTelegramAvatarId(telegramUserId) : DEFAULT_CONTROLLED_AVATAR_ID);
+  const [avatarMotion, setAvatarMotion] = useState(() => telegram ? getTelegramAvatarMotion(getTelegramAvatarId(telegramUserId)) : "daily-walk-loop");
+  const avatarMotionRef = useRef(telegram ? getTelegramAvatarMotion(getTelegramAvatarId(telegramUserId)) : "daily-walk-loop");
   const [dlanisWeaponEditorId, setDlanisWeaponEditorId] = useState<DlanisWeaponId>("Weapon_Spear");
   const [dlanisTransformTarget, setDlanisTransformTarget] = useState<DlanisTransformTarget | null>(null);
   const [dlanisWeaponAdjustments, setDlanisWeaponAdjustments] = useState<DlanisWeaponAdjustments>(DEFAULT_DLANIS_WEAPON_ADJUSTMENTS);
@@ -1138,7 +1140,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
     window.setTimeout(() => {
       seatStorageHydratedRef.current = true;
     }, 0);
-  }, []);
+  }, [telegram]);
   useEffect(() => {
     selectedIdRef.current = selectedId;
     const object = selectedId ? objectRefs.current.get(selectedId) ?? null : null;
@@ -1700,6 +1702,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
     runtime.wasMoving = false;
   };
   useEffect(() => {
+    if (!controlledAvatar) return;
     const nextMotion = getDefaultAvatarMotion(controlledAvatar);
     const keepsDlanisMotion =
       controlledAvatar?.id === DLANIS_AVATAR_ID && DLANIS_SELECTABLE_MOTION_IDS.has(avatarMotion);
@@ -1718,10 +1721,10 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     renderer.setClearColor(0x020706, 1);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, telegram ? 1.25 : 2));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.enabled = !telegram;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.tabIndex = 0;
     renderer.domElement.setAttribute("aria-label", "3D сцена: управление аватаром через WASD и стрелки");
@@ -1814,7 +1817,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
 
     const keyLight = new THREE.DirectionalLight(0xf4dfaa, 2.4);
     keyLight.position.set(-8, 12, 9);
-    keyLight.castShadow = true;
+    keyLight.castShadow = !telegram;
     keyLight.shadow.mapSize.set(1024, 1024);
     scene.add(keyLight);
 
@@ -1871,7 +1874,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
 
     const solarLight = new THREE.DirectionalLight(0xffe7ae, 7.2);
     solarLight.name = "jyotish-moving-sunlight";
-    solarLight.castShadow = true;
+    solarLight.castShadow = !telegram;
     solarLight.shadow.mapSize.set(2048, 2048);
     solarLight.shadow.camera.near = 8;
     solarLight.shadow.camera.far = 160;
@@ -1908,7 +1911,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
     updateSolarOrbit(solarOrbitStartedAt);
 
     let solarDisposed = false;
-    void fetch(assetUrl("/models/meshy/manifest.json"), { cache: "no-store" })
+    if (!telegram) void fetch(assetUrl("/models/meshy/manifest.json"), { cache: "no-store" })
       .then((response) => response.json() as Promise<MeshyManifest>)
       .then((manifest) => manifest.assets?.find((asset) => asset.slug === "jyotish-solar-seal-v1")?.localModel)
       .then((localModel) => {
@@ -1947,14 +1950,15 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
       texture.needsUpdate = true;
       return texture;
     };
-    const floorTexture = configureRoomTexture(roomTextureLoader.load("/images/inner-council/council-floor-generated.png"));
-    const ceilingTexture = configureRoomTexture(roomTextureLoader.load("/images/inner-council/council-ceiling-generated.png"));
+    const floorTexture = configureRoomTexture(roomTextureLoader.load(telegram ? "/images/inner-council/council-floor-telegram.webp" : "/images/inner-council/council-floor-generated.png"));
+    const ceilingTexture = telegram ? null : configureRoomTexture(roomTextureLoader.load("/images/inner-council/council-ceiling-generated.png"));
     const floorMaterial = new THREE.MeshPhysicalMaterial({ color: 0xffffff, map: floorTexture, roughness: 0.16, metalness: 0.04, transparent: true, opacity: 0.98, clearcoat: 0.9, clearcoatRoughness: 0.08, side: THREE.DoubleSide });
     const wallMaterial = new THREE.MeshBasicMaterial({ color: 0x12352d, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
     const ceilingMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: ceilingTexture, transparent: true, opacity: 0.96, side: THREE.DoubleSide, depthWrite: false });
     const edgeMaterial = new THREE.LineBasicMaterial({ color: 0xd8ae5e, transparent: true, opacity: 0.46 });
 
     SURFACES.forEach((surface) => {
+      if (telegram && surface.id !== "floor") return;
       const geometry = new THREE.PlaneGeometry(surface.dimensions[0], surface.dimensions[1]);
       const material = surface.id === "floor" ? floorMaterial : surface.id === "ceiling" ? ceilingMaterial.clone() : wallMaterial.clone();
       const plane = new THREE.Mesh(geometry, material);
@@ -1979,13 +1983,13 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
     const gridMaterial = grid.material as THREE.Material;
     gridMaterial.transparent = true;
     gridMaterial.opacity = 0.08;
-    scene.add(grid);
+    if (!telegram) scene.add(grid);
 
     const axisRing = new THREE.Mesh(new THREE.TorusGeometry(7.45 * ROOM_SCALE, 0.024, 8, 220), new THREE.MeshBasicMaterial({ color: 0xd8ae5e, transparent: true, opacity: 0.42 }));
     axisRing.name = "constructor-seat-radius-ring";
     axisRing.position.set(0, 0.07, -2.8 * ROOM_SCALE);
     axisRing.rotation.x = Math.PI / 2;
-    scene.add(axisRing);
+    if (!telegram) scene.add(axisRing);
 
     loaderRef.current = new GLTFLoader();
 
@@ -2397,7 +2401,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
       solarHaloTexture.dispose();
       renderer.dispose();
     };
-  }, []);
+  }, [telegram]);
 
   useEffect(() => {
     if (!plain || !isReady || !sceneRef.current || !loaderRef.current) return;
@@ -2476,7 +2480,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
       let seatedAction: THREE.AnimationAction | null = null;
       let baseSeatedModelPosition: THREE.Vector3 | null = null;
       const idleUrl = versionedAvatarUrl(avatar.riggedModel ?? "");
-      if (controlled && idleUrl && idleUrl !== url) {
+      if (!telegram && controlled && idleUrl && idleUrl !== url) {
         const idleGltf = await loadGltf(idleUrl);
         if (idleGltf && !cancelled) {
           idleModel = idleGltf.scene;
@@ -2523,6 +2527,9 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
       if (restoredPose) {
         root.position.copy(restoredPose.position);
         root.rotation.y = restoredPose.yaw + modelFacingOffset;
+      } else if (telegram && controlled) {
+        root.position.set(AVATAR_TABLE_CENTER.x + 7, 0, AVATAR_TABLE_CENTER.z + 15);
+        root.rotation.y = seatPose.targetYaw + modelFacingOffset;
       } else {
         root.position.copy(seatPose.targetPosition);
         root.rotation.y = seatPose.targetYaw + modelFacingOffset;
@@ -2616,7 +2623,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
         }
         const seatedSource = getMotionSource(avatar, "sit-at-table");
         const seatedUrl = seatedSource.url;
-        if (seatedUrl) {
+        if (!telegram && seatedUrl) {
           void loadGltf(seatedUrl).then((seatedGltf) => {
             if (!seatedGltf || cancelled || controlledAvatarRef.current !== runtime) return;
             const nextSeatedModel = seatedGltf.scene;
@@ -2648,7 +2655,10 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
         const response = await fetch(assetUrl("/models/initiates/manifest.json"), { cache: "no-store" });
         const manifest = (await response.json()) as InitiateManifest;
         if (cancelled) return;
-        const allAvatars = (manifest.avatars ?? []).filter((avatar) => ACTIVE_AVATAR_IDS.has(avatar.id));
+        const activeAvatars = (manifest.avatars ?? []).filter((avatar) => ACTIVE_AVATAR_IDS.has(avatar.id));
+        const allAvatars = telegram
+          ? activeAvatars.filter((avatar) => avatar.id === controlledAvatarId).slice(0, 1)
+          : activeAvatars;
         setInitiateAvatars(allAvatars);
         const controllableAvatars = allAvatars.filter((avatar) => !NON_CONTROLLABLE_AVATAR_IDS.has(avatar.id));
         const controlled = controllableAvatars.find((avatar) => avatar.id === controlledAvatarId) ?? controllableAvatars.find((avatar) => avatar.id === DEFAULT_CONTROLLED_AVATAR_ID) ?? controllableAvatars[0];
@@ -2699,7 +2709,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
       disposeObjectTree(avatarLayer);
       if (avatarGroupRef.current === avatarLayer) avatarGroupRef.current = null;
     };
-  }, [sceneAvatarMotion, controlledAvatarId, isReady, plain, templateRevision]);
+  }, [sceneAvatarMotion, controlledAvatarId, isReady, plain, telegram, templateRevision]);
 
   useEffect(() => {
     if (controlledAvatarId !== DLANIS_AVATAR_ID) return;
@@ -2725,8 +2735,9 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
         const manifest = (await response.json()) as MeshyManifest;
         if (cancelled) return;
         const nextAssets = (manifest.assets ?? [])
-          .filter((asset) => asset.localModel)
+          .filter((asset) => asset.localModel && (!telegram || isTelegramSceneAsset(asset.slug)))
           .sort((a, b) => a.slug.localeCompare(b.slug, "en", { numeric: true }));
+        assetsRef.current = nextAssets;
         setAssets(nextAssets);
         setMessage(`В библиотеке ${nextAssets.length} деталей`);
       } catch (error) {
@@ -2738,7 +2749,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [telegram]);
 
   const selected = useMemo(() => placed.find((item) => item.id === selectedId) ?? null, [placed, selectedId]);
   const selectedItems = useMemo(() => placed.filter((item) => selectedIds.includes(item.id)), [placed, selectedIds]);
@@ -2746,6 +2757,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
   const seatEditorAdjustment = seatEditorAvatar ? getAvatarSeatAdjustment(seatEditorAvatar.id, avatarSeatAdjustments) : DEFAULT_AVATAR_SEAT_ADJUSTMENT;
 
   const selectObject = (id: string, additive = false) => {
+    if (telegram) return;
     dlanisTransformTargetRef.current = null;
     setDlanisTransformTarget(null);
     if (!additive) {
@@ -2993,9 +3005,17 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
   const restoreSceneItems = async (items: PlacedAsset[], sourceLabel: string) => {
     clearScene();
     setMessage(`Загружаю ${sourceLabel}: ${items.length} объектов`);
-    const assetsBySlug = new Map(assets.map((asset) => [asset.slug, asset]));
+    const assetsBySlug = new Map(assetsRef.current.map((asset) => [asset.slug, asset]));
     const scene = sceneRef.current;
     if (!scene) return;
+
+    const uniqueAssets = Array.from(new Map(
+      items
+        .map((item) => assetsBySlug.get(item.slug))
+        .filter((asset): asset is MeshyAsset => Boolean(asset))
+        .map((asset) => [asset.slug, asset])
+    ).values());
+    await Promise.all(uniqueAssets.map((asset) => loadSource(asset)));
 
     const restored: PlacedAsset[] = [];
     for (const rawItem of items) {
@@ -3038,8 +3058,9 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
     }
 
     setPlaced(restored);
-    setSelectedId(restored.at(-1)?.id ?? null);
-    setSelectedIds(restored.at(-1)?.id ? [restored.at(-1)!.id] : []);
+    const restoredSelectionId = telegram ? null : restored.at(-1)?.id ?? null;
+    setSelectedId(restoredSelectionId);
+    setSelectedIds(restoredSelectionId ? [restoredSelectionId] : []);
     setMessage(`${sourceLabel} \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d: ${restored.length} \u043e\u0431\u044a\u0435\u043a\u0442\u043e\u0432`);
   };
 
@@ -3105,7 +3126,8 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
       const response = await fetch(TEMPLATE_API_URL, { cache: "no-store" });
       if (!response.ok) throw new Error(`template load failed: ${response.status}`);
       const template = (await response.json()) as ConstructorTemplatePayload;
-      const items = Array.isArray(template.items) ? template.items : [];
+      const templateItems = Array.isArray(template.items) ? template.items : [];
+      const items = telegram ? templateItems.filter((item) => isTelegramSceneAsset(item.slug)) : templateItems;
       await restoreSceneItems(items, "шаблон проекта");
       if (template.avatarSeatMap) {
         const nextSeatMap = normalizeAvatarSeatMapPayload(template.avatarSeatMap);
@@ -3125,12 +3147,12 @@ export function MeshySceneConstructor({ plain = false, telegram = false }: { pla
         setSeatTuning(nextTuning);
         window.localStorage.setItem(AVATAR_SEAT_TUNING_STORAGE_KEY, JSON.stringify(nextTuning));
       }
-      if (typeof template.controlledAvatarId === "string" && ACTIVE_AVATAR_IDS.has(template.controlledAvatarId)) {
+      if (!telegram && typeof template.controlledAvatarId === "string" && ACTIVE_AVATAR_IDS.has(template.controlledAvatarId)) {
         setControlledAvatarId(template.controlledAvatarId);
       }
-      seatAllAvatarsOnNextLoadRef.current = true;
+      seatAllAvatarsOnNextLoadRef.current = !telegram;
       controlledAvatarPoseRef.current = {};
-      setTemplateRevision((revision) => revision + 1);
+      if (!telegram) setTemplateRevision((revision) => revision + 1);
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch (error) {
       console.error("Failed to load project template", error);

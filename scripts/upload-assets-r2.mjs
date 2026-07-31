@@ -43,7 +43,16 @@ function collectFiles(directory) {
   });
 }
 
-const files = roots.flatMap((root) => collectFiles(path.join(publicDir, root)));
+const requestedFiles = process.argv.slice(2);
+const files = requestedFiles.length > 0
+  ? requestedFiles.map((file) => path.resolve(publicDir, file))
+  : roots.flatMap((root) => collectFiles(path.join(publicDir, root)));
+
+for (const file of files) {
+  if (!file.startsWith(`${publicDir}${path.sep}`) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+    throw new Error(`Ресурс не найден внутри public: ${file}`);
+  }
+}
 let uploaded = 0;
 let skipped = 0;
 let bytesUploaded = 0;
