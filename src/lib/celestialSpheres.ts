@@ -167,7 +167,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const telegram = Boolean(options.telegram);
   const root = new THREE.Group();
   root.name = "puranic-celestial-spheres";
-  root.position.y = options.roomHeight * 0.68;
+  root.position.y = options.roomHeight * 1.4;
 
   const disposables = new Set<THREE.BufferGeometry | THREE.Material | THREE.Texture>();
   const roundPointTexture = makeRoundPointTexture();
@@ -175,6 +175,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const orbitRuntimes: OrbitRuntime[] = [];
   const minRoomSpan = Math.min(options.roomWidth, options.roomDepth);
   const orbitScale = THREE.MathUtils.clamp((minRoomSpan / 70) * 0.15, 0.11, 0.2);
+  const grahaDistanceScale = THREE.MathUtils.clamp(minRoomSpan / 70, 0.72, 1.1);
 
   const orbitLayer = new THREE.Group();
   orbitLayer.name = "graha-orbits";
@@ -214,7 +215,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       mount,
       placeholder,
       modelUrl,
-      displaySize: displaySize * (telegram ? 0.72 : 1),
+      displaySize: displaySize * (telegram ? 0.88 : 1),
     });
     return mount;
   };
@@ -245,15 +246,15 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   // The remaining grahas occupy increasingly high, compressed celestial tiers
   // above the council table, while Surya and Chandra travel around the hall.
   const grahas = [
-    { name: "Shukra", radius: 55, tier: 0.35, displaySize: 2.8, color: 0xffe3ab, emissive: 0xffbd64, glow: 1, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
-    { name: "Budha", radius: 72, tier: 0.95, displaySize: 2.65, color: 0x75d6aa, emissive: 0x2aa97f, glow: 0.95, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
-    { name: "Mangala", radius: 90, tier: 1.55, displaySize: 2.85, color: 0xc85c4b, emissive: 0xa61e16, glow: 1.05, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
-    { name: "Brihaspati", radius: 112, tier: 2.2, displaySize: 3.45, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.72, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
-    { name: "Shani", radius: 138, tier: 3, displaySize: 3.15, color: 0x8193a3, emissive: 0x334766, glow: 0.78, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
+    { name: "Shukra", distance: 8, tier: 0, displaySize: 1.8, color: 0xffe3ab, emissive: 0xffbd64, glow: 1, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
+    { name: "Budha", distance: 11.5, tier: 1.4, displaySize: 1.15, color: 0x75d6aa, emissive: 0x2aa97f, glow: 0.95, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
+    { name: "Mangala", distance: 16.5, tier: 3.1, displaySize: 1.45, color: 0xc85c4b, emissive: 0xa61e16, glow: 1.05, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
+    { name: "Brihaspati", distance: 24.5, tier: 5.5, displaySize: 5.2, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.72, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
+    { name: "Shani", distance: 34, tier: 8.4, displaySize: 4.7, color: 0x8193a3, emissive: 0x334766, glow: 0.78, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
   ];
 
   grahas.forEach((graha, index) => {
-    const radius = graha.radius * orbitScale;
+    const radius = graha.distance * grahaDistanceScale;
     const pivot = new THREE.Group();
     pivot.name = `${graha.name.toLowerCase()}-orbit`;
     pivot.position.y = graha.tier;
@@ -286,7 +287,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       mount: bodyMount,
       placeholder,
       modelUrl: graha.modelUrl,
-      displaySize: graha.displaySize * (telegram ? 0.82 : 1),
+      displaySize: graha.displaySize * (telegram ? 0.94 : 1),
     });
     orbitRuntimes.push({ pivot, speed: graha.speed, phase: graha.phase, body: bodyMount });
   });
@@ -333,7 +334,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
   const starLayer = new THREE.Group();
   starLayer.name = "nakshatra-celestial-vault";
-  starLayer.position.y = 0.7;
+  starLayer.position.y = 4.2;
   starLayer.scale.y = 0.18;
   root.add(starLayer);
   const random = seededRandom(0x28a7c41);
@@ -390,6 +391,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
   const sacredConstellations = new THREE.Group();
   sacredConstellations.name = "sacred-constellations";
+  sacredConstellations.position.y = 5.6;
   sacredConstellations.scale.y = 0.14;
   root.add(sacredConstellations);
 

@@ -1936,16 +1936,15 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
       return texture;
     };
     const floorTexture = configureRoomTexture(roomTextureLoader.load(telegram ? "/images/inner-council/council-floor-telegram.webp" : "/images/inner-council/council-floor-generated.png"));
-    const ceilingTexture = telegram ? null : configureRoomTexture(roomTextureLoader.load("/images/inner-council/council-ceiling-generated.png"));
     const floorMaterial = new THREE.MeshPhysicalMaterial({ color: 0xffffff, map: floorTexture, roughness: 0.16, metalness: 0.04, transparent: true, opacity: 0.98, clearcoat: 0.9, clearcoatRoughness: 0.08, side: THREE.DoubleSide });
     const wallMaterial = new THREE.MeshBasicMaterial({ color: 0x12352d, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
-    const ceilingMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: ceilingTexture, transparent: true, opacity: 0.96, side: THREE.DoubleSide, depthWrite: false });
     const edgeMaterial = new THREE.LineBasicMaterial({ color: 0xd8ae5e, transparent: true, opacity: 0.46 });
 
     SURFACES.forEach((surface) => {
+      if (surface.id === "ceiling") return;
       if (telegram && surface.id !== "floor") return;
       const geometry = new THREE.PlaneGeometry(surface.dimensions[0], surface.dimensions[1]);
-      const material = surface.id === "floor" ? floorMaterial : surface.id === "ceiling" ? ceilingMaterial.clone() : wallMaterial.clone();
+      const material = surface.id === "floor" ? floorMaterial : wallMaterial.clone();
       const plane = new THREE.Mesh(geometry, material);
       plane.name = `placement-surface-${surface.id}`;
       plane.userData.surfaceId = surface.id;
@@ -2383,7 +2382,6 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
         }
       });
       floorTexture?.dispose();
-      ceilingTexture?.dispose();
       solarTexture.dispose();
       solarHaloTexture.dispose();
       renderer.dispose();
