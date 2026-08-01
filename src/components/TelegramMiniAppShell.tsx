@@ -13,6 +13,14 @@ type PrivateTelegramSession = {
   expiresAt: string;
 };
 
+type ChatMessage = {
+  id: string;
+  nickname: string;
+  body: string;
+  createdAt: string;
+  mine: boolean;
+};
+
 type TelegramWebApp = {
   initData: string;
   ready: () => void;
@@ -34,6 +42,8 @@ declare global {
 const WORLD_LOAD_SETTLE_MS = 2400;
 const WORLD_LOAD_STALL_MS = 35000;
 const PRESENCE_HEARTBEAT_MS = 30000;
+const CHAT_POLL_OPEN_MS = 2500;
+const CHAT_POLL_CLOSED_MS = 9000;
 
 const formatWorldItem = (url: string) => {
   const normalized = url.toLowerCase();
@@ -51,6 +61,12 @@ export function TelegramMiniAppShell() {
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [presenceCount, setPresenceCount] = useState(0);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatDraft, setChatDraft] = useState("");
+  const [chatSending, setChatSending] = useState(false);
+  const [chatError, setChatError] = useState("");
+  const [chatUnread, setChatUnread] = useState(0);
   const [status, setStatus] = useState("Проверяем вход через Telegram...");
   const [error, setError] = useState("");
   const [entered, setEntered] = useState(false);
@@ -63,6 +79,9 @@ export function TelegramMiniAppShell() {
   const loadingFailedRef = useRef(false);
   const settleTimerRef = useRef<number | null>(null);
   const stallTimerRef = useRef<number | null>(null);
+  const chatOpenRef = useRef(false);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const lastChatMessageIdRef = useRef("");
 
   const armInitialWorldTimeout = () => {
     if (stallTimerRef.current) window.clearTimeout(stallTimerRef.current);
@@ -77,6 +96,11 @@ export function TelegramMiniAppShell() {
   useEffect(() => {
     enteredRef.current = entered;
   }, [entered]);
+
+  useEffect(() => {
+    chatOpenRef.current = chatOpen;
+    if (chatOpen) setChatUnread(0);
+  }, [chatOpen]);
 
   useEffect(() => {
     const manager = THREE.DefaultLoadingManager;
@@ -220,6 +244,46 @@ export function TelegramMiniAppShell() {
     };
   }, [entered, session]);
 
+  useEffect(() => {
+    if (!entered || !session) return;
+    let cancelled = false;
+
+    const loadChat = async () => {
+      try {
+        const response = await fetch("/api/telegram/chat", {
+          headers: { Authorization: `Bearer ${session.token}` },
+          cache: "no-store"
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok || cancelled || !Array.isArray(payload.messages)) return;
+        const messages = payload.messages as ChatMessage[];
+        const latestId = messages.at(-1)?.id ?? "";
+        const previousId = lastChatMessageIdRef.current;
+        if (!chatOpenRef.current && previousId && latestId && latestId !== previousId) {
+          const previousIndex = messages.findIndex((message) => message.id === previousId);
+          setChatUnread((current) => Math.min(99, current + (previousIndex >= 0 ? messages.length - previousIndex - 1 : 1)));
+        }
+        lastChatMessageIdRef.current = latestId;
+        setChatMessages(messages);
+        setChatError("");
+      } catch {
+        if (!cancelled && chatOpenRef.current) setChatError("Не удалось обновить сообщения");
+      }
+    };
+
+    void loadChat();
+    const interval = window.setInterval(() => void loadChat(), chatOpen ? CHAT_POLL_OPEN_MS : CHAT_POLL_CLOSED_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [chatOpen, entered, session]);
+
+  useEffect(() => {
+    if (!chatOpen) return;
+    chatEndRef.current?.scrollIntoView({ block: "end" });
+  }, [chatMessages, chatOpen]);
+
   const saveNickname = async () => {
     if (!session) return false;
     const nickname = nicknameDraft.trim();
@@ -281,6 +345,34 @@ export function TelegramMiniAppShell() {
     setLoadAttempt((attempt) => attempt + 1);
   };
 
+  const sendChatMessage = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!session || chatSending || !chatDraft.trim()) return;
+    setChatSending(true);
+    setChatError("");
+    try {
+      const response = await fetch("/api/telegram/chat", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: chatDraft }),
+        cache: "no-store"
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.error || "Не удалось отправить сообщение");
+      const message = payload.message as ChatMessage;
+      lastChatMessageIdRef.current = message.id;
+      setChatMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
+      setChatDraft("");
+    } catch (reason) {
+      setChatError(reason instanceof Error ? reason.message : "Не удалось отправить сообщение");
+    } finally {
+      setChatSending(false);
+    }
+  };
+
   if (entered && session) {
     return (
       <div className="telegram-mini-app telegram-mini-app--entered">
@@ -294,6 +386,64 @@ export function TelegramMiniAppShell() {
           <strong>{session.nickname}</strong>
           <span>В храме: {Math.max(1, presenceCount)}</span>
         </div>
+        <button
+          aria-expanded={chatOpen}
+          className="telegram-chat-toggle"
+          onClick={() => setChatOpen(true)}
+          type="button"
+        >
+          Чат{chatUnread > 0 ? <span>{chatUnread}</span> : null}
+        </button>
+        {chatOpen ? (
+          <aside aria-label="Чат пространства" className="telegram-chat-panel">
+            <header className="telegram-chat-panel__header">
+              <div>
+                <p className="dao-kicker">Пространство</p>
+                <h2>Внутренний чат</h2>
+              </div>
+              <button aria-label="Закрыть чат" onClick={() => setChatOpen(false)} title="Закрыть" type="button">×</button>
+            </header>
+            <div aria-live="polite" className="telegram-chat-messages" role="log">
+              {chatMessages.length === 0 ? (
+                <p className="telegram-chat-empty">Здесь пока тихо. Начните разговор.</p>
+              ) : chatMessages.map((message) => (
+                <article className={message.mine ? "is-mine" : ""} key={message.id}>
+                  <div>
+                    <strong>{message.nickname}</strong>
+                    <time dateTime={message.createdAt}>
+                      {new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit" }).format(new Date(message.createdAt))}
+                    </time>
+                  </div>
+                  <p>{message.body}</p>
+                </article>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+            <form className="telegram-chat-compose" onSubmit={(event) => void sendChatMessage(event)}>
+              <label>
+                <span className="sr-only">Сообщение</span>
+                <textarea
+                  aria-label="Сообщение"
+                  maxLength={500}
+                  onChange={(event) => setChatDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault();
+                      event.currentTarget.form?.requestSubmit();
+                    }
+                  }}
+                  placeholder="Написать от имени временного ника"
+                  rows={2}
+                  value={chatDraft}
+                />
+              </label>
+              <button disabled={chatSending || !chatDraft.trim()} type="submit">
+                {chatSending ? "..." : "Отправить"}
+              </button>
+              <p role="status">{chatError || "Профили Telegram участникам не показываются"}</p>
+            </form>
+          </aside>
+        ) : null}
         {(worldLoading || worldError) && (
           <section className={"telegram-world-loader " + (worldError ? "is-error" : "")} aria-live="polite">
             <div className="telegram-world-loader__content">

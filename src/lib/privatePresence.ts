@@ -4,6 +4,10 @@ import { getTelegramAvatarId } from "@/lib/telegramScene";
 const SESSION_TTL_HOURS = 12;
 const ACTIVE_WINDOW_SECONDS = 120;
 const ROOM_KEY = "temple-main";
+const CHAT_HISTORY_LIMIT = 80;
+const CHAT_MESSAGE_LIMIT = 500;
+const CHAT_RATE_WINDOW_SECONDS = 10;
+const CHAT_RATE_LIMIT = 5;
 
 export type PrivatePresenceSession = {
   participantId: string;
@@ -23,6 +27,14 @@ export type PublicPresence = {
   lastSeenAt: string;
 };
 
+export type PublicChatMessage = {
+  id: string;
+  nickname: string;
+  body: string;
+  createdAt: string;
+  mine: boolean;
+};
+
 type PrivateSessionRow = {
   participant_id: string;
   expires_at: string;
@@ -39,6 +51,14 @@ type PresenceRow = {
   rotation_y: number;
   animation: string;
   last_seen_at: string;
+};
+
+type ChatRow = {
+  id: string;
+  participant_id: string;
+  nickname_snapshot: string;
+  body: string;
+  created_at: string;
 };
 
 function supabaseConfiguration() {
@@ -89,6 +109,23 @@ export function normalizeSessionNickname(value: unknown) {
     throw new Error("Используйте буквы, цифры, пробел, точку, дефис или подчёркивание");
   }
   return nickname;
+}
+
+export function normalizeChatMessage(value: unknown) {
+  if (typeof value !== "string") throw new Error("Введите сообщение");
+  const body = value
+    .normalize("NFKC")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\t\v\f ]+/g, " ")
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
+    .replace(/ *\n */g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  if (!body) throw new Error("Сообщение не может быть пустым");
+  if (body.length > CHAT_MESSAGE_LIMIT) {
+    throw new Error(`Сообщение должно быть не длиннее ${CHAT_MESSAGE_LIMIT} символов`);
+  }
+  return body;
 }
 
 function createDefaultNickname(participantId: string) {
@@ -182,6 +219,50 @@ export async function listActivePresence(token: string): Promise<PublicPresence[
   return (rows ?? []).map(mapPresence);
 }
 
+export async function listSessionChat(token: string): Promise<PublicChatMessage[]> {
+  const session = await requirePrivateSession(token);
+  const now = new Date().toISOString();
+  const rows = await supabaseRequest<ChatRow[]>(
+    `pseudonymous_chat_messages?select=id,participant_id,nickname_snapshot,body,created_at&room_key=eq.${ROOM_KEY}&expires_at=gt.${encodeURIComponent(now)}&order=created_at.desc&limit=${CHAT_HISTORY_LIMIT}`
+  );
+  return (rows ?? []).reverse().map((row) => mapChatMessage(row, session.participant_id));
+}
+
+export async function postSessionChatMessage(token: string, value: unknown): Promise<PublicChatMessage> {
+  const session = await requirePrivateSession(token);
+  const body = normalizeChatMessage(value);
+  const recentAfter = new Date(Date.now() - CHAT_RATE_WINDOW_SECONDS * 1000).toISOString();
+  const recentRows = await supabaseRequest<Array<{ id: string }>>(
+    `pseudonymous_chat_messages?select=id&participant_id=eq.${encodeURIComponent(session.participant_id)}&created_at=gte.${encodeURIComponent(recentAfter)}&limit=${CHAT_RATE_LIMIT}`
+  );
+  if ((recentRows ?? []).length >= CHAT_RATE_LIMIT) {
+    throw new Error("Слишком много сообщений. Сделайте короткую паузу");
+  }
+
+  const presenceRows = await supabaseRequest<Array<Pick<PresenceRow, "nickname">>>(
+    `pseudonymous_presence?select=nickname&participant_id=eq.${encodeURIComponent(session.participant_id)}&limit=1`
+  );
+  const presence = presenceRows?.[0];
+  if (!presence) throw new Error("Private session has expired");
+
+  const maximumExpiry = Date.now() + SESSION_TTL_HOURS * 60 * 60 * 1000;
+  const expiresAt = new Date(Math.min(Date.parse(session.expires_at), maximumExpiry)).toISOString();
+  const rows = await supabaseRequest<ChatRow[]>("pseudonymous_chat_messages?select=id,participant_id,nickname_snapshot,body,created_at", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({
+      room_key: ROOM_KEY,
+      participant_id: session.participant_id,
+      nickname_snapshot: presence.nickname,
+      body,
+      expires_at: expiresAt
+    })
+  });
+  const message = rows?.[0];
+  if (!message) throw new Error("Chat message was not saved");
+  return mapChatMessage(message, session.participant_id);
+}
+
 function mapPresence(row: PresenceRow): PublicPresence {
   return {
     participantId: row.participant_id,
@@ -191,5 +272,15 @@ function mapPresence(row: PresenceRow): PublicPresence {
     rotationY: row.rotation_y,
     animation: row.animation,
     lastSeenAt: row.last_seen_at
+  };
+}
+
+function mapChatMessage(row: ChatRow, ownParticipantId: string): PublicChatMessage {
+  return {
+    id: row.id,
+    nickname: row.nickname_snapshot,
+    body: row.body,
+    createdAt: row.created_at,
+    mine: row.participant_id === ownParticipantId
   };
 }

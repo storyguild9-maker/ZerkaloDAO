@@ -1751,6 +1751,8 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, telegram ? 1.25 : 2));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.86;
     renderer.shadowMap.enabled = !telegram;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.tabIndex = 0;
@@ -1839,16 +1841,16 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
     scene.add(transform.getHelper());
     transformRef.current = transform;
 
-    const ambient = new THREE.HemisphereLight(0xd8efe0, 0x020504, 1.25);
+    const ambient = new THREE.HemisphereLight(0xd8efe0, 0x020504, 0.58);
     scene.add(ambient);
 
-    const keyLight = new THREE.DirectionalLight(0xf4dfaa, 2.4);
+    const keyLight = new THREE.DirectionalLight(0xdde8df, 0.32);
     keyLight.position.set(-8, 12, 9);
     keyLight.castShadow = !telegram;
     keyLight.shadow.mapSize.set(1024, 1024);
     scene.add(keyLight);
 
-    const goldLight = new THREE.PointLight(0xffcf75, 110, 120, 1.5);
+    const goldLight = new THREE.PointLight(0xffcf75, 16, 72, 1.9);
     goldLight.position.set(0, ROOM_HEIGHT * 0.36, -18);
     scene.add(goldLight);
 
@@ -1861,93 +1863,6 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
     });
     scene.add(celestialSpheres.group);
 
-    const solarOrbit = new THREE.Group();
-    solarOrbit.name = "jyotish-solar-orbit";
-    scene.add(solarOrbit);
-
-    const solarVisual = new THREE.Group();
-    solarVisual.name = "jyotish-solar-seal";
-    solarVisual.visible = false;
-    solarOrbit.add(solarVisual);
-
-    const solarTexture = new THREE.TextureLoader().load("/images/meshy-references/161-jyotish-solar-seal.png");
-    solarTexture.colorSpace = THREE.SRGBColorSpace;
-    solarTexture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
-    const solarSpriteMaterial = new THREE.SpriteMaterial({ map: solarTexture, color: 0xffffff, transparent: true, opacity: 0.96, depthWrite: false });
-    const solarSprite = new THREE.Sprite(solarSpriteMaterial);
-    solarSprite.name = "jyotish-solar-seal-preview";
-    solarSprite.scale.set(30, 30, 1);
-    solarVisual.add(solarSprite);
-
-    const solarHaloCanvas = document.createElement("canvas");
-    solarHaloCanvas.width = 256;
-    solarHaloCanvas.height = 256;
-    const solarHaloContext = solarHaloCanvas.getContext("2d");
-    if (solarHaloContext) {
-      const halo = solarHaloContext.createRadialGradient(128, 128, 8, 128, 128, 126);
-      halo.addColorStop(0, "rgba(255, 255, 238, 1)");
-      halo.addColorStop(0.16, "rgba(255, 237, 166, 0.98)");
-      halo.addColorStop(0.42, "rgba(255, 181, 70, 0.54)");
-      halo.addColorStop(0.72, "rgba(255, 132, 28, 0.17)");
-      halo.addColorStop(1, "rgba(255, 110, 20, 0)");
-      solarHaloContext.fillStyle = halo;
-      solarHaloContext.fillRect(0, 0, 256, 256);
-    }
-    const solarHaloTexture = new THREE.CanvasTexture(solarHaloCanvas);
-    solarHaloTexture.colorSpace = THREE.SRGBColorSpace;
-    const solarHaloMaterial = new THREE.SpriteMaterial({
-      map: solarHaloTexture,
-      color: 0xfff4c7,
-      transparent: true,
-      opacity: 0.94,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-    const solarHalo = new THREE.Sprite(solarHaloMaterial);
-    solarHalo.name = "jyotish-solar-blinding-halo";
-    solarHalo.scale.set(58, 58, 1);
-    solarHalo.renderOrder = -1;
-    solarVisual.add(solarHalo);
-
-    const solarLight = new THREE.DirectionalLight(0xffe7ae, 7.2);
-    solarLight.name = "jyotish-moving-sunlight";
-    solarLight.castShadow = !telegram;
-    solarLight.shadow.mapSize.set(2048, 2048);
-    solarLight.shadow.camera.near = 8;
-    solarLight.shadow.camera.far = 160;
-    solarLight.shadow.camera.left = -48;
-    solarLight.shadow.camera.right = 48;
-    solarLight.shadow.camera.top = 48;
-    solarLight.shadow.camera.bottom = -48;
-    solarLight.shadow.bias = -0.00018;
-    solarLight.target.position.set(0, ROOM_HEIGHT * 0.28, 0);
-    scene.add(solarLight, solarLight.target);
-
-    const solarGlow = new THREE.PointLight(0xffc45c, 260, 180, 1.35);
-    solarGlow.name = "jyotish-moving-solar-glow";
-    solarOrbit.add(solarGlow);
-
-    const solarOrbitStartedAt = performance.now();
-    const solarOrbitRadius = Math.max(ROOM_WIDTH, ROOM_DEPTH) * 0.99;
-    const solarOrbitPeriodMs = 4 * 60 * 1000;
-    const updateSolarOrbit = (now: number) => {
-      const phase = ((now - solarOrbitStartedAt) / solarOrbitPeriodMs) * Math.PI * 2;
-      // Front wall is East. Negative phase around Y reads clockwise on the room plan.
-      const x = -Math.sin(phase) * solarOrbitRadius;
-      const z = Math.cos(phase) * solarOrbitRadius;
-      const y = ROOM_HEIGHT * 0.42 + Math.sin(phase) * ROOM_HEIGHT * 0.78;
-      solarOrbit.position.set(x, y, z);
-      solarVisual.rotation.y = -phase;
-      solarSpriteMaterial.rotation = phase * 0.06;
-      solarLight.position.copy(solarOrbit.position);
-      const daylight = THREE.MathUtils.smoothstep(y, -ROOM_HEIGHT * 0.08, ROOM_HEIGHT * 0.92);
-      solarLight.intensity = THREE.MathUtils.lerp(0.3, 7.2, daylight);
-      solarGlow.intensity = THREE.MathUtils.lerp(12, 260, daylight);
-      solarHaloMaterial.opacity = THREE.MathUtils.lerp(0.28, 0.94, daylight);
-    };
-    updateSolarOrbit(solarOrbitStartedAt);
-
-    let solarDisposed = false;
     const surfaceGroup = new THREE.Group();
     surfaceGroup.name = "constructor-placement-surfaces";
     scene.add(surfaceGroup);
@@ -2264,7 +2179,6 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
       const now = performance.now();
       const delta = Math.min((now - lastFrameTime) / 1000, 0.04);
       lastFrameTime = now;
-      updateSolarOrbit(now);
       celestialSpheres.update((now - celestialStartedAt) / 1000);
       if (flyModeRef.current) {
         const keys = flyKeysRef.current;
@@ -2384,7 +2298,6 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
     renderer.domElement.addEventListener("contextmenu", onContextMenu);
     window.addEventListener("resize", onResize);
     return () => {
-      solarDisposed = true;
       window.cancelAnimationFrame(frame);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
@@ -2408,8 +2321,6 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
         }
       });
       floorTexture?.dispose();
-      solarTexture.dispose();
-      solarHaloTexture.dispose();
       renderer.dispose();
     };
   }, [telegram]);

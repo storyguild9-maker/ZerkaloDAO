@@ -30,6 +30,7 @@ type GrahaModelMount = {
   displaySize: number;
   normalizeToSphere?: boolean;
   radiance?: "sun" | "moon";
+  reflectedLight?: { color: number; intensity: number; lift: number; metalnessCap: number };
 };
 
 const TAU = Math.PI * 2;
@@ -243,7 +244,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const suryaMount = createLuminary(
     "Surya",
     "/models/celestial-grahas/surya-web-v1.glb",
-    13.5,
+    14.8,
     0xffc44f,
     0xff8a16,
     3.4,
@@ -256,9 +257,17 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     0xc8dcff,
     1.35,
   );
-  const suryaLight = new THREE.PointLight(0xffdf91, telegram ? 150 : 260, 220, 1.22);
+  // The disk supplies its own visual radiance. Illumination is directional at
+  // room scale, so a nearby point source must not burn a moving stripe into the floor.
+  const suryaLight = new THREE.PointLight(0xffdf91, 0, 0, 2);
   suryaLight.name = "surya-local-radiance";
   suryaMount.add(suryaLight);
+
+  const solarKey = new THREE.DirectionalLight(0xffe4b0, telegram ? 0.78 : 0.92);
+  solarKey.name = "surya-celestial-key-light";
+  solarKey.castShadow = false;
+  solarKey.target.position.set(0, -root.position.y + options.roomHeight * 0.22, 0);
+  root.add(solarKey, solarKey.target);
 
   const solarCoronaMaterial = setNoFog(new THREE.SpriteMaterial({
     map: solarGlowTexture,
@@ -271,7 +280,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   solarCoronaMaterial.toneMapped = false;
   const solarCorona = new THREE.Sprite(solarCoronaMaterial);
   solarCorona.name = "surya-outer-corona";
-  solarCorona.scale.set(42, 42, 1);
+  solarCorona.scale.set(50, 50, 1);
   solarCorona.renderOrder = 20;
   suryaMount.add(solarCorona);
 
@@ -286,7 +295,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   solarCoreMaterial.toneMapped = false;
   const solarCoreGlow = new THREE.Sprite(solarCoreMaterial);
   solarCoreGlow.name = "surya-white-gold-core";
-  solarCoreGlow.scale.set(24, 24, 1);
+  solarCoreGlow.scale.set(30, 30, 1);
   solarCoreGlow.renderOrder = 21;
   suryaMount.add(solarCoreGlow);
   disposables.add(solarCoronaMaterial);
@@ -314,11 +323,11 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   // The remaining grahas occupy increasingly high external celestial tiers
   // above the council table, while Surya and Chandra travel around the hall.
   const grahas = [
-    { name: "Shukra", orbitFactor: 1.22, tier: 0, displaySize: 7.2, color: 0xffe3ab, emissive: 0xffbd64, glow: 1, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
-    { name: "Budha", orbitFactor: 1.46, tier: 7, displaySize: 5.2, color: 0x75d6aa, emissive: 0x2aa97f, glow: 0.95, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
-    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 6.4, color: 0xc85c4b, emissive: 0xa61e16, glow: 1.05, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
-    { name: "Brihaspati", orbitFactor: 2.24, tier: 24, displaySize: 18, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.72, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
-    { name: "Shani", orbitFactor: 2.78, tier: 36, displaySize: 16, color: 0x8193a3, emissive: 0x334766, glow: 0.78, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
+    { name: "Shukra", orbitFactor: 1.22, tier: 0, displaySize: 8, color: 0xffe3ab, emissive: 0xffbd64, glow: 1.15, reflectColor: 0xffd79a, reflectIntensity: 0.84, lift: 0.12, metalnessCap: 0.68, auraOpacity: 0.25, auraScale: 1.7, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
+    { name: "Budha", orbitFactor: 1.46, tier: 7, displaySize: 6, color: 0x75d6aa, emissive: 0x2aa97f, glow: 1.08, reflectColor: 0x75d6aa, reflectIntensity: 0.9, lift: 0.14, metalnessCap: 0.64, auraOpacity: 0.28, auraScale: 1.75, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
+    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 7.2, color: 0xc85c4b, emissive: 0xa61e16, glow: 1.18, reflectColor: 0xcf523d, reflectIntensity: 0.82, lift: 0.13, metalnessCap: 0.66, auraOpacity: 0.25, auraScale: 1.7, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
+    { name: "Brihaspati", orbitFactor: 2.24, tier: 24, displaySize: 19, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.9, reflectColor: 0xd5a859, reflectIntensity: 0.86, lift: 0.14, metalnessCap: 0.62, auraOpacity: 0.22, auraScale: 1.55, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
+    { name: "Shani", orbitFactor: 2.78, tier: 36, displaySize: 20.5, color: 0x91a9bd, emissive: 0x6f93bd, glow: 1.45, reflectColor: 0x8bb4df, reflectIntensity: 1.9, lift: 0.3, metalnessCap: 0.46, auraOpacity: 0.68, auraScale: 1.82, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
   ];
 
   grahas.forEach((graha) => {
@@ -336,6 +345,22 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     bodyMount.position.x = radius;
     pivot.add(bodyMount);
 
+    const reflectedAuraMaterial = setNoFog(new THREE.SpriteMaterial({
+      map: solarGlowTexture,
+      color: graha.reflectColor,
+      transparent: true,
+      opacity: graha.auraOpacity,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    }));
+    reflectedAuraMaterial.toneMapped = false;
+    const reflectedAura = new THREE.Sprite(reflectedAuraMaterial);
+    reflectedAura.name = `${graha.name}-reflected-solar-aura`;
+    reflectedAura.scale.setScalar(graha.displaySize * graha.auraScale);
+    reflectedAura.renderOrder = 4;
+    bodyMount.add(reflectedAura);
+    disposables.add(reflectedAuraMaterial);
+
     const bodyMaterial = makeBodyMaterial(graha.color, graha.emissive, graha.glow);
     const placeholder = new THREE.Mesh(bodyGeometry, bodyMaterial);
     placeholder.name = `${graha.name}-loading-placeholder`;
@@ -348,6 +373,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       placeholder,
       modelUrl: graha.modelUrl,
       displaySize: graha.displaySize * (telegram ? 0.94 : 1),
+      reflectedLight: { color: graha.reflectColor, intensity: graha.reflectIntensity, lift: graha.lift, metalnessCap: graha.metalnessCap },
     });
     orbitRuntimes.push({ pivot, speed: graha.speed, phase: graha.phase, body: bodyMount });
   });
@@ -376,6 +402,12 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
               } else if (entry.radiance === "moon") {
                 material.emissive.set(0x9dbfff);
                 material.emissiveIntensity = Math.max(material.emissiveIntensity, 0.85);
+              } else if (entry.reflectedLight) {
+                material.emissive.set(entry.reflectedLight.color);
+                material.emissiveIntensity = Math.max(material.emissiveIntensity, entry.reflectedLight.intensity);
+                material.color.offsetHSL(0, 0, entry.reflectedLight.lift);
+                material.roughness = Math.min(material.roughness, 0.5);
+                material.metalness = Math.min(material.metalness, entry.reflectedLight.metalnessCap);
               }
             }
           });
@@ -608,12 +640,14 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     const luminaryPhase = (elapsedSeconds / 240) * TAU;
     updateLuminaryPosition(suryaMount, luminaryPhase);
     updateLuminaryPosition(chandraMount, luminaryPhase + Math.PI);
+    solarKey.position.copy(suryaMount.position);
     const solarPulse = 0.5 + Math.sin(elapsedSeconds * 0.72) * 0.5;
     solarCoronaMaterial.opacity = 0.7 + solarPulse * 0.2;
-    solarCorona.scale.setScalar(39 + solarPulse * 6);
+    solarCorona.scale.setScalar(47 + solarPulse * 7);
     solarCoreMaterial.opacity = 0.94 + solarPulse * 0.06;
-    solarCoreGlow.scale.setScalar(22.5 + solarPulse * 3);
-    suryaLight.intensity = (telegram ? 135 : 235) + solarPulse * (telegram ? 35 : 65);
+    solarCoreGlow.scale.setScalar(28 + solarPulse * 4);
+    suryaLight.intensity = 0;
+    solarKey.intensity = (telegram ? 0.72 : 0.84) + solarPulse * (telegram ? 0.08 : 0.1);
     lunarAuraMaterial.opacity = 0.42 + (1 - solarPulse) * 0.16;
     lunarAura.scale.setScalar(8.4 + (1 - solarPulse) * 1.4);
     chandraLight.intensity = (telegram ? 10 : 20) + (1 - solarPulse) * (telegram ? 4 : 8);

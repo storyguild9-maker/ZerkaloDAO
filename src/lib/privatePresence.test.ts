@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createTelegramSubjectHash,
   hashSessionToken,
+  normalizeChatMessage,
   normalizeSessionNickname
 } from "./privatePresence";
 
@@ -24,5 +25,11 @@ describe("private Telegram presence", () => {
     expect(normalizeSessionNickname("  Белый   Лотос  ")).toBe("Белый Лотос");
     expect(() => normalizeSessionNickname("@username")).toThrow();
     expect(() => normalizeSessionNickname("https://t.me/name")).toThrow();
+  });
+
+  it("normalizes ephemeral chat messages and rejects invalid bodies", () => {
+    expect(normalizeChatMessage("  Тихий   свет\r\n\r\n\r\n  над водой  ")).toBe("Тихий свет\n\nнад водой");
+    expect(() => normalizeChatMessage("   ")).toThrow("пустым");
+    expect(() => normalizeChatMessage("я".repeat(501))).toThrow("500");
   });
 });
