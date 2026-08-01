@@ -56,15 +56,6 @@ function setNoFog<T extends THREE.Material>(material: T): T {
   return material;
 }
 
-function makeOrbitMaterial(color: number, opacity: number) {
-  return setNoFog(new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  }));
-}
 
 function makeBodyMaterial(color: number, emissive: number, emissiveIntensity: number) {
   return new THREE.MeshStandardMaterial({
@@ -330,7 +321,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     { name: "Shani", orbitFactor: 2.78, tier: 36, displaySize: 16, color: 0x8193a3, emissive: 0x334766, glow: 0.78, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
   ];
 
-  grahas.forEach((graha, index) => {
+  grahas.forEach((graha) => {
     const radius = luminaryRadius * graha.orbitFactor;
     const pivot = new THREE.Group();
     pivot.name = `${graha.name.toLowerCase()}-orbit`;
@@ -339,14 +330,6 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     pivot.rotation.z = graha.inclination * 0.55;
     orbitLayer.add(pivot);
 
-    const ringGeometry = new THREE.TorusGeometry(radius, telegram ? 0.07 : 0.09, 6, telegram ? 192 : 256);
-    const ringMaterial = makeOrbitMaterial(index % 2 === 0 ? 0xd6c080 : 0x72a89a, telegram ? 0.055 : 0.085);
-    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-    ring.name = `${graha.name.toLowerCase()}-mandala`;
-    ring.rotation.x = Math.PI / 2;
-    pivot.add(ring);
-    disposables.add(ringGeometry);
-    disposables.add(ringMaterial);
 
     const bodyMount = new THREE.Group();
     bodyMount.name = `${graha.name.toLowerCase()}-body-mount`;
