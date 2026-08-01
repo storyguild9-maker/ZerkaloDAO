@@ -431,7 +431,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   root.add(starLayer);
   const random = seededRandom(0x28a7c41);
   const starfieldPositions: number[] = [];
-  const starCount = telegram ? 520 : 1200;
+  const starCount = 1200;
   for (let index = 0; index < starCount; index += 1) {
     const azimuth = random() * TAU;
     const elevation = THREE.MathUtils.lerp(-0.08, 1.48, Math.asin(random()) / (Math.PI * 0.5));
@@ -443,8 +443,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     starLayer,
     starfieldPositions,
     0xf4fbff,
-    telegram ? 2.35 : 2.1,
-    telegram ? 0.86 : 0.9,
+    2.1,
+    0.9,
     disposables,
     roundPointTexture,
   );
@@ -461,7 +461,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     const vertical = new THREE.Vector3().crossVectors(radial, tangent).normalize();
     const localRandom = seededRandom(0x9e3779b9 ^ (index * 7919));
     const constellation: THREE.Vector3[] = [];
-    const pointCount = telegram ? 4 + (index % 2) : 5 + (index % 3);
+    const pointCount = 5 + (index % 3);
     for (let pointIndex = 0; pointIndex < pointCount; pointIndex += 1) {
       const horizontalOffset = (localRandom() - 0.5) * 8.5 * orbitScale;
       const verticalOffset = (localRandom() - 0.5) * 6.5 * orbitScale;
@@ -478,13 +478,13 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       nakshatraLines.push(point.x, point.y, point.z, next.x, next.y, next.z);
     });
   }
-  const nakshatraMaterial = addStarGeometry(starLayer, nakshatraPoints, 0xffe7a3, telegram ? 3.8 : 3.4, 0.94, disposables, roundPointTexture);
+  const nakshatraMaterial = addStarGeometry(starLayer, nakshatraPoints, 0xffe7a3, 3.4, 0.94, disposables, roundPointTexture);
   const nakshatraLineMaterial = addLineGeometry(starLayer, nakshatraLines, 0xc7ad6d, telegram ? 0.13 : 0.2, disposables);
 
   const planetariumPoints: number[] = [];
   const planetariumLines: number[] = [];
   const planetariumRadius = 221 * orbitScale;
-  const constellationCount = telegram ? 42 : 72;
+  const constellationCount = 72;
   const goldenAngle = Math.PI * (3 - Math.sqrt(5));
   for (let index = 0; index < constellationCount; index += 1) {
     const azimuth = (index * goldenAngle + 0.31) % TAU;
@@ -495,7 +495,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     const tangent = new THREE.Vector3(Math.cos(azimuth), 0, -Math.sin(azimuth)).normalize();
     const vertical = new THREE.Vector3().crossVectors(radial, tangent).normalize();
     const localRandom = seededRandom(0x51f15e5d ^ (index * 104729));
-    const pointCount = telegram ? 4 + (index % 3) : 5 + (index % 4);
+    const pointCount = 5 + (index % 4);
     const constellation: THREE.Vector3[] = [];
     for (let pointIndex = 0; pointIndex < pointCount; pointIndex += 1) {
       const progress = pointIndex / Math.max(pointCount - 1, 1) - 0.5;
@@ -524,8 +524,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     starLayer,
     planetariumPoints,
     0xddeeff,
-    telegram ? 3.3 : 3,
-    telegram ? 0.92 : 0.95,
+    3,
+    0.95,
     disposables,
     roundPointTexture,
   );
@@ -648,7 +648,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     starfieldMaterial.opacity = 0.82 + Math.sin(elapsedSeconds * 0.21) * 0.08;
     nakshatraMaterial.opacity = 0.9 + Math.sin(elapsedSeconds * 0.31) * 0.08;
     nakshatraLineMaterial.opacity = (telegram ? 0.11 : 0.17) + Math.sin(elapsedSeconds * 0.17) * 0.035;
-    planetariumStarMaterial.opacity = (telegram ? 0.86 : 0.9) + Math.sin(elapsedSeconds * 0.13) * 0.07;
+    planetariumStarMaterial.opacity = 0.9 + Math.sin(elapsedSeconds * 0.13) * 0.07;
     planetariumLineMaterial.opacity = (telegram ? 0.13 : 0.19) + Math.sin(elapsedSeconds * 0.09) * 0.035;
     saptarishiMaterial.opacity = 0.96 + pulse * 0.04;
     saptarishiLineMaterial.opacity = 0.44 + pulse * 0.12;
