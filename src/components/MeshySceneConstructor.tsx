@@ -7,6 +7,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { assetUrl } from "@/lib/assetUrl";
+import { createCelestialSpheres } from "@/lib/celestialSpheres";
 import { getTelegramAvatarId, getTelegramAvatarMotion, isTelegramSceneAsset } from "@/lib/telegramScene";
 
 type MeshyAsset = {
@@ -1825,6 +1826,15 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
     goldLight.position.set(0, ROOM_HEIGHT * 0.36, -18);
     scene.add(goldLight);
 
+    const celestialStartedAt = performance.now();
+    const celestialSpheres = createCelestialSpheres({
+      telegram,
+      roomWidth: ROOM_WIDTH,
+      roomHeight: ROOM_HEIGHT,
+      roomDepth: ROOM_DEPTH,
+    });
+    scene.add(celestialSpheres.group);
+
     const solarOrbit = new THREE.Group();
     solarOrbit.name = "jyotish-solar-orbit";
     scene.add(solarOrbit);
@@ -2255,6 +2265,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
       const delta = Math.min((now - lastFrameTime) / 1000, 0.04);
       lastFrameTime = now;
       updateSolarOrbit(now);
+      celestialSpheres.update((now - celestialStartedAt) / 1000);
       if (flyModeRef.current) {
         const keys = flyKeysRef.current;
         const forward = new THREE.Vector3();
@@ -2387,6 +2398,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
       transform.detach();
       transform.dispose();
       orbit.dispose();
+      celestialSpheres.dispose();
       mount.removeChild(renderer.domElement);
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points) {
