@@ -8,9 +8,9 @@ describe("Telegram light scene", () => {
     expect(isTelegramSceneAsset("239-white-gold-gothic-wall-bay-kit")).toBe(false);
   });
 
-  it("assigns one stable avatar to each Telegram account", () => {
-    expect(getTelegramAvatarId(42)).toBe(getTelegramAvatarId(42));
-    expect(TELEGRAM_AVATAR_IDS).toContain(getTelegramAvatarId(42));
+  it("assigns one stable avatar to each private session without a Telegram id", () => {
+    expect(getTelegramAvatarId("private-session-a")).toBe(getTelegramAvatarId("private-session-a"));
+    expect(TELEGRAM_AVATAR_IDS).toContain(getTelegramAvatarId("private-session-a"));
   });
 
   it("uses the gender-appropriate lightweight walking clip", () => {

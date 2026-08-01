@@ -1020,7 +1020,7 @@ const snapshotObject = (placed: PlacedAsset, object: THREE.Object3D): PlacedAsse
   visible: object.visible
 });
 
-export function MeshySceneConstructor({ plain = false, telegram = false, telegramUserId }: { plain?: boolean; telegram?: boolean; telegramUserId?: number } = {}) {
+export function MeshySceneConstructor({ plain = false, telegram = false, telegramAvatarId }: { plain?: boolean; telegram?: boolean; telegramAvatarId?: string } = {}) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -1081,9 +1081,9 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
   const [avatarSeatAdjustments, setAvatarSeatAdjustments] = useState<Record<string, AvatarSeatAdjustment>>(DEFAULT_AVATAR_SEAT_ADJUSTMENTS);
   const [seatEditorAvatarId, setSeatEditorAvatarId] = useState(DEFAULT_CONTROLLED_AVATAR_ID);
   const [initiateAvatars, setInitiateAvatars] = useState<InitiateAvatar[]>([]);
-  const [controlledAvatarId, setControlledAvatarId] = useState<string>(() => telegram ? getTelegramAvatarId(telegramUserId) : DEFAULT_CONTROLLED_AVATAR_ID);
-  const [avatarMotion, setAvatarMotion] = useState(() => telegram ? getTelegramAvatarMotion(getTelegramAvatarId(telegramUserId)) : "daily-walk-loop");
-  const avatarMotionRef = useRef(telegram ? getTelegramAvatarMotion(getTelegramAvatarId(telegramUserId)) : "daily-walk-loop");
+  const [controlledAvatarId, setControlledAvatarId] = useState<string>(() => telegram ? (telegramAvatarId ?? getTelegramAvatarId()) : DEFAULT_CONTROLLED_AVATAR_ID);
+  const [avatarMotion, setAvatarMotion] = useState(() => telegram ? getTelegramAvatarMotion(telegramAvatarId ?? getTelegramAvatarId()) : "daily-walk-loop");
+  const avatarMotionRef = useRef(telegram ? getTelegramAvatarMotion(telegramAvatarId ?? getTelegramAvatarId()) : "daily-walk-loop");
   const [dlanisWeaponEditorId, setDlanisWeaponEditorId] = useState<DlanisWeaponId>("Weapon_Spear");
   const [dlanisTransformTarget, setDlanisTransformTarget] = useState<DlanisTransformTarget | null>(null);
   const [dlanisWeaponAdjustments, setDlanisWeaponAdjustments] = useState<DlanisWeaponAdjustments>(DEFAULT_DLANIS_WEAPON_ADJUSTMENTS);

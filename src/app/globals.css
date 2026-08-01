@@ -3307,6 +3307,71 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
     transform: none;
   }
 }
+.telegram-nickname {
+  display: grid;
+  width: min(24rem, 100%);
+  gap: 0.5rem;
+  margin-top: 1.35rem;
+  color: rgba(240, 217, 156, 0.82);
+  font-size: 0.82rem;
+}
+
+.telegram-nickname input {
+  width: 100%;
+  min-height: 3.25rem;
+  border: 1px solid rgba(236, 205, 135, 0.34);
+  border-radius: 8px;
+  outline: none;
+  background: rgba(5, 13, 10, 0.88);
+  color: #fffdf4;
+  padding: 0.75rem 0.9rem;
+  font: inherit;
+}
+
+.telegram-nickname input:focus {
+  border-color: rgba(240, 217, 156, 0.7);
+  box-shadow: 0 0 0 3px rgba(240, 217, 156, 0.1);
+}
+
+.telegram-presence-badge {
+  position: fixed;
+  z-index: 23;
+  top: max(0.75rem, env(safe-area-inset-top));
+  left: max(0.75rem, env(safe-area-inset-left));
+  display: grid;
+  min-width: 8.5rem;
+  min-height: 2.75rem;
+  align-content: center;
+  gap: 0.1rem;
+  border: 1px solid rgba(236, 205, 135, 0.28);
+  border-radius: 8px;
+  background: rgba(5, 13, 10, 0.82);
+  padding: 0.45rem 0.7rem;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px);
+  pointer-events: none;
+}
+
+.telegram-presence-badge strong {
+  overflow: hidden;
+  max-width: 12rem;
+  color: #f8f7f2;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.telegram-presence-badge span {
+  color: rgba(240, 217, 156, 0.72);
+  font-size: 0.68rem;
+}
+
+@media (max-width: 640px) {
+  .telegram-presence-badge {
+    top: calc(max(0.75rem, env(safe-area-inset-top)) + 3.2rem);
+  }
+}
 /* optimization board */
 main:has(.optimization-page) {
   min-height: 100vh;

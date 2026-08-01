@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { MeshySceneConstructor } from "@/components/MeshySceneConstructor";
 import { assetUrl } from "@/lib/assetUrl";
 
-type TelegramUser = {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  photo_url?: string;
+type PrivateTelegramSession = {
+  participantId: string;
+  token: string;
+  nickname: string;
+  avatarId: string;
+  expiresAt: string;
 };
 
 type TelegramWebApp = {
@@ -33,6 +33,7 @@ declare global {
 
 const WORLD_LOAD_SETTLE_MS = 2400;
 const WORLD_LOAD_STALL_MS = 35000;
+const PRESENCE_HEARTBEAT_MS = 30000;
 
 const formatWorldItem = (url: string) => {
   const normalized = url.toLowerCase();
@@ -44,8 +45,12 @@ const formatWorldItem = (url: string) => {
   if (normalized.includes("manifest")) return "Читаю карту пространства";
   return "Собираю пространство";
 };
+
 export function TelegramMiniAppShell() {
-  const [user, setUser] = useState<TelegramUser | null>(null);
+  const [session, setSession] = useState<PrivateTelegramSession | null>(null);
+  const [nicknameDraft, setNicknameDraft] = useState("");
+  const [nicknameSaving, setNicknameSaving] = useState(false);
+  const [presenceCount, setPresenceCount] = useState(0);
   const [status, setStatus] = useState("Проверяем вход через Telegram...");
   const [error, setError] = useState("");
   const [entered, setEntered] = useState(false);
@@ -137,7 +142,7 @@ export function TelegramMiniAppShell() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     const telegram = window.Telegram?.WebApp;
     telegram?.setHeaderColor?.("#07100d");
     telegram?.setBackgroundColor?.("#020706");
@@ -149,35 +154,106 @@ export function TelegramMiniAppShell() {
     if (!initData && !devMode) {
       setStatus("");
       setError("Откройте «Зеркало Дао» кнопкой внутри Telegram-бота.");
-      return;
+      return () => controller.abort();
     }
 
     void fetch("/api/telegram/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData })
+      body: JSON.stringify({ initData }),
+      cache: "no-store",
+      signal: controller.signal
     })
       .then(async (response) => {
         const payload = await response.json();
         if (!response.ok || !payload.ok) throw new Error(payload.error || "Вход не подтверждён");
-        if (!cancelled) {
-          setUser(payload.user);
-          setStatus("Вход подтверждён");
-        }
+        const nextSession = payload.session as PrivateTelegramSession;
+        setSession(nextSession);
+        setNicknameDraft(nextSession.nickname);
+        setStatus("Приватная сессия создана");
       })
       .catch((reason) => {
-        if (!cancelled) {
-          setStatus("");
-          setError(reason instanceof Error ? reason.message : "Не удалось войти");
-        }
+        if (controller.signal.aborted) return;
+        setStatus("");
+        setError(reason instanceof Error ? reason.message : "Не удалось войти");
       });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, []);
 
-  const enterTemple = () => {
+  useEffect(() => {
+    if (!entered || !session) return;
+    let cancelled = false;
+
+    const heartbeat = async () => {
+      try {
+        const [heartbeatResponse, presenceResponse] = await Promise.all([
+          fetch("/api/telegram/presence", {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${session.token}`,
+              "Content-Type": "application/json"
+            },
+            body: "{}",
+            cache: "no-store"
+          }),
+          fetch("/api/telegram/presence", {
+            headers: { Authorization: `Bearer ${session.token}` },
+            cache: "no-store"
+          })
+        ]);
+        if (!heartbeatResponse.ok || !presenceResponse.ok || cancelled) return;
+        const payload = await presenceResponse.json();
+        if (!cancelled && payload.ok && Array.isArray(payload.participants)) {
+          setPresenceCount(payload.participants.length);
+        }
+      } catch {
+        // A later heartbeat will retry without interrupting the 3D scene.
+      }
+    };
+
+    void heartbeat();
+    const interval = window.setInterval(() => void heartbeat(), PRESENCE_HEARTBEAT_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [entered, session]);
+
+  const saveNickname = async () => {
+    if (!session) return false;
+    const nickname = nicknameDraft.trim();
+    if (nickname === session.nickname) return true;
+
+    setNicknameSaving(true);
+    setError("");
+    try {
+      const response = await fetch("/api/telegram/presence", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ nickname }),
+        cache: "no-store"
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.error || "Не удалось сохранить ник");
+      setSession((current) => current ? { ...current, nickname: payload.presence.nickname } : current);
+      setNicknameDraft(payload.presence.nickname);
+      setStatus("Ник сохранён для этой сессии");
+      return true;
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Не удалось сохранить ник");
+      return false;
+    } finally {
+      setNicknameSaving(false);
+    }
+  };
+
+  const enterTemple = async (event?: FormEvent) => {
+    event?.preventDefault();
+    if (!session || !(await saveNickname())) return;
     enteredRef.current = true;
     loadingFailedRef.current = false;
     setWorldProgress(0);
@@ -205,10 +281,19 @@ export function TelegramMiniAppShell() {
     setLoadAttempt((attempt) => attempt + 1);
   };
 
-  if (entered && user) {
+  if (entered && session) {
     return (
       <div className="telegram-mini-app telegram-mini-app--entered">
-        <MeshySceneConstructor key={"telegram-world-" + loadAttempt} plain telegram telegramUserId={user.id} />
+        <MeshySceneConstructor
+          key={"telegram-world-" + loadAttempt}
+          plain
+          telegram
+          telegramAvatarId={session.avatarId}
+        />
+        <div className="telegram-presence-badge" aria-live="polite">
+          <strong>{session.nickname}</strong>
+          <span>В храме: {Math.max(1, presenceCount)}</span>
+        </div>
         {(worldLoading || worldError) && (
           <section className={"telegram-world-loader " + (worldError ? "is-error" : "")} aria-live="polite">
             <div className="telegram-world-loader__content">
@@ -241,15 +326,25 @@ export function TelegramMiniAppShell() {
       }}
     >
       <div className="telegram-entry__veil" />
-      <div className="telegram-entry__content">
+      <form className="telegram-entry__content" onSubmit={(event) => void enterTemple(event)}>
         <p className="dao-kicker">Зеркало Дао</p>
-        <h1>{user ? `Добро пожаловать, ${user.first_name}` : "Вход в пространство"}</h1>
+        <h1>{session ? `Добро пожаловать, ${session.nickname}` : "Вход в пространство"}</h1>
+        {session ? (
+          <label className="telegram-nickname">
+            <span>Ник на эту сессию</span>
+            <input
+              autoComplete="off"
+              maxLength={24}
+              onChange={(event) => setNicknameDraft(event.target.value)}
+              value={nicknameDraft}
+            />
+          </label>
+        ) : null}
         <p className="telegram-entry__status" role="status">{error || status}</p>
-        <button disabled={!user} onClick={enterTemple} type="button">
-          {user ? "Войти в храм" : "Ожидание Telegram"}
+        <button disabled={!session || nicknameSaving} type="submit">
+          {session ? (nicknameSaving ? "Сохраняю..." : "Войти в храм") : "Ожидание Telegram"}
         </button>
-      </div>
+      </form>
     </section>
   );
 }
-

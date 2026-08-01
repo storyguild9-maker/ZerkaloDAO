@@ -18,9 +18,12 @@ export function isTelegramSceneAsset(slug: string) {
   return TELEGRAM_SCENE_ASSET_SET.has(slug);
 }
 
-export function getTelegramAvatarId(userId?: number) {
-  if (!Number.isSafeInteger(userId)) return TELEGRAM_AVATAR_IDS[0];
-  const index = Math.abs(userId as number) % TELEGRAM_AVATAR_IDS.length;
+export function getTelegramAvatarId(sessionSeed?: string) {
+  if (!sessionSeed) return TELEGRAM_AVATAR_IDS[0];
+  const index = [...sessionSeed].reduce(
+    (hash, character) => ((hash * 31) + character.charCodeAt(0)) >>> 0,
+    0
+  ) % TELEGRAM_AVATAR_IDS.length;
   return TELEGRAM_AVATAR_IDS[index];
 }
 
