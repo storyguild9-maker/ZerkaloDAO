@@ -170,6 +170,18 @@ const AVATAR_SEATED_MOTION_BY_ID: Record<string, string> = {
   "azure-aegis-armed-v3": "sit-cross-legged",
 };
 const AVATAR_SEATED_MOTION_IDS = new Set(["sit-at-table", "walk-to-seat", "chair-sitting-idle", "male-sit-transition", "sit-transition", "sit-cross-legged"]);
+const AVATAR_LOCOMOTION_MOTION_IDS = new Set([
+  "basic-walking",
+  "daily-walk-loop",
+  "fast-walk-loop",
+  "slow-walk-loop",
+  "elegant-walk-loop",
+  "walk-loop",
+  "walk-turn-left",
+  "walk-turn-right",
+  "walk-backward",
+  "female-walk-loop",
+]);
 const getAvatarSeatedMotionId = (avatar: InitiateAvatar) => AVATAR_SEATED_MOTION_BY_ID[avatar.id] ?? "sit-at-table";
 const AVATAR_SEAT_STORAGE_KEY = "zerkalo-dao-avatar-seats-v1";
 const AVATAR_SEAT_TUNING_STORAGE_KEY = "zerkalo-dao-avatar-seat-tuning-v1";
@@ -890,12 +902,26 @@ const getObjectHeight = (object: THREE.Object3D) => {
   return Math.max(size.y, 0.001);
 };
 
-const sanitizeAvatarAnimationClip = (clip: THREE.AnimationClip, motion: string) => {
+const sanitizeAvatarAnimationClip = (clip: THREE.AnimationClip, motion: string, model?: THREE.Object3D) => {
   let changed = false;
   const tracks = clip.tracks.flatMap((track) => {
     if (motion === "female-walk-loop" && /\.scale(?:$|\[)/i.test(track.name)) {
       changed = true;
       return [];
+    }
+    if (model && AVATAR_LOCOMOTION_MOTION_IDS.has(motion) && /Hips\.position$/i.test(track.name) && track.values.length >= 3) {
+      const hips = model.getObjectByName("Hips");
+      if (hips) {
+        const values = Array.from(track.values);
+        const firstY = values[1] ?? hips.position.y;
+        for (let index = 0; index < values.length; index += 3) {
+          values[index] = hips.position.x;
+          values[index + 1] = hips.position.y + ((values[index + 1] ?? firstY) - firstY);
+          values[index + 2] = hips.position.z;
+        }
+        changed = true;
+        return [new THREE.VectorKeyframeTrack(track.name, Array.from(track.times), values, track.getInterpolation())];
+      }
     }
     if (AVATAR_SEATED_MOTION_IDS.has(motion) && /Hips\.position$/i.test(track.name) && track.values.length >= 3) {
       const values = Array.from(track.values);
@@ -2574,7 +2600,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
           )
         : undefined;
       const sourceClip = getAvatarAnimationClip(gltf.animations, motionSource.clipName);
-      const animationClip = motionClips?.get(motion) ?? (sourceClip ? sanitizeAvatarAnimationClip(sourceClip, motion) : null);
+      const animationClip = motionClips?.get(motion) ?? (sourceClip ? sanitizeAvatarAnimationClip(sourceClip, motion, model) : null);
       const mixer = animationClip ? new THREE.AnimationMixer(model) : null;
       const action = mixer && animationClip ? mixer.clipAction(animationClip) : null;
       if (action) {
