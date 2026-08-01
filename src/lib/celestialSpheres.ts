@@ -182,6 +182,7 @@ function addLineGeometry(
     blending: THREE.AdditiveBlending,
   }));
   const lines = new THREE.LineSegments(geometry, material);
+  lines.visible = false;
   parent.add(lines);
   disposables.add(geometry);
   disposables.add(material);
@@ -582,7 +583,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     new THREE.Vector3(0, -options.roomHeight * 0.28, 0),
     dhruva.position.clone(),
   ]);
-  const axisMaterial = setNoFog(new THREE.LineBasicMaterial({ color: 0xd8bf7a, transparent: true, opacity: 0.09, depthWrite: false }));
+  const axisMaterial = setNoFog(new THREE.LineBasicMaterial({ color: 0xd8bf7a, transparent: true, opacity: 0, depthWrite: false }));
   const axis = new THREE.Line(axisGeometry, axisMaterial);
   axis.name = "dhruva-axis";
   sacredConstellations.add(axis);
@@ -601,7 +602,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const shishumaraMaterial = setNoFog(new THREE.LineBasicMaterial({
     color: 0x6fa394,
     transparent: true,
-    opacity: telegram ? 0.08 : 0.12,
+    opacity: 0,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   }));
