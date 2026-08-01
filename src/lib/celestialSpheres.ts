@@ -49,8 +49,8 @@ function sphericalPoint(radius: number, azimuth: number, elevation: number) {
   );
 }
 
-function setNoFog(material: THREE.Material) {
-  if ("fog" in material) (material as THREE.Material & { fog: boolean }).fog = false;
+function setNoFog<T extends THREE.Material>(material: T): T {
+  if ("fog" in material) (material as T & { fog: boolean }).fog = false;
   return material;
 }
 
@@ -102,6 +102,29 @@ function makeRoundPointTexture() {
       data[offset + 1] = 255;
       data[offset + 2] = 255;
       data[offset + 3] = Math.round(alpha * 255);
+    }
+  }
+  const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function makeSolarGlowTexture() {
+  const size = 128;
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const dx = (x + 0.5) / size * 2 - 1;
+      const dy = (y + 0.5) / size * 2 - 1;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const alpha = distance >= 1 ? 0 : Math.pow(1 - distance, 2.15);
+      const offset = (y * size + x) * 4;
+      data[offset] = 255;
+      data[offset + 1] = Math.round(218 + (1 - distance) * 37);
+      data[offset + 2] = Math.round(120 + (1 - distance) * 135);
+      data[offset + 3] = Math.round(THREE.MathUtils.clamp(alpha, 0, 1) * 255);
     }
   }
   const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
@@ -171,7 +194,9 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
   const disposables = new Set<THREE.BufferGeometry | THREE.Material | THREE.Texture>();
   const roundPointTexture = makeRoundPointTexture();
+  const solarGlowTexture = makeSolarGlowTexture();
   disposables.add(roundPointTexture);
+  disposables.add(solarGlowTexture);
   const orbitRuntimes: OrbitRuntime[] = [];
   const minRoomSpan = Math.min(options.roomWidth, options.roomDepth);
   const orbitScale = THREE.MathUtils.clamp((minRoomSpan / 70) * 0.15, 0.11, 0.2);
@@ -223,7 +248,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const suryaMount = createLuminary(
     "Surya",
     "/models/celestial-grahas/surya-web-v1.glb",
-    11.5,
+    13.5,
     0xffc44f,
     0xff8a16,
     2.2,
@@ -231,14 +256,46 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const chandraMount = createLuminary(
     "Chandra",
     "/models/celestial-grahas/chandra-web-v1.glb",
-    7.5,
+    2.2,
     0xf2f5e9,
     0xc8dcff,
     1.35,
   );
-  const suryaLight = new THREE.PointLight(0xffd27a, telegram ? 28 : 52, 32, 1.5);
+  const suryaLight = new THREE.PointLight(0xffd27a, telegram ? 70 : 120, 140, 1.35);
   suryaLight.name = "surya-local-radiance";
   suryaMount.add(suryaLight);
+
+  const solarCoronaMaterial = setNoFog(new THREE.SpriteMaterial({
+    map: solarGlowTexture,
+    color: 0xffb83f,
+    transparent: true,
+    opacity: 0.62,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  }));
+  solarCoronaMaterial.toneMapped = false;
+  const solarCorona = new THREE.Sprite(solarCoronaMaterial);
+  solarCorona.name = "surya-outer-corona";
+  solarCorona.scale.set(34, 34, 1);
+  solarCorona.renderOrder = 20;
+  suryaMount.add(solarCorona);
+
+  const solarCoreMaterial = setNoFog(new THREE.SpriteMaterial({
+    map: solarGlowTexture,
+    color: 0xfff4c4,
+    transparent: true,
+    opacity: 0.92,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  }));
+  solarCoreMaterial.toneMapped = false;
+  const solarCoreGlow = new THREE.Sprite(solarCoreMaterial);
+  solarCoreGlow.name = "surya-white-gold-core";
+  solarCoreGlow.scale.set(19, 19, 1);
+  solarCoreGlow.renderOrder = 21;
+  suryaMount.add(solarCoreGlow);
+  disposables.add(solarCoronaMaterial);
+  disposables.add(solarCoreMaterial);
   const chandraLight = new THREE.PointLight(0xc9dcff, telegram ? 3 : 7, 20, 1.7);
   chandraLight.name = "chandra-local-radiance";
   chandraMount.add(chandraLight);
@@ -478,6 +535,11 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     const luminaryPhase = (elapsedSeconds / 240) * TAU;
     updateLuminaryPosition(suryaMount, luminaryPhase);
     updateLuminaryPosition(chandraMount, luminaryPhase + Math.PI);
+    const solarPulse = 0.5 + Math.sin(elapsedSeconds * 0.72) * 0.5;
+    solarCoronaMaterial.opacity = 0.54 + solarPulse * 0.14;
+    solarCorona.scale.setScalar(32 + solarPulse * 4);
+    solarCoreMaterial.opacity = 0.86 + solarPulse * 0.1;
+    solarCoreGlow.scale.setScalar(18.2 + solarPulse * 1.8);
     orbitRuntimes.forEach((runtime, index) => {
       runtime.pivot.rotation.y = runtime.phase + elapsedSeconds * runtime.speed;
       runtime.body.rotation.y = -runtime.pivot.rotation.y * (index % 2 === 0 ? 0.65 : 0.42);
@@ -489,8 +551,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     const pulse = 0.5 + Math.sin(elapsedSeconds * 1.4) * 0.5;
     dhruva.scale.setScalar(0.92 + pulse * 0.14);
     dhruvaRayMaterial.opacity = 0.5 + pulse * 0.28;
-    starfieldMaterial.opacity = 0.72 + Math.sin(elapsedSeconds * 0.21) * 0.08;
-    nakshatraMaterial.opacity = 0.88 + Math.sin(elapsedSeconds * 0.31) * 0.08;
+    starfieldMaterial.opacity = 0.36 + Math.sin(elapsedSeconds * 0.21) * 0.06;
+    nakshatraMaterial.opacity = 0.68 + Math.sin(elapsedSeconds * 0.31) * 0.06;
     nakshatraLineMaterial.opacity = (telegram ? 0.11 : 0.17) + Math.sin(elapsedSeconds * 0.17) * 0.035;
     saptarishiMaterial.opacity = 0.9 + pulse * 0.1;
     saptarishiLineMaterial.opacity = 0.44 + pulse * 0.12;
