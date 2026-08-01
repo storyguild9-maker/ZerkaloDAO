@@ -190,7 +190,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const telegram = Boolean(options.telegram);
   const root = new THREE.Group();
   root.name = "puranic-celestial-spheres";
-  root.position.y = options.roomHeight * 1.4;
+  root.position.y = options.roomHeight * 2.6;
 
   const disposables = new Set<THREE.BufferGeometry | THREE.Material | THREE.Texture>();
   const roundPointTexture = makeRoundPointTexture();
@@ -198,9 +198,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   disposables.add(roundPointTexture);
   disposables.add(solarGlowTexture);
   const orbitRuntimes: OrbitRuntime[] = [];
-  const minRoomSpan = Math.min(options.roomWidth, options.roomDepth);
-  const orbitScale = THREE.MathUtils.clamp((minRoomSpan / 70) * 0.15, 0.11, 0.2);
-  const grahaDistanceScale = THREE.MathUtils.clamp(minRoomSpan / 70, 0.72, 1.1);
+  const luminaryRadius = Math.max(options.roomWidth, options.roomDepth) * 0.99;
+  const orbitScale = luminaryRadius / 70;
 
   const orbitLayer = new THREE.Group();
   orbitLayer.name = "graha-orbits";
@@ -215,7 +214,6 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const luminaryLayer = new THREE.Group();
   luminaryLayer.name = "surya-chandra-diametric-orbit";
   root.add(luminaryLayer);
-  const luminaryRadius = Math.max(options.roomWidth, options.roomDepth) * 0.99;
 
   const createLuminary = (
     name: "Surya" | "Chandra",
@@ -303,15 +301,15 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   // The remaining grahas occupy increasingly high, compressed celestial tiers
   // above the council table, while Surya and Chandra travel around the hall.
   const grahas = [
-    { name: "Shukra", distance: 8, tier: 0, displaySize: 1.8, color: 0xffe3ab, emissive: 0xffbd64, glow: 1, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
-    { name: "Budha", distance: 11.5, tier: 1.4, displaySize: 1.15, color: 0x75d6aa, emissive: 0x2aa97f, glow: 0.95, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
-    { name: "Mangala", distance: 16.5, tier: 3.1, displaySize: 1.45, color: 0xc85c4b, emissive: 0xa61e16, glow: 1.05, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
-    { name: "Brihaspati", distance: 24.5, tier: 5.5, displaySize: 5.2, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.72, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
-    { name: "Shani", distance: 34, tier: 8.4, displaySize: 4.7, color: 0x8193a3, emissive: 0x334766, glow: 0.78, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
+    { name: "Shukra", orbitFactor: 1.22, tier: 0, displaySize: 7.2, color: 0xffe3ab, emissive: 0xffbd64, glow: 1, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
+    { name: "Budha", orbitFactor: 1.46, tier: 7, displaySize: 5.2, color: 0x75d6aa, emissive: 0x2aa97f, glow: 0.95, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
+    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 6.4, color: 0xc85c4b, emissive: 0xa61e16, glow: 1.05, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
+    { name: "Brihaspati", orbitFactor: 2.24, tier: 24, displaySize: 18, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.72, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
+    { name: "Shani", orbitFactor: 2.78, tier: 36, displaySize: 16, color: 0x8193a3, emissive: 0x334766, glow: 0.78, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
   ];
 
   grahas.forEach((graha, index) => {
-    const radius = graha.distance * grahaDistanceScale;
+    const radius = luminaryRadius * graha.orbitFactor;
     const pivot = new THREE.Group();
     pivot.name = `${graha.name.toLowerCase()}-orbit`;
     pivot.position.y = graha.tier;
@@ -319,7 +317,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     pivot.rotation.z = graha.inclination * 0.55;
     orbitLayer.add(pivot);
 
-    const ringGeometry = new THREE.TorusGeometry(radius, telegram ? 0.02 : 0.032, 5, telegram ? 96 : 160);
+    const ringGeometry = new THREE.TorusGeometry(radius, telegram ? 0.07 : 0.09, 6, telegram ? 192 : 256);
     const ringMaterial = makeOrbitMaterial(index % 2 === 0 ? 0xd6c080 : 0x72a89a, telegram ? 0.055 : 0.085);
     const ring = new THREE.Mesh(ringGeometry, ringMaterial);
     ring.name = `${graha.name.toLowerCase()}-mandala`;
@@ -391,7 +389,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
   const starLayer = new THREE.Group();
   starLayer.name = "nakshatra-celestial-vault";
-  starLayer.position.y = 4.2;
+  starLayer.position.y = 20;
   starLayer.scale.y = 0.18;
   root.add(starLayer);
   const random = seededRandom(0x28a7c41);
@@ -416,7 +414,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
   const nakshatraPoints: number[] = [];
   const nakshatraLines: number[] = [];
-  const nakshatraRadius = 46 * orbitScale;
+  const nakshatraRadius = 86 * orbitScale;
   for (let index = 0; index < 28; index += 1) {
     const azimuth = (index / 28) * TAU;
     const elevation = 0.48 + Math.sin(index * 1.73) * 0.16 + Math.cos(index * 0.63) * 0.07;
@@ -448,7 +446,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
   const sacredConstellations = new THREE.Group();
   sacredConstellations.name = "sacred-constellations";
-  sacredConstellations.position.y = 5.6;
+  sacredConstellations.position.y = 28;
   sacredConstellations.scale.y = 0.14;
   root.add(sacredConstellations);
 
