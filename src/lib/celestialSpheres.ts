@@ -150,7 +150,7 @@ function addStarGeometry(
   const material = setNoFog(new THREE.PointsMaterial({
     color,
     size,
-    sizeAttenuation: true,
+    sizeAttenuation: false,
     transparent: true,
     opacity,
     map: pointTexture,
@@ -158,6 +158,7 @@ function addStarGeometry(
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   }));
+  material.toneMapped = false;
   const points = new THREE.Points(geometry, material);
   parent.add(points);
   disposables.add(geometry);
@@ -441,9 +442,9 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const starfieldMaterial = addStarGeometry(
     starLayer,
     starfieldPositions,
-    0xdde9dc,
-    telegram ? 0.24 : 0.18,
-    telegram ? 0.46 : 0.5,
+    0xf4fbff,
+    telegram ? 2.35 : 2.1,
+    telegram ? 0.86 : 0.9,
     disposables,
     roundPointTexture,
   );
@@ -477,7 +478,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       nakshatraLines.push(point.x, point.y, point.z, next.x, next.y, next.z);
     });
   }
-  const nakshatraMaterial = addStarGeometry(starLayer, nakshatraPoints, 0xffd983, telegram ? 0.3 : 0.24, 0.72, disposables, roundPointTexture);
+  const nakshatraMaterial = addStarGeometry(starLayer, nakshatraPoints, 0xffe7a3, telegram ? 3.8 : 3.4, 0.94, disposables, roundPointTexture);
   const nakshatraLineMaterial = addLineGeometry(starLayer, nakshatraLines, 0xc7ad6d, telegram ? 0.13 : 0.2, disposables);
 
   const planetariumPoints: number[] = [];
@@ -522,9 +523,9 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const planetariumStarMaterial = addStarGeometry(
     starLayer,
     planetariumPoints,
-    0xd9e8ff,
-    telegram ? 0.34 : 0.28,
-    telegram ? 0.76 : 0.82,
+    0xddeeff,
+    telegram ? 3.3 : 3,
+    telegram ? 0.92 : 0.95,
     disposables,
     roundPointTexture,
   );
@@ -560,7 +561,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       saptarishiLines.push(previous.x, previous.y, previous.z, point.x, point.y, point.z);
     }
   });
-  const saptarishiMaterial = addStarGeometry(sacredConstellations, saptarishiPoints, 0x9fe6d1, 0.38, 0.82, disposables, roundPointTexture);
+  const saptarishiMaterial = addStarGeometry(sacredConstellations, saptarishiPoints, 0xbffff0, 4.2, 1, disposables, roundPointTexture);
   const saptarishiLineMaterial = addLineGeometry(sacredConstellations, saptarishiLines, 0x7fc5b5, 0.52, disposables);
 
   const dhruvaGeometry = new THREE.OctahedronGeometry(0.82, telegram ? 1 : 2);
@@ -644,12 +645,12 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     const pulse = 0.5 + Math.sin(elapsedSeconds * 1.4) * 0.5;
     dhruva.scale.setScalar(0.92 + pulse * 0.14);
     dhruvaRayMaterial.opacity = 0.5 + pulse * 0.28;
-    starfieldMaterial.opacity = 0.36 + Math.sin(elapsedSeconds * 0.21) * 0.06;
-    nakshatraMaterial.opacity = 0.68 + Math.sin(elapsedSeconds * 0.31) * 0.06;
+    starfieldMaterial.opacity = 0.82 + Math.sin(elapsedSeconds * 0.21) * 0.08;
+    nakshatraMaterial.opacity = 0.9 + Math.sin(elapsedSeconds * 0.31) * 0.08;
     nakshatraLineMaterial.opacity = (telegram ? 0.11 : 0.17) + Math.sin(elapsedSeconds * 0.17) * 0.035;
-    planetariumStarMaterial.opacity = (telegram ? 0.72 : 0.78) + Math.sin(elapsedSeconds * 0.13) * 0.05;
+    planetariumStarMaterial.opacity = (telegram ? 0.86 : 0.9) + Math.sin(elapsedSeconds * 0.13) * 0.07;
     planetariumLineMaterial.opacity = (telegram ? 0.13 : 0.19) + Math.sin(elapsedSeconds * 0.09) * 0.035;
-    saptarishiMaterial.opacity = 0.9 + pulse * 0.1;
+    saptarishiMaterial.opacity = 0.96 + pulse * 0.04;
     saptarishiLineMaterial.opacity = 0.44 + pulse * 0.12;
   };
 
