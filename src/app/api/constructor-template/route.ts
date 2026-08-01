@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
+import bundledTemplate from "../../../../data/inner-constructor-template.json";
 
 export const runtime = "nodejs";
 
@@ -20,8 +21,13 @@ const projectRoot = process.cwd().endsWith(path.join("projects", "zerkalo-dao"))
 const templatePath = path.join(projectRoot, "data", "inner-constructor-template.json");
 
 async function readTemplate(): Promise<ConstructorTemplate> {
-  const raw = await fs.readFile(templatePath, "utf8");
-  const parsed = JSON.parse(raw) as ConstructorTemplate;
+  let parsed: ConstructorTemplate;
+  try {
+    const raw = await fs.readFile(templatePath, "utf8");
+    parsed = JSON.parse(raw) as ConstructorTemplate;
+  } catch {
+    parsed = bundledTemplate as ConstructorTemplate;
+  }
   return {
     version: parsed.version ?? 1,
     updatedAt: parsed.updatedAt ?? new Date(0).toISOString(),
