@@ -1841,6 +1841,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
 
     const solarVisual = new THREE.Group();
     solarVisual.name = "jyotish-solar-seal";
+    solarVisual.visible = false;
     solarOrbit.add(solarVisual);
 
     const solarTexture = new THREE.TextureLoader().load("/images/meshy-references/161-jyotish-solar-seal.png");
@@ -1921,32 +1922,6 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
     updateSolarOrbit(solarOrbitStartedAt);
 
     let solarDisposed = false;
-    void fetch(assetUrl("/models/meshy/manifest.json"), { cache: "no-store" })
-      .then((response) => response.json() as Promise<MeshyManifest>)
-      .then((manifest) => manifest.assets?.find((asset) => asset.slug === "jyotish-solar-seal-v1")?.localModel)
-      .then((localModel) => {
-        if (!localModel || solarDisposed) return;
-        new GLTFLoader().load(assetUrl(localModel), (gltf) => {
-          const model = gltf.scene;
-          cloneMaterials(model);
-          model.updateMatrixWorld(true);
-          const size = new THREE.Vector3();
-          const center = new THREE.Vector3();
-          new THREE.Box3().setFromObject(model).getSize(size);
-          model.scale.setScalar(25 / Math.max(size.x, size.y, size.z, 0.001));
-          model.updateMatrixWorld(true);
-          new THREE.Box3().setFromObject(model).getCenter(center);
-          model.position.sub(center);
-          if (solarDisposed) {
-            disposeObjectTree(model);
-            return;
-          }
-          model.name = "jyotish-solar-suncrest-meshy-v2";
-          solarVisual.add(model);
-          solarSprite.visible = false;
-        });
-      })
-      .catch((error) => console.info("Meshy solar model is not available yet; using the generated preview.", error));
     const surfaceGroup = new THREE.Group();
     surfaceGroup.name = "constructor-placement-surfaces";
     scene.add(surfaceGroup);
