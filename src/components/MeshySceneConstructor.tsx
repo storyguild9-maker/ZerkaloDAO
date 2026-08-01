@@ -1911,12 +1911,12 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
     updateSolarOrbit(solarOrbitStartedAt);
 
     let solarDisposed = false;
-    if (!telegram) void fetch(assetUrl("/models/meshy/manifest.json"), { cache: "no-store" })
+    void fetch(assetUrl("/models/meshy/manifest.json"), { cache: "no-store" })
       .then((response) => response.json() as Promise<MeshyManifest>)
       .then((manifest) => manifest.assets?.find((asset) => asset.slug === "jyotish-solar-seal-v1")?.localModel)
       .then((localModel) => {
         if (!localModel || solarDisposed) return;
-        new GLTFLoader().load(localModel, (gltf) => {
+        new GLTFLoader().load(assetUrl(localModel), (gltf) => {
           const model = gltf.scene;
           cloneMaterials(model);
           model.updateMatrixWorld(true);
@@ -1931,7 +1931,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
             disposeObjectTree(model);
             return;
           }
-          model.name = "jyotish-solar-seal-meshy-v1";
+          model.name = "jyotish-solar-suncrest-meshy-v2";
           solarVisual.add(model);
           solarSprite.visible = false;
         });
