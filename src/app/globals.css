@@ -3170,6 +3170,70 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
   opacity: 0.55;
 }
 
+.telegram-world-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: max(1.5rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right)) max(1.5rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
+  background: linear-gradient(180deg, rgba(2, 7, 6, 0.94), rgba(2, 7, 6, 0.84));
+  backdrop-filter: blur(10px);
+}
+
+.telegram-world-loader__content {
+  display: grid;
+  width: min(32rem, 100%);
+  gap: 1rem;
+}
+
+.telegram-world-loader__content > strong {
+  color: #fffdf4;
+  font-size: clamp(4.5rem, 18vw, 8.5rem);
+  font-weight: 500;
+  line-height: 0.9;
+}
+
+.telegram-world-loader__content > p:last-of-type {
+  min-height: 1.7rem;
+  margin: 0;
+  color: rgba(235, 239, 235, 0.72);
+  line-height: 1.5;
+}
+
+.telegram-world-loader__track {
+  position: relative;
+  width: 100%;
+  height: 5px;
+  overflow: hidden;
+  background: rgba(240, 217, 156, 0.12);
+}
+
+.telegram-world-loader__track span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  background: linear-gradient(90deg, #4f9b78, #f0d99c 72%, #fff5c7);
+  box-shadow: 0 0 22px rgba(240, 217, 156, 0.38);
+  transition: width 320ms ease;
+}
+
+.telegram-world-loader button {
+  justify-self: start;
+  min-height: 3.35rem;
+  border: 1px solid rgba(240, 217, 156, 0.42);
+  border-radius: 8px;
+  background: rgba(5, 13, 10, 0.9);
+  color: #f0d99b;
+  padding: 0.8rem 1.15rem;
+  font: inherit;
+  font-weight: 700;
+}
+
+.telegram-world-loader.is-error {
+  background: linear-gradient(180deg, rgba(10, 6, 5, 0.96), rgba(2, 7, 6, 0.9));
+}
+
 .meshy-constructor--telegram .meshy-constructor__topbar,
 .meshy-constructor--telegram .meshy-constructor__panel {
   display: none;
