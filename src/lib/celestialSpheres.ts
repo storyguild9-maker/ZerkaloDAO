@@ -28,6 +28,8 @@ type GrahaModelMount = {
   placeholder: THREE.Object3D;
   modelUrl: string;
   displaySize: number;
+  normalizeToSphere?: boolean;
+  radiance?: "sun" | "moon";
 };
 
 const TAU = Math.PI * 2;
@@ -239,6 +241,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       placeholder,
       modelUrl,
       displaySize: displaySize * (telegram ? 0.88 : 1),
+      normalizeToSphere: true,
+      radiance: name === "Surya" ? "sun" : "moon",
     });
     return mount;
   };
@@ -249,7 +253,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     13.5,
     0xffc44f,
     0xff8a16,
-    2.2,
+    3.4,
   );
   const chandraMount = createLuminary(
     "Chandra",
@@ -259,7 +263,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     0xc8dcff,
     1.35,
   );
-  const suryaLight = new THREE.PointLight(0xffd27a, telegram ? 70 : 120, 140, 1.35);
+  const suryaLight = new THREE.PointLight(0xffdf91, telegram ? 150 : 260, 220, 1.22);
   suryaLight.name = "surya-local-radiance";
   suryaMount.add(suryaLight);
 
@@ -267,14 +271,14 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     map: solarGlowTexture,
     color: 0xffb83f,
     transparent: true,
-    opacity: 0.62,
+    opacity: 0.78,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   }));
   solarCoronaMaterial.toneMapped = false;
   const solarCorona = new THREE.Sprite(solarCoronaMaterial);
   solarCorona.name = "surya-outer-corona";
-  solarCorona.scale.set(34, 34, 1);
+  solarCorona.scale.set(42, 42, 1);
   solarCorona.renderOrder = 20;
   suryaMount.add(solarCorona);
 
@@ -282,23 +286,39 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     map: solarGlowTexture,
     color: 0xfff4c4,
     transparent: true,
-    opacity: 0.92,
+    opacity: 1,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   }));
   solarCoreMaterial.toneMapped = false;
   const solarCoreGlow = new THREE.Sprite(solarCoreMaterial);
   solarCoreGlow.name = "surya-white-gold-core";
-  solarCoreGlow.scale.set(19, 19, 1);
+  solarCoreGlow.scale.set(24, 24, 1);
   solarCoreGlow.renderOrder = 21;
   suryaMount.add(solarCoreGlow);
   disposables.add(solarCoronaMaterial);
   disposables.add(solarCoreMaterial);
-  const chandraLight = new THREE.PointLight(0xc9dcff, telegram ? 3 : 7, 20, 1.7);
+  const chandraLight = new THREE.PointLight(0xc9dcff, telegram ? 12 : 24, 72, 1.45);
   chandraLight.name = "chandra-local-radiance";
   chandraMount.add(chandraLight);
 
-  // The remaining grahas occupy increasingly high, compressed celestial tiers
+  const lunarAuraMaterial = setNoFog(new THREE.SpriteMaterial({
+    map: solarGlowTexture,
+    color: 0xbfd8ff,
+    transparent: true,
+    opacity: 0.5,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  }));
+  lunarAuraMaterial.toneMapped = false;
+  const lunarAura = new THREE.Sprite(lunarAuraMaterial);
+  lunarAura.name = "chandra-silver-blue-aura";
+  lunarAura.scale.set(9, 9, 1);
+  lunarAura.renderOrder = 19;
+  chandraMount.add(lunarAura);
+  disposables.add(lunarAuraMaterial);
+
+  // The remaining grahas occupy increasingly high external celestial tiers
   // above the council table, while Surya and Chandra travel around the hall.
   const grahas = [
     { name: "Shukra", orbitFactor: 1.22, tier: 0, displaySize: 7.2, color: 0xffe3ab, emissive: 0xffbd64, glow: 1, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
@@ -364,13 +384,29 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
           materials.forEach((material) => {
             if (material instanceof THREE.MeshStandardMaterial || material instanceof THREE.MeshPhysicalMaterial) {
               material.envMapIntensity = Math.max(material.envMapIntensity, 1.15);
+              if (entry.radiance === "sun") {
+                material.emissive.set(0xff9b2f);
+                material.emissiveIntensity = Math.max(material.emissiveIntensity, 2.6);
+                material.toneMapped = false;
+              } else if (entry.radiance === "moon") {
+                material.emissive.set(0x9dbfff);
+                material.emissiveIntensity = Math.max(material.emissiveIntensity, 0.85);
+              }
             }
           });
         });
         model.updateMatrixWorld(true);
         const bounds = new THREE.Box3().setFromObject(model);
         const size = bounds.getSize(new THREE.Vector3());
-        model.scale.setScalar(entry.displaySize / Math.max(size.x, size.y, size.z, 0.001));
+        if (entry.normalizeToSphere) {
+          model.scale.set(
+            entry.displaySize / Math.max(size.x, 0.001),
+            entry.displaySize / Math.max(size.y, 0.001),
+            entry.displaySize / Math.max(size.z, 0.001),
+          );
+        } else {
+          model.scale.setScalar(entry.displaySize / Math.max(size.x, size.y, size.z, 0.001));
+        }
         model.updateMatrixWorld(true);
         const center = new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3());
         model.position.sub(center);
@@ -525,7 +561,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const updateLuminaryPosition = (mount: THREE.Object3D, phase: number) => {
     const x = -Math.sin(phase) * luminaryRadius;
     const z = Math.cos(phase) * luminaryRadius;
-    const worldY = options.roomHeight * 0.42 + Math.sin(phase) * options.roomHeight * 0.78;
+    const worldY = options.roomHeight * 1.9 + Math.sin(phase) * options.roomHeight * 0.3;
     mount.position.set(x, worldY - root.position.y, z);
     mount.rotation.y = -phase;
   };
@@ -534,10 +570,14 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     updateLuminaryPosition(suryaMount, luminaryPhase);
     updateLuminaryPosition(chandraMount, luminaryPhase + Math.PI);
     const solarPulse = 0.5 + Math.sin(elapsedSeconds * 0.72) * 0.5;
-    solarCoronaMaterial.opacity = 0.54 + solarPulse * 0.14;
-    solarCorona.scale.setScalar(32 + solarPulse * 4);
-    solarCoreMaterial.opacity = 0.86 + solarPulse * 0.1;
-    solarCoreGlow.scale.setScalar(18.2 + solarPulse * 1.8);
+    solarCoronaMaterial.opacity = 0.7 + solarPulse * 0.2;
+    solarCorona.scale.setScalar(39 + solarPulse * 6);
+    solarCoreMaterial.opacity = 0.94 + solarPulse * 0.06;
+    solarCoreGlow.scale.setScalar(22.5 + solarPulse * 3);
+    suryaLight.intensity = (telegram ? 135 : 235) + solarPulse * (telegram ? 35 : 65);
+    lunarAuraMaterial.opacity = 0.42 + (1 - solarPulse) * 0.16;
+    lunarAura.scale.setScalar(8.4 + (1 - solarPulse) * 1.4);
+    chandraLight.intensity = (telegram ? 10 : 20) + (1 - solarPulse) * (telegram ? 4 : 8);
     orbitRuntimes.forEach((runtime, index) => {
       runtime.pivot.rotation.y = runtime.phase + elapsedSeconds * runtime.speed;
       runtime.body.rotation.y = -runtime.pivot.rotation.y * (index % 2 === 0 ? 0.65 : 0.42);
