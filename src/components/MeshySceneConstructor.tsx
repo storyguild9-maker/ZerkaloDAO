@@ -107,6 +107,8 @@ type ControlledAvatarRuntime = {
 type RemoteAvatarRuntime = {
   participantId: string;
   avatarId: string;
+  motionId: string;
+  looping: boolean;
   root: THREE.Group;
   mixer: THREE.AnimationMixer | null;
   action: THREE.AnimationAction | null;
@@ -1511,7 +1513,11 @@ export function MeshySceneConstructor({
 
   const getOccupiedRealSeatIndexes = (exceptAvatarId?: string) => new Set(
     Object.entries(avatarSeatMapRef.current)
-      .filter(([avatarId]) => avatarId !== exceptAvatarId && ACTIVE_AVATAR_IDS.has(avatarId))
+      .filter(([avatarId]) =>
+        avatarId !== exceptAvatarId
+        && ACTIVE_AVATAR_IDS.has(avatarId)
+        && (!telegram || avatarId === controlledAvatarId)
+      )
       .map(([, seatIndex]) => clamp(Math.trunc(Number(seatIndex)), 0, AVATAR_SEAT_COUNT - 1))
   );
 
@@ -1519,17 +1525,19 @@ export function MeshySceneConstructor({
     const seats = getRealChairSeatPoses();
     if (seats.length === 0) return null;
     const occupiedSeats = getOccupiedRealSeatIndexes(avatarId);
+    const remoteOccupants = Array.from(remoteAvatarRuntimesRef.current.values()).map((runtime) => runtime.targetPosition);
     let nearest: { seatIndex: number; targetPosition: THREE.Vector3; targetYaw: number; label: string } | null = null;
     let nearestDistance = Number.POSITIVE_INFINITY;
     seats.forEach((seat) => {
       if (occupiedSeats.has(seat.seatIndex)) return;
+      if (remoteOccupants.some((remotePosition) => remotePosition.distanceToSquared(seat.targetPosition) < 14.1)) return;
       const distance = seat.targetPosition.distanceToSquared(position);
       if (distance < nearestDistance) {
         nearestDistance = distance;
         nearest = seat;
       }
     });
-    return nearest ?? findNearestRealChairSeat(position);
+    return nearest ?? (telegram && remoteOccupants.length > 0 ? null : findNearestRealChairSeat(position));
   };
   const getAvatarSeatAdjustment = (avatarId: string, map = avatarSeatAdjustmentsRef.current) => ({
     ...DEFAULT_AVATAR_SEAT_ADJUSTMENT,
@@ -1630,12 +1638,21 @@ export function MeshySceneConstructor({
     });
   };
 
+  const getSeatedFirstPersonEyePosition = (runtime: ControlledAvatarRuntime) => {
+    const avatarId = typeof runtime.root.userData.avatarId === "string" ? runtime.root.userData.avatarId : "";
+    const isVoidArchon = avatarId === "void-archon-v3-cyber";
+    const seatedForward = new THREE.Vector3(-Math.sin(runtime.yaw), 0, -Math.cos(runtime.yaw));
+    return runtime.root.position
+      .clone()
+      .add(new THREE.Vector3(0, isVoidArchon ? 5.25 : 4.65, 0))
+      .addScaledVector(seatedForward, isVoidArchon ? 1.45 : 1.05);
+  };
+
   const applySeatedFirstPersonCamera = (runtime: ControlledAvatarRuntime) => {
     const camera = cameraRef.current;
     const orbit = orbitRef.current;
     if (!camera || !orbit) return;
-    const seatedForward = new THREE.Vector3(-Math.sin(runtime.yaw), 0, -Math.cos(runtime.yaw));
-    const eyePosition = runtime.root.position.clone().add(new THREE.Vector3(0, 4.05, 0)).addScaledVector(seatedForward, 0.62);
+    const eyePosition = getSeatedFirstPersonEyePosition(runtime);
     const look = seatedLookRef.current;
     const direction = new THREE.Vector3(
       -Math.sin(look.yaw) * Math.cos(look.pitch),
@@ -2206,8 +2223,7 @@ export function MeshySceneConstructor({
       if (!runtime || !shouldFollow) return false;
 
       if (runtime.isSeated) {
-        const seatedForward = new THREE.Vector3(-Math.sin(runtime.yaw), 0, -Math.cos(runtime.yaw));
-        const eyePosition = runtime.root.position.clone().add(new THREE.Vector3(0, 4.05, 0)).addScaledVector(seatedForward, 0.62);
+        const eyePosition = getSeatedFirstPersonEyePosition(runtime);
         const look = seatedLookRef.current;
         const direction = new THREE.Vector3(
           -Math.sin(look.yaw) * Math.cos(look.pitch),
@@ -2221,11 +2237,11 @@ export function MeshySceneConstructor({
         camera.lookAt(orbit.target);
         if (runtime.idleModel) runtime.idleModel.visible = false;
         if (runtime.seatedModel) {
-          runtime.seatedModel.visible = true;
+          runtime.seatedModel.visible = !telegram;
           runtime.seatedModel.position.copy(runtime.baseSeatedModelPosition ?? runtime.seatedModel.position);
           runtime.seatedMixer?.update(0);
         }
-        runtime.model.visible = !runtime.seatedModel;
+        runtime.model.visible = telegram ? false : !runtime.seatedModel;
         return true;
       }
 
@@ -2276,19 +2292,22 @@ export function MeshySceneConstructor({
         if (!updateThirdPersonCamera(delta)) orbit.update();
       }
 
+      const controlledRuntime = controlledAvatarRef.current;
       remoteAvatarRuntimesRef.current.forEach((runtime) => {
         const distanceSquared = runtime.root.position.distanceToSquared(runtime.targetPosition);
-        const moving = distanceSquared > 0.015 || (runtime.animation !== "idle" && !runtime.animation.includes("sit"));
+        const moving = runtime.looping && (distanceSquared > 0.015 || runtime.animation !== "idle");
         const positionLerp = 1 - Math.exp(-delta * 5.2);
         const rotationLerp = 1 - Math.exp(-delta * 7.5);
         runtime.root.position.lerp(runtime.targetPosition, positionLerp);
         runtime.root.rotation.y = lerpAngle(
           runtime.root.rotation.y,
-          runtime.targetYaw + AVATAR_MODEL_FORWARD_OFFSET,
+          runtime.targetYaw + AVATAR_MODEL_FORWARD_OFFSET + getAvatarMotionFacingOffset(runtime.motionId),
           rotationLerp
         );
         if (runtime.action) {
-          if (moving) {
+          if (!runtime.looping) {
+            if (!runtime.action.paused) runtime.mixer?.update(delta);
+          } else if (moving) {
             runtime.action.paused = false;
             runtime.mixer?.update(delta);
           } else if (runtime.wasMoving) {
@@ -2299,10 +2318,14 @@ export function MeshySceneConstructor({
             runtime.action.paused = true;
           }
         }
+        const overlapsSeatedCamera = Boolean(
+          controlledRuntime?.isSeated
+          && runtime.root.position.distanceToSquared(controlledRuntime.root.position) < 6.25
+        );
+        runtime.root.visible = !overlapsSeatedCamera;
         runtime.wasMoving = moving;
       });
 
-      const controlledRuntime = controlledAvatarRef.current;
       if (telegram && controlledRuntime && onTelegramPoseRef.current && now - lastTelegramPoseEmitAtRef.current >= 1000) {
         lastTelegramPoseEmitAtRef.current = now;
         onTelegramPoseRef.current({
@@ -2792,14 +2815,46 @@ export function MeshySceneConstructor({
       );
     };
 
+    const getRemoteMotionId = (avatar: InitiateAvatar, animation: string) => {
+      if (animation === "sit-at-table" || animation.includes("sit")) return "sit-at-table";
+      if (animation === "walk-to-seat") return getDefaultAvatarMotion(avatar);
+      if (avatar.animationTasks?.[animation]?.localModel) return animation;
+      return getDefaultAvatarMotion(avatar);
+    };
+
+    const getRemoteMotionSource = (avatar: InitiateAvatar, motionId: string) => {
+      if (motionId === "sit-at-table") {
+        const preferredSeatedMotion = getAvatarSeatedMotionId(avatar);
+        const task = [
+          avatar.animationTasks?.[preferredSeatedMotion],
+          avatar.animationTasks?.["sit-at-table"],
+          avatar.animationTasks?.["walk-to-seat"],
+        ].find((candidate) => candidate?.localModel);
+        return { url: task?.localModel ?? "", clipName: task?.clipName };
+      }
+      const task = avatar.animationTasks?.[motionId];
+      return {
+        url: task?.localModel
+          ?? avatar.basicAnimations?.walking
+          ?? avatar.riggedModel
+          ?? avatar.localModel
+          ?? "",
+        clipName: task?.clipName,
+      };
+    };
+
     desiredParticipants.forEach((participant, index) => {
+      const avatar = telegramAvatarCatalogRef.current.get(participant.avatarId);
+      if (!avatar) return;
+      const animation = participant.animation || "idle";
+      const motionId = getRemoteMotionId(avatar, animation);
       const targetPosition = getTargetPosition(participant, index);
       const targetYaw = Number.isFinite(Number(participant.rotationY)) ? Number(participant.rotationY) : 0;
       const existing = remoteAvatarRuntimesRef.current.get(participant.participantId);
-      if (existing && existing.avatarId === participant.avatarId) {
+      if (existing && existing.avatarId === participant.avatarId && existing.motionId === motionId) {
         existing.targetPosition.copy(targetPosition);
         existing.targetYaw = targetYaw;
-        existing.animation = participant.animation || "idle";
+        existing.animation = animation;
         return;
       }
       if (existing) {
@@ -2809,19 +2864,11 @@ export function MeshySceneConstructor({
       }
       if (remoteAvatarLoadingRef.current.has(participant.participantId)) return;
 
-      const avatar = telegramAvatarCatalogRef.current.get(participant.avatarId);
-      if (!avatar) return;
-      const defaultMotion = getDefaultAvatarMotion(avatar);
-      const task = avatar.animationTasks?.[defaultMotion];
-      const sourceUrl = task?.localModel
-        ?? avatar.basicAnimations?.walking
-        ?? avatar.riggedModel
-        ?? avatar.localModel
-        ?? "";
-      if (!sourceUrl) return;
+      const source = getRemoteMotionSource(avatar, motionId);
+      if (!source.url) return;
 
       remoteAvatarLoadingRef.current.add(participant.participantId);
-      const versionedUrl = `${sourceUrl}${sourceUrl.includes("?") ? "&" : "?"}v=${AVATAR_ASSET_VERSION}`;
+      const versionedUrl = source.url + (source.url.includes("?") ? "&" : "?") + "v=" + AVATAR_ASSET_VERSION;
       loader.load(
         versionedUrl,
         (gltf) => {
@@ -2832,39 +2879,60 @@ export function MeshySceneConstructor({
             return;
           }
 
+          const currentAvatar = telegramAvatarCatalogRef.current.get(currentParticipant.avatarId);
+          if (!currentAvatar) {
+            disposeObjectTree(gltf.scene);
+            return;
+          }
+          const currentAnimation = currentParticipant.animation || "idle";
+          const currentMotionId = getRemoteMotionId(currentAvatar, currentAnimation);
+          if (currentMotionId !== motionId || currentAvatar.id !== avatar.id) {
+            disposeObjectTree(gltf.scene);
+            return;
+          }
+
           const model = gltf.scene;
           cloneMaterials(model);
           normalizeAvatarObject(model, AVATAR_TARGET_HEIGHT);
           const root = new THREE.Group();
-          root.name = `remote-participant-${participant.participantId}`;
+          root.name = "remote-participant-" + participant.participantId;
           root.userData.participantId = participant.participantId;
           root.userData.nickname = participant.nickname;
           root.userData.avatarId = participant.avatarId;
           root.position.copy(getTargetPosition(currentParticipant, index));
-          root.rotation.y = (Number(currentParticipant.rotationY) || 0) + AVATAR_MODEL_FORWARD_OFFSET;
+          root.rotation.y = (Number(currentParticipant.rotationY) || 0)
+            + AVATAR_MODEL_FORWARD_OFFSET
+            + getAvatarMotionFacingOffset(motionId);
           root.add(model);
 
-          const sourceClip = (task?.clipName
-            ? gltf.animations.find((clip) => clip.name === task.clipName)
+          const sourceClip = (source.clipName
+            ? gltf.animations.find((clip) => clip.name === source.clipName)
             : null) ?? gltf.animations[0] ?? null;
-          const animationClip = sourceClip ? sanitizeAvatarAnimationClip(sourceClip, defaultMotion, model) : null;
+          const animationClip = sourceClip ? sanitizeAvatarAnimationClip(sourceClip, motionId, model) : null;
           const mixer = animationClip ? new THREE.AnimationMixer(model) : null;
           const action = mixer && animationClip ? mixer.clipAction(animationClip) : null;
+          const looping = motionId !== "sit-at-table" && AVATAR_LOCOMOTION_MOTION_IDS.has(motionId);
           if (action) {
-            action.setLoop(THREE.LoopRepeat, Infinity);
-            action.play();
-            action.paused = true;
+            if (looping) {
+              action.setLoop(THREE.LoopRepeat, Infinity);
+              action.play();
+              action.paused = currentAnimation === "idle";
+            } else {
+              holdActionAtEnd(mixer, action);
+            }
           }
 
           const runtime: RemoteAvatarRuntime = {
             participantId: participant.participantId,
             avatarId: participant.avatarId,
+            motionId,
+            looping,
             root,
             mixer,
             action,
             targetPosition: getTargetPosition(currentParticipant, index),
             targetYaw: Number(currentParticipant.rotationY) || 0,
-            animation: currentParticipant.animation || "idle",
+            animation: currentAnimation,
             wasMoving: false
           };
           layer.add(root);
@@ -3475,6 +3543,10 @@ export function MeshySceneConstructor({
       return;
     }
     const realSeat = findNearestAvailableRealChairSeat(runtime.root.position, avatar.id);
+    if (!realSeat && telegram && remoteAvatarRuntimesRef.current.size > 0) {
+      setMessage("Свободных кресел рядом нет");
+      return;
+    }
     const tableCenter = getCouncilTableCenter();
     const fallbackSeatIndex = getNearestAvatarSeatIndex(runtime.root.position, tableCenter);
     const fallbackSeat = getAvatarSeatPose(fallbackSeatIndex, tableCenter);
@@ -3586,6 +3658,10 @@ export function MeshySceneConstructor({
       return;
     }
     const realSeat = findNearestAvailableRealChairSeat(runtime.root.position, avatar.id);
+    if (!realSeat && telegram && remoteAvatarRuntimesRef.current.size > 0) {
+      setMessage("Свободных кресел рядом нет");
+      return;
+    }
     const tableCenter = getCouncilTableCenter();
     const fallbackSeatIndex = getNearestAvatarSeatIndex(runtime.root.position, tableCenter);
     const fallbackSeat = getAvatarSeatPose(fallbackSeatIndex, tableCenter);
