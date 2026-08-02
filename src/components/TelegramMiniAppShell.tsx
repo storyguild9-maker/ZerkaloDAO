@@ -413,6 +413,7 @@ export function TelegramMiniAppShell() {
           telegram
           telegramAvatarId={session.avatarId}
           telegramParticipantId={session.participantId}
+          telegramParticipantNickname={session.nickname}
           telegramParticipants={participants}
         />
         <div className="telegram-presence-badge" aria-live="polite">

@@ -9,6 +9,7 @@ import { TransformControls } from "three/examples/jsm/controls/TransformControls
 import { assetUrl } from "@/lib/assetUrl";
 import { createCelestialSpheres } from "@/lib/celestialSpheres";
 import { getTelegramAvatarId, getTelegramAvatarMotion, isTelegramSceneAsset } from "@/lib/telegramScene";
+import { CouncilHologramPanel } from "@/components/CouncilHologramPanel";
 
 type MeshyAsset = {
   slug: string;
@@ -63,6 +64,7 @@ type MeshySceneConstructorProps = {
   telegram?: boolean;
   telegramAvatarId?: string;
   telegramParticipantId?: string;
+  telegramParticipantNickname?: string;
   telegramParticipants?: TelegramPresenceParticipant[];
   onTelegramPose?: (pose: TelegramAvatarPose) => void;
 };
@@ -1060,6 +1062,7 @@ export function MeshySceneConstructor({
   telegram = false,
   telegramAvatarId,
   telegramParticipantId,
+  telegramParticipantNickname,
   telegramParticipants = [],
   onTelegramPose
 }: MeshySceneConstructorProps = {}) {
@@ -3769,6 +3772,13 @@ export function MeshySceneConstructor({
       <div className="meshy-seat-prompt" data-active={avatarIsSeated || avatarNearTable} data-seated={avatarIsSeated} role="group" aria-label="Действие рядом со столом">
         <button onClick={handleSeatPromptAction} type="button">{avatarIsSeated ? "Выйти из-за стола" : avatarNearTable ? "Сесть за стол" : "Подойди к столу"}</button>
       </div>
+      {telegram ? (
+        <CouncilHologramPanel
+          onLeave={leaveCouncilTable}
+          participantName={telegramParticipantNickname}
+          visible={avatarIsSeated}
+        />
+      ) : null}
 
       <aside className="meshy-constructor__panel meshy-constructor__panel--library">
         <div className="meshy-constructor__section">

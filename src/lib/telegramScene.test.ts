@@ -33,7 +33,8 @@ describe("Telegram light scene", () => {
       (_, index) => getTelegramAvatarIdForGender(`female-session-${index}`, "female")
     );
     expect(new Set(femaleAssignments).size).toBe(2);
-    expect(femaleAssignments.every((avatarId) => TELEGRAM_AVATAR_POOLS.female.includes(avatarId))).toBe(true);
+    const femalePool = new Set<string>(TELEGRAM_AVATAR_POOLS.female);
+    expect(femaleAssignments.every((avatarId) => femalePool.has(avatarId))).toBe(true);
     expect(TELEGRAM_AVATAR_POOLS.male).toContain(getTelegramAvatarIdForGender("male-session", "male"));
   });
 
