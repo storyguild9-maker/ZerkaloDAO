@@ -3141,6 +3141,78 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
   width: min(34rem, 100%);
 }
 
+.telegram-entry__profile {
+  display: grid;
+  width: min(28rem, 100%);
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.telegram-avatar-gender {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.telegram-avatar-gender legend,
+.telegram-nickname > span {
+  margin-bottom: 0.5rem;
+  color: rgba(240, 217, 156, 0.82);
+  font-size: 0.82rem;
+}
+
+.telegram-avatar-gender > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.telegram-avatar-gender label {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  min-height: 3.65rem;
+  align-items: center;
+  gap: 0.7rem;
+  border: 1px solid rgba(236, 205, 135, 0.24);
+  border-radius: 8px;
+  background: rgba(5, 13, 10, 0.76);
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.telegram-avatar-gender label:hover,
+.telegram-avatar-gender label.is-selected {
+  border-color: rgba(240, 217, 156, 0.7);
+  background: rgba(17, 31, 23, 0.92);
+  box-shadow: 0 0 0 3px rgba(240, 217, 156, 0.08);
+}
+
+.telegram-avatar-gender input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.telegram-avatar-gender label > span {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid rgba(240, 217, 156, 0.32);
+  border-radius: 50%;
+  color: #f0d99b;
+  font-weight: 700;
+}
+
+.telegram-avatar-gender strong {
+  color: #fffdf4;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
 .telegram-entry h1 {
   max-width: 12ch;
   margin: 0.45rem 0 0.8rem;
@@ -3321,7 +3393,7 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
   display: grid;
   width: min(24rem, 100%);
   gap: 0.5rem;
-  margin-top: 1.35rem;
+  margin-top: 0;
   color: rgba(240, 217, 156, 0.82);
   font-size: 0.82rem;
 }
@@ -3341,6 +3413,21 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
 .telegram-nickname input:focus {
   border-color: rgba(240, 217, 156, 0.7);
   box-shadow: 0 0 0 3px rgba(240, 217, 156, 0.1);
+}
+
+@media (max-height: 720px) {
+  .telegram-entry {
+    place-items: center start;
+  }
+
+  .telegram-entry h1 {
+    font-size: clamp(2.25rem, 8vw, 3.5rem);
+  }
+
+  .telegram-entry__status {
+    min-height: 1.8rem;
+    margin: 0.6rem 0 0;
+  }
 }
 
 .telegram-presence-badge {

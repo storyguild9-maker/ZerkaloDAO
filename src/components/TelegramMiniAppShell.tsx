@@ -8,6 +8,7 @@ import {
   type TelegramPresenceParticipant
 } from "@/components/MeshySceneConstructor";
 import { assetUrl } from "@/lib/assetUrl";
+import type { TelegramAvatarGender } from "@/lib/telegramScene";
 
 type PrivateTelegramSession = {
   participantId: string;
@@ -63,6 +64,7 @@ const formatWorldItem = (url: string) => {
 export function TelegramMiniAppShell() {
   const [session, setSession] = useState<PrivateTelegramSession | null>(null);
   const [nicknameDraft, setNicknameDraft] = useState("");
+  const [avatarGender, setAvatarGender] = useState<TelegramAvatarGender | null>(null);
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [presenceCount, setPresenceCount] = useState(0);
   const [participants, setParticipants] = useState<TelegramPresenceParticipant[]>([]);
@@ -303,10 +305,13 @@ export function TelegramMiniAppShell() {
     chatEndRef.current?.scrollIntoView({ block: "end" });
   }, [chatMessages, chatOpen]);
 
-  const saveNickname = async () => {
+  const saveEntryProfile = async () => {
     if (!session) return false;
+    if (!avatarGender) {
+      setError("Выберите облик аватара");
+      return false;
+    }
     const nickname = nicknameDraft.trim();
-    if (nickname === session.nickname) return true;
 
     setNicknameSaving(true);
     setError("");
@@ -317,14 +322,18 @@ export function TelegramMiniAppShell() {
           Authorization: `Bearer ${session.token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ nickname }),
+        body: JSON.stringify({ nickname, avatarGender }),
         cache: "no-store"
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok) throw new Error(payload.error || "Не удалось сохранить ник");
-      setSession((current) => current ? { ...current, nickname: payload.presence.nickname } : current);
+      setSession((current) => current ? {
+        ...current,
+        nickname: payload.presence.nickname,
+        avatarId: payload.presence.avatarId
+      } : current);
       setNicknameDraft(payload.presence.nickname);
-      setStatus("Ник сохранён для этой сессии");
+      setStatus("Аватар готов к входу");
       return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Не удалось сохранить ник");
@@ -336,7 +345,7 @@ export function TelegramMiniAppShell() {
 
   const enterTemple = async (event?: FormEvent) => {
     event?.preventDefault();
-    if (!session || !(await saveNickname())) return;
+    if (!session || !(await saveEntryProfile())) return;
     enteredRef.current = true;
     loadingFailedRef.current = false;
     setWorldProgress(0);
@@ -513,19 +522,48 @@ export function TelegramMiniAppShell() {
         <p className="dao-kicker">Зеркало Дао</p>
         <h1>{session ? `Добро пожаловать, ${session.nickname}` : "Вход в пространство"}</h1>
         {session ? (
-          <label className="telegram-nickname">
-            <span>Ник на эту сессию</span>
-            <input
-              autoComplete="off"
-              maxLength={24}
-              onChange={(event) => setNicknameDraft(event.target.value)}
-              value={nicknameDraft}
-            />
-          </label>
+          <div className="telegram-entry__profile">
+            <fieldset className="telegram-avatar-gender">
+              <legend>Выберите облик</legend>
+              <div>
+                <label className={avatarGender === "male" ? "is-selected" : ""}>
+                  <input
+                    checked={avatarGender === "male"}
+                    name="avatar-gender"
+                    onChange={() => setAvatarGender("male")}
+                    type="radio"
+                    value="male"
+                  />
+                  <span aria-hidden="true">М</span>
+                  <strong>Мужской</strong>
+                </label>
+                <label className={avatarGender === "female" ? "is-selected" : ""}>
+                  <input
+                    checked={avatarGender === "female"}
+                    name="avatar-gender"
+                    onChange={() => setAvatarGender("female")}
+                    type="radio"
+                    value="female"
+                  />
+                  <span aria-hidden="true">Ж</span>
+                  <strong>Женский</strong>
+                </label>
+              </div>
+            </fieldset>
+            <label className="telegram-nickname">
+              <span>Ник на эту сессию</span>
+              <input
+                autoComplete="off"
+                maxLength={24}
+                onChange={(event) => setNicknameDraft(event.target.value)}
+                value={nicknameDraft}
+              />
+            </label>
+          </div>
         ) : null}
         <p className="telegram-entry__status" role="status">{error || status}</p>
-        <button disabled={!session || nicknameSaving} type="submit">
-          {session ? (nicknameSaving ? "Сохраняю..." : "Войти в храм") : "Ожидание Telegram"}
+        <button disabled={!session || !avatarGender || nicknameSaving} type="submit">
+          {session ? (nicknameSaving ? "Подготавливаю аватара..." : "Войти в храм") : "Ожидание Telegram"}
         </button>
       </form>
     </section>

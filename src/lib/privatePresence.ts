@@ -1,5 +1,9 @@
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
-import { getTelegramAvatarId } from "@/lib/telegramScene";
+import {
+  getTelegramAvatarId,
+  getTelegramAvatarIdForGender,
+  normalizeTelegramAvatarGender
+} from "@/lib/telegramScene";
 
 const SESSION_TTL_HOURS = 12;
 const ACTIVE_WINDOW_SECONDS = 300;
@@ -169,6 +173,7 @@ export async function requirePrivateSession(token: string) {
 
 export async function updateOwnPresence(token: string, updates: {
   nickname?: unknown;
+  avatarGender?: unknown;
   position?: unknown;
   rotationY?: unknown;
   animation?: unknown;
@@ -178,6 +183,10 @@ export async function updateOwnPresence(token: string, updates: {
   const payload: Record<string, string | number> = { last_seen_at: now };
 
   if (updates.nickname !== undefined) payload.nickname = normalizeSessionNickname(updates.nickname);
+  if (updates.avatarGender !== undefined) {
+    const gender = normalizeTelegramAvatarGender(updates.avatarGender);
+    payload.avatar_id = getTelegramAvatarIdForGender(session.participant_id, gender);
+  }
   if (Array.isArray(updates.position) && updates.position.length === 3) {
     const position = updates.position.map(Number);
     if (position.every(Number.isFinite)) {

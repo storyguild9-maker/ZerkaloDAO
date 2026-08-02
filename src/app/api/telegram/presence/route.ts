@@ -36,7 +36,7 @@ export async function PATCH(request: Request) {
     return noStore({ ok: true, presence });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Не удалось обновить присутствие";
-    const status = /session/i.test(message) ? 401 : /ник|символ/i.test(message) ? 400 : 503;
+    const status = /session/i.test(message) ? 401 : /ник|символ|облик|пол/i.test(message) ? 400 : 503;
     const clientMessage = status === 401 ? "Сессия истекла" : status === 400 ? message : "Не удалось обновить присутствие";
     return noStore({ ok: false, error: clientMessage }, { status });
   }
