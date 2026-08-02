@@ -29,6 +29,12 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
   }, []);
 
   useEffect(() => {
+    const toggleFromCrystal = () => setCollapsed((value) => !value);
+    window.addEventListener("council-projector-crystal-toggle", toggleFromCrystal);
+    return () => window.removeEventListener("council-projector-crystal-toggle", toggleFromCrystal);
+  }, []);
+
+  useEffect(() => {
     if (!visible) {
       setActiveTab("wallet");
       setCollapsed(false);

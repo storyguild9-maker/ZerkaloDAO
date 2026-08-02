@@ -64,6 +64,8 @@ export type TelegramAvatarPose = Pick<TelegramPresenceParticipant, "position" | 
 type CouncilHologramWorldRuntime = {
   group: THREE.Group;
   anchor: THREE.Object3D;
+  pedestal: THREE.Group;
+  crystalHitTarget: THREE.Mesh;
   rings: THREE.Mesh[];
   light: THREE.PointLight;
   tabletopY: number | null;
@@ -75,103 +77,18 @@ const createCouncilHologramWorldRuntime = (): CouncilHologramWorldRuntime => {
   group.name = "council-hologram-world-projector";
   group.visible = false;
 
-  const darkMetal = new THREE.MeshPhysicalMaterial({
-    color: 0x171019,
-    emissive: 0x241331,
-    emissiveIntensity: 0.3,
-    metalness: 0.9,
-    roughness: 0.2,
-    clearcoat: 0.95,
-    clearcoatRoughness: 0.1,
-  });
-  const goldMetal = new THREE.MeshPhysicalMaterial({
-    color: 0xb68a3d,
-    emissive: 0x5a3610,
-    emissiveIntensity: 0.28,
-    metalness: 0.94,
-    roughness: 0.18,
-    clearcoat: 1,
-  });
-  const crystalMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x9d77dc,
-    emissive: 0x8d56e8,
-    emissiveIntensity: 2.4,
-    roughness: 0.08,
-    metalness: 0.05,
-    transmission: 0.24,
-    transparent: true,
-    opacity: 0.94,
-  });
-
   const pedestal = new THREE.Group();
   pedestal.name = "council-hologram-pedestal";
   group.add(pedestal);
 
-  const addTier = (
-    topRadius: number,
-    bottomRadius: number,
-    height: number,
-    y: number,
-    material: THREE.Material,
-  ) => {
-    const tier = new THREE.Mesh(new THREE.CylinderGeometry(topRadius, bottomRadius, height, 48), material);
-    tier.position.y = y;
-    tier.castShadow = true;
-    tier.receiveShadow = true;
-    pedestal.add(tier);
-  };
-
-  addTier(0.77, 0.88, 0.14, 0.07, darkMetal);
-  addTier(0.66, 0.76, 0.13, 0.2, goldMetal);
-  addTier(0.48, 0.62, 0.24, 0.385, darkMetal);
-  addTier(0.31, 0.46, 0.12, 0.565, goldMetal);
-
-  [
-    { radius: 0.79, y: 0.135, tube: 0.026 },
-    { radius: 0.67, y: 0.27, tube: 0.022 },
-    { radius: 0.49, y: 0.51, tube: 0.02 },
-  ].forEach(({ radius, y, tube }) => {
-    const trim = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 8, 64), goldMetal);
-    trim.rotation.x = Math.PI / 2;
-    trim.position.y = y;
-    pedestal.add(trim);
-  });
-
-  for (let index = 0; index < 6; index += 1) {
-    const angle = (index / 6) * Math.PI * 2;
-    const rib = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.28, 0.065), goldMetal);
-    rib.position.set(Math.cos(angle) * 0.51, 0.39, Math.sin(angle) * 0.51);
-    rib.rotation.y = -angle;
-    pedestal.add(rib);
-  }
-
-  const emitter = new THREE.Mesh(new THREE.OctahedronGeometry(0.17, 0), crystalMaterial);
-  emitter.position.y = 0.73;
-  emitter.rotation.y = Math.PI / 4;
-  pedestal.add(emitter);
-
-  const emitterFrame = new THREE.Mesh(
-    new THREE.OctahedronGeometry(0.225, 0),
-    new THREE.MeshBasicMaterial({ color: 0xe2bd6c, wireframe: true }),
+  const crystalHitTarget = new THREE.Mesh(
+    new THREE.SphereGeometry(0.17, 16, 12),
+    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
   );
-  emitterFrame.position.copy(emitter.position);
-  emitterFrame.rotation.copy(emitter.rotation);
-  pedestal.add(emitterFrame);
-
-  const ringMaterial = new THREE.MeshBasicMaterial({
-    color: 0xb99aef,
-    transparent: true,
-    opacity: 0.7,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-  });
-  const rings = [0.29, 0.39].map((radius, index) => {
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.012, 6, 48), ringMaterial.clone());
-    ring.rotation.x = Math.PI / 2;
-    ring.position.y = 0.7 + index * 0.06;
-    pedestal.add(ring);
-    return ring;
-  });
+  crystalHitTarget.name = "council-hologram-crystal-toggle";
+  crystalHitTarget.position.y = 0.34;
+  crystalHitTarget.userData.councilProjectorToggle = true;
+  pedestal.add(crystalHitTarget);
 
   const panelFrame = new THREE.Group();
   panelFrame.name = "council-hologram-world-panel";
@@ -183,11 +100,20 @@ const createCouncilHologramWorldRuntime = (): CouncilHologramWorldRuntime => {
   anchor.name = "council-hologram-dom-anchor";
   panelFrame.add(anchor);
 
-  const light = new THREE.PointLight(0xb57bf0, 4.2, 7.2, 1.7);
-  light.position.set(0, 0.8, 0.3);
+  const light = new THREE.PointLight(0xb57bf0, 4.2, 4.8, 1.7);
+  light.position.set(0, 0.42, 0.18);
   group.add(light);
 
-  return { group, anchor, rings, light, tabletopY: null, viewportWidth: 0 };
+  return {
+    group,
+    anchor,
+    pedestal,
+    crystalHitTarget,
+    rings: [],
+    light,
+    tabletopY: null,
+    viewportWidth: 0,
+  };
 };
 
 type MeshySceneConstructorProps = {
@@ -2101,6 +2027,63 @@ export function MeshySceneConstructor({
     scene.add(councilHologramWorld.group);
     councilHologramWorldRef.current = councilHologramWorld;
 
+    let councilHologramDisposed = false;
+    const councilProjectorLoader = new GLTFLoader();
+    councilProjectorLoader.load(
+      assetUrl("/models/council-hologram/amethyst-projector-v1.glb"),
+      (gltf) => {
+        const model = gltf.scene;
+        if (councilHologramDisposed) {
+          model.traverse((object) => {
+            if (!(object instanceof THREE.Mesh)) return;
+            object.geometry?.dispose();
+            const materials = Array.isArray(object.material) ? object.material : [object.material];
+            materials.forEach((material) => material.dispose());
+          });
+          return;
+        }
+
+        model.name = "amethyst-aether-projector";
+        const bounds = new THREE.Box3().setFromObject(model);
+        const size = bounds.getSize(new THREE.Vector3());
+        const horizontalSize = Math.max(size.x, size.z, 0.001);
+        model.scale.setScalar(0.62 / horizontalSize);
+
+        const scaledBounds = new THREE.Box3().setFromObject(model);
+        const scaledCenter = scaledBounds.getCenter(new THREE.Vector3());
+        model.position.x -= scaledCenter.x;
+        model.position.y -= scaledBounds.min.y;
+        model.position.z -= scaledCenter.z;
+        model.traverse((object) => {
+          if (!(object instanceof THREE.Mesh)) return;
+          object.castShadow = !telegram;
+          object.receiveShadow = true;
+          const materials = Array.isArray(object.material) ? object.material : [object.material];
+          materials.forEach((material) => {
+            if (!(material instanceof THREE.MeshStandardMaterial)) return;
+            material.envMapIntensity = 1.15;
+            for (const map of [material.map, material.normalMap, material.roughnessMap, material.metalnessMap, material.emissiveMap]) {
+              if (!map) continue;
+              map.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+              map.needsUpdate = true;
+            }
+          });
+        });
+        councilHologramWorld.pedestal.add(model);
+
+        const finalBounds = new THREE.Box3().setFromObject(model);
+        const crystalCenter = finalBounds.getCenter(new THREE.Vector3());
+        councilHologramWorld.crystalHitTarget.position.set(
+          crystalCenter.x,
+          finalBounds.max.y - 0.025,
+          crystalCenter.z,
+        );
+        councilHologramWorld.light.position.set(crystalCenter.x, finalBounds.max.y + 0.04, crystalCenter.z + 0.1);
+      },
+      undefined,
+      () => undefined,
+    );
+
     const roomTextureLoader = new THREE.TextureLoader();
     const configureRoomTexture = (texture: THREE.Texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
@@ -2607,6 +2590,22 @@ export function MeshySceneConstructor({
     };
     const onPointerDown = (event: PointerEvent) => {
       renderer.domElement.focus();
+      if (event.button === 0) {
+        const world = councilHologramWorldRef.current;
+        const panelElement = councilHologramPanelRef.current;
+        if (world?.group.visible && panelElement) {
+          const rect = renderer.domElement.getBoundingClientRect();
+          selectionPointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+          selectionPointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+          selectionRaycaster.setFromCamera(selectionPointer, camera);
+          if (selectionRaycaster.intersectObject(world.crystalHitTarget, false).length > 0) {
+            window.dispatchEvent(new Event("council-projector-crystal-toggle"));
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+        }
+      }
       if (isTransformDragging || event.button !== 2) return;
       const seatedLookActive = Boolean(controlledAvatarRef.current?.isSeated && avatarControlEnabledRef.current);
       if (!flyModeRef.current && !seatedLookActive) return;
@@ -2682,6 +2681,7 @@ export function MeshySceneConstructor({
       remoteAvatarRuntimesRef.current.clear();
       remoteAvatarLoadingRef.current.clear();
       remoteAvatarLayerRef.current = null;
+      councilHologramDisposed = true;
       if (councilHologramWorldRef.current === councilHologramWorld) councilHologramWorldRef.current = null;
       mount.removeChild(renderer.domElement);
       scene.traverse((object) => {
