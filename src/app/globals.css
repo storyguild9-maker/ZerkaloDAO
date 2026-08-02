@@ -4630,22 +4630,6 @@ main:has(.animate-page)::after {
   pointer-events: none;
 }
 
-.council-hologram__projector-toggle {
-  position: absolute;
-  z-index: 7;
-  right: 0.45rem;
-  bottom: -2.75rem;
-  min-height: 2.15rem;
-  border: 1px solid rgba(240, 217, 156, 0.34);
-  border-radius: 999px;
-  background: rgba(5, 10, 11, 0.82);
-  color: #f4dc9f;
-  padding: 0.42rem 0.78rem;
-  box-shadow: 0 0 22px rgba(111, 215, 231, 0.14);
-  font-size: 0.7rem;
-  cursor: pointer;
-  pointer-events: auto;
-}
 
 .council-hologram[data-projector-visible="false"] .council-hologram__surface {
   opacity: 0;

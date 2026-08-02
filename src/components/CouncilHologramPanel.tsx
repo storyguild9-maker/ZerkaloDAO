@@ -29,7 +29,7 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
   }, []);
 
   useEffect(() => {
-    const toggleFromCrystal = () => setCollapsed((value) => !value);
+    const toggleFromCrystal = () => setProjectorVisible((value) => !value);
     window.addEventListener("council-projector-crystal-toggle", toggleFromCrystal);
     return () => window.removeEventListener("council-projector-crystal-toggle", toggleFromCrystal);
   }, []);
@@ -55,9 +55,6 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
         panelRef.current = node;
       }}
     >
-      <button className="council-hologram__projector-toggle" onClick={() => setProjectorVisible((value) => !value)} type="button">
-        {projectorVisible ? "Скрыть экран" : "Показать экран"}
-      </button>
 
       <div className="council-hologram__surface">
         <header className="council-hologram__header">

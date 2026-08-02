@@ -2425,8 +2425,7 @@ export function MeshySceneConstructor({
         world.group.position.y = tabletopY;
         world.group.lookAt(camera.position.x, tabletopY, camera.position.z);
       }
-      const projectorVisible = panelElement?.dataset.projectorVisible === "true";
-      world.group.visible = projectorVisible;
+      world.group.visible = true;
 
       const pulse = (Math.sin(elapsedSeconds * 3.4) + 1) * 0.5;
       world.rings.forEach((ring, index) => {
