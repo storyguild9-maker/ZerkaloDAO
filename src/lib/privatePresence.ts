@@ -2,7 +2,7 @@ import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { getTelegramAvatarId } from "@/lib/telegramScene";
 
 const SESSION_TTL_HOURS = 12;
-const ACTIVE_WINDOW_SECONDS = 120;
+const ACTIVE_WINDOW_SECONDS = 300;
 const ROOM_KEY = "temple-main";
 const CHAT_HISTORY_LIMIT = 80;
 const CHAT_MESSAGE_LIMIT = 500;

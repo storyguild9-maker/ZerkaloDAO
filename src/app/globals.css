@@ -3377,6 +3377,16 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
   font-size: 0.68rem;
 }
 
+.telegram-presence-badge small {
+  overflow: hidden;
+  max-width: 15rem;
+  color: rgba(222, 229, 224, 0.68);
+  font-size: 0.64rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .telegram-chat-toggle {
   position: fixed;
   z-index: 55;
@@ -3424,13 +3434,22 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
 }
 
 .telegram-chat-panel__header {
-  display: flex;
+  display: grid;
   min-height: 5.25rem;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-content: start;
+  gap: 0.75rem;
   border-bottom: 1px solid rgba(236, 205, 135, 0.14);
-  padding: max(0.9rem, env(safe-area-inset-top)) max(0.9rem, env(safe-area-inset-right)) 0.9rem 1rem;
+  padding:
+    max(0.9rem, env(safe-area-inset-top))
+    max(4.75rem, calc(env(safe-area-inset-right) + 4rem))
+    0.9rem
+    max(0.9rem, env(safe-area-inset-left));
+}
+
+.telegram-chat-panel__header > div {
+  min-width: 0;
 }
 
 .telegram-chat-panel__header h2 {
@@ -3443,11 +3462,11 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
 .telegram-chat-panel__header button {
   width: 2.75rem;
   height: 2.75rem;
-  flex: 0 0 auto;
-  border: 0;
-  background: transparent;
-  color: rgba(248, 247, 242, 0.8);
-  font-size: 1.9rem;
+  border: 1px solid rgba(236, 205, 135, 0.18);
+  border-radius: 50%;
+  background: rgba(248, 247, 242, 0.04);
+  color: rgba(248, 247, 242, 0.86);
+  font-size: 1.45rem;
   line-height: 1;
 }
 

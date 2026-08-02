@@ -2,7 +2,11 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { MeshySceneConstructor } from "@/components/MeshySceneConstructor";
+import {
+  MeshySceneConstructor,
+  type TelegramAvatarPose,
+  type TelegramPresenceParticipant
+} from "@/components/MeshySceneConstructor";
 import { assetUrl } from "@/lib/assetUrl";
 
 type PrivateTelegramSession = {
@@ -41,7 +45,7 @@ declare global {
 
 const WORLD_LOAD_SETTLE_MS = 2400;
 const WORLD_LOAD_STALL_MS = 35000;
-const PRESENCE_HEARTBEAT_MS = 30000;
+const PRESENCE_HEARTBEAT_MS = 15000;
 const CHAT_POLL_OPEN_MS = 2500;
 const CHAT_POLL_CLOSED_MS = 9000;
 
@@ -61,6 +65,7 @@ export function TelegramMiniAppShell() {
   const [nicknameDraft, setNicknameDraft] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [presenceCount, setPresenceCount] = useState(0);
+  const [participants, setParticipants] = useState<TelegramPresenceParticipant[]>([]);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatDraft, setChatDraft] = useState("");
@@ -82,6 +87,11 @@ export function TelegramMiniAppShell() {
   const chatOpenRef = useRef(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const lastChatMessageIdRef = useRef("");
+  const latestAvatarPoseRef = useRef<TelegramAvatarPose>({
+    position: [0, 0, 0],
+    rotationY: 0,
+    animation: "idle"
+  });
 
   const armInitialWorldTimeout = () => {
     if (stallTimerRef.current) window.clearTimeout(stallTimerRef.current);
@@ -211,25 +221,27 @@ export function TelegramMiniAppShell() {
 
     const heartbeat = async () => {
       try {
-        const [heartbeatResponse, presenceResponse] = await Promise.all([
-          fetch("/api/telegram/presence", {
-            method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${session.token}`,
-              "Content-Type": "application/json"
-            },
-            body: "{}",
-            cache: "no-store"
-          }),
-          fetch("/api/telegram/presence", {
-            headers: { Authorization: `Bearer ${session.token}` },
-            cache: "no-store"
-          })
-        ]);
-        if (!heartbeatResponse.ok || !presenceResponse.ok || cancelled) return;
+        const heartbeatResponse = await fetch("/api/telegram/presence", {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${session.token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(latestAvatarPoseRef.current),
+          cache: "no-store"
+        });
+        if (!heartbeatResponse.ok || cancelled) return;
+
+        const presenceResponse = await fetch("/api/telegram/presence", {
+          headers: { Authorization: `Bearer ${session.token}` },
+          cache: "no-store"
+        });
+        if (!presenceResponse.ok || cancelled) return;
         const payload = await presenceResponse.json();
         if (!cancelled && payload.ok && Array.isArray(payload.participants)) {
-          setPresenceCount(payload.participants.length);
+          const nextParticipants = payload.participants as TelegramPresenceParticipant[];
+          setParticipants(nextParticipants);
+          setPresenceCount(nextParticipants.length);
         }
       } catch {
         // A later heartbeat will retry without interrupting the 3D scene.
@@ -238,9 +250,16 @@ export function TelegramMiniAppShell() {
 
     void heartbeat();
     const interval = window.setInterval(() => void heartbeat(), PRESENCE_HEARTBEAT_MS);
+    const resumeHeartbeat = () => {
+      if (document.visibilityState === "visible") void heartbeat();
+    };
+    document.addEventListener("visibilitychange", resumeHeartbeat);
+    window.addEventListener("focus", resumeHeartbeat);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", resumeHeartbeat);
+      window.removeEventListener("focus", resumeHeartbeat);
     };
   }, [entered, session]);
 
@@ -378,13 +397,27 @@ export function TelegramMiniAppShell() {
       <div className="telegram-mini-app telegram-mini-app--entered">
         <MeshySceneConstructor
           key={"telegram-world-" + loadAttempt}
+          onTelegramPose={(pose) => {
+            latestAvatarPoseRef.current = pose;
+          }}
           plain
           telegram
           telegramAvatarId={session.avatarId}
+          telegramParticipantId={session.participantId}
+          telegramParticipants={participants}
         />
         <div className="telegram-presence-badge" aria-live="polite">
           <strong>{session.nickname}</strong>
           <span>В храме: {Math.max(1, presenceCount)}</span>
+          {participants.some((participant) => participant.participantId !== session.participantId) ? (
+            <small>
+              Рядом: {participants
+                .filter((participant) => participant.participantId !== session.participantId)
+                .slice(0, 3)
+                .map((participant) => participant.nickname)
+                .join(", ")}
+            </small>
+          ) : null}
         </div>
         <button
           aria-expanded={chatOpen}
@@ -397,11 +430,11 @@ export function TelegramMiniAppShell() {
         {chatOpen ? (
           <aside aria-label="Чат пространства" className="telegram-chat-panel">
             <header className="telegram-chat-panel__header">
+              <button aria-label="Свернуть чат" onClick={() => setChatOpen(false)} title="Свернуть чат" type="button">←</button>
               <div>
                 <p className="dao-kicker">Пространство</p>
                 <h2>Внутренний чат</h2>
               </div>
-              <button aria-label="Закрыть чат" onClick={() => setChatOpen(false)} title="Закрыть" type="button">×</button>
             </header>
             <div aria-live="polite" className="telegram-chat-messages" role="log">
               {chatMessages.length === 0 ? (

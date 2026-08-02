@@ -46,6 +46,27 @@ type InitiateManifest = {
   avatars?: InitiateAvatar[];
 };
 
+export type TelegramPresenceParticipant = {
+  participantId: string;
+  nickname: string;
+  avatarId: string;
+  position: [number, number, number];
+  rotationY: number;
+  animation: string;
+  lastSeenAt: string;
+};
+
+export type TelegramAvatarPose = Pick<TelegramPresenceParticipant, "position" | "rotationY" | "animation">;
+
+type MeshySceneConstructorProps = {
+  plain?: boolean;
+  telegram?: boolean;
+  telegramAvatarId?: string;
+  telegramParticipantId?: string;
+  telegramParticipants?: TelegramPresenceParticipant[];
+  onTelegramPose?: (pose: TelegramAvatarPose) => void;
+};
+
 type AvatarSeatingRuntime = {
   startPosition: THREE.Vector3;
   targetPosition: THREE.Vector3;
@@ -81,6 +102,18 @@ type ControlledAvatarRuntime = {
   wasMoving: boolean;
   isSeated: boolean;
   seating: AvatarSeatingRuntime | null;
+};
+
+type RemoteAvatarRuntime = {
+  participantId: string;
+  avatarId: string;
+  root: THREE.Group;
+  mixer: THREE.AnimationMixer | null;
+  action: THREE.AnimationAction | null;
+  targetPosition: THREE.Vector3;
+  targetYaw: number;
+  animation: string;
+  wasMoving: boolean;
 };
 
 type DlanisPoseRuntime = {
@@ -1020,7 +1053,14 @@ const snapshotObject = (placed: PlacedAsset, object: THREE.Object3D): PlacedAsse
   visible: object.visible
 });
 
-export function MeshySceneConstructor({ plain = false, telegram = false, telegramAvatarId }: { plain?: boolean; telegram?: boolean; telegramAvatarId?: string } = {}) {
+export function MeshySceneConstructor({
+  plain = false,
+  telegram = false,
+  telegramAvatarId,
+  telegramParticipantId,
+  telegramParticipants = [],
+  onTelegramPose
+}: MeshySceneConstructorProps = {}) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -1028,6 +1068,14 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
   const orbitRef = useRef<OrbitControls | null>(null);
   const transformRef = useRef<TransformControls | null>(null);
   const loaderRef = useRef<GLTFLoader | null>(null);
+  const remoteAvatarLayerRef = useRef<THREE.Group | null>(null);
+  const remoteAvatarRuntimesRef = useRef(new Map<string, RemoteAvatarRuntime>());
+  const remoteAvatarLoadingRef = useRef(new Set<string>());
+  const telegramParticipantsRef = useRef(telegramParticipants);
+  const telegramParticipantIdRef = useRef(telegramParticipantId);
+  const telegramAvatarCatalogRef = useRef(new Map<string, InitiateAvatar>());
+  const onTelegramPoseRef = useRef(onTelegramPose);
+  const lastTelegramPoseEmitAtRef = useRef(0);
   const sourceCacheRef = useRef(new Map<string, THREE.Object3D>());
   const assetsRef = useRef<MeshyAsset[]>([]);
   const objectRefs = useRef(new Map<string, THREE.Group>());
@@ -1081,6 +1129,7 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
   const [avatarSeatAdjustments, setAvatarSeatAdjustments] = useState<Record<string, AvatarSeatAdjustment>>(DEFAULT_AVATAR_SEAT_ADJUSTMENTS);
   const [seatEditorAvatarId, setSeatEditorAvatarId] = useState(DEFAULT_CONTROLLED_AVATAR_ID);
   const [initiateAvatars, setInitiateAvatars] = useState<InitiateAvatar[]>([]);
+  const [telegramAvatarCatalogRevision, setTelegramAvatarCatalogRevision] = useState(0);
   const [controlledAvatarId, setControlledAvatarId] = useState<string>(() => telegram ? (telegramAvatarId ?? getTelegramAvatarId()) : DEFAULT_CONTROLLED_AVATAR_ID);
   const [avatarMotion, setAvatarMotion] = useState(() => telegram ? getTelegramAvatarMotion(telegramAvatarId ?? getTelegramAvatarId()) : "daily-walk-loop");
   const avatarMotionRef = useRef(telegram ? getTelegramAvatarMotion(telegramAvatarId ?? getTelegramAvatarId()) : "daily-walk-loop");
@@ -1091,6 +1140,18 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
   useEffect(() => {
     avatarMotionRef.current = avatarMotion;
   }, [avatarMotion]);
+
+  useEffect(() => {
+    telegramParticipantsRef.current = telegramParticipants;
+  }, [telegramParticipants]);
+
+  useEffect(() => {
+    telegramParticipantIdRef.current = telegramParticipantId;
+  }, [telegramParticipantId]);
+
+  useEffect(() => {
+    onTelegramPoseRef.current = onTelegramPose;
+  }, [onTelegramPose]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Все");
   const [loadingSlug, setLoadingSlug] = useState<string | null>(null);
@@ -1867,6 +1928,13 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
     surfaceGroup.name = "constructor-placement-surfaces";
     scene.add(surfaceGroup);
 
+    const remoteAvatarLayer = new THREE.Group();
+    remoteAvatarLayer.name = "telegram-remote-participants";
+    scene.add(remoteAvatarLayer);
+    remoteAvatarLayerRef.current = remoteAvatarLayer;
+    remoteAvatarRuntimesRef.current.clear();
+    remoteAvatarLoadingRef.current.clear();
+
     const roomTextureLoader = new THREE.TextureLoader();
     const configureRoomTexture = (texture: THREE.Texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
@@ -2207,6 +2275,53 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
         updateControlledAvatar(delta);
         if (!updateThirdPersonCamera(delta)) orbit.update();
       }
+
+      remoteAvatarRuntimesRef.current.forEach((runtime) => {
+        const distanceSquared = runtime.root.position.distanceToSquared(runtime.targetPosition);
+        const moving = distanceSquared > 0.015 || (runtime.animation !== "idle" && !runtime.animation.includes("sit"));
+        const positionLerp = 1 - Math.exp(-delta * 5.2);
+        const rotationLerp = 1 - Math.exp(-delta * 7.5);
+        runtime.root.position.lerp(runtime.targetPosition, positionLerp);
+        runtime.root.rotation.y = lerpAngle(
+          runtime.root.rotation.y,
+          runtime.targetYaw + AVATAR_MODEL_FORWARD_OFFSET,
+          rotationLerp
+        );
+        if (runtime.action) {
+          if (moving) {
+            runtime.action.paused = false;
+            runtime.mixer?.update(delta);
+          } else if (runtime.wasMoving) {
+            runtime.action.reset();
+            runtime.action.paused = true;
+            runtime.mixer?.update(0);
+          } else {
+            runtime.action.paused = true;
+          }
+        }
+        runtime.wasMoving = moving;
+      });
+
+      const controlledRuntime = controlledAvatarRef.current;
+      if (telegram && controlledRuntime && onTelegramPoseRef.current && now - lastTelegramPoseEmitAtRef.current >= 1000) {
+        lastTelegramPoseEmitAtRef.current = now;
+        onTelegramPoseRef.current({
+          position: [
+            controlledRuntime.root.position.x,
+            controlledRuntime.root.position.y,
+            controlledRuntime.root.position.z
+          ],
+          rotationY: controlledRuntime.yaw,
+          animation: controlledRuntime.seating
+            ? "walk-to-seat"
+            : controlledRuntime.isSeated
+              ? "sit-at-table"
+              : controlledRuntime.wasMoving
+                ? avatarMotionRef.current
+                : "idle"
+        });
+      }
+
       avatarMixersRef.current.forEach((mixer) => mixer.update(delta));
       updateDlanisPoseRuntime(dlanisPoseRef.current, delta);
       renderer.render(scene, camera);
@@ -2312,6 +2427,9 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
       transform.dispose();
       orbit.dispose();
       celestialSpheres.dispose();
+      remoteAvatarRuntimesRef.current.clear();
+      remoteAvatarLoadingRef.current.clear();
+      remoteAvatarLayerRef.current = null;
       mount.removeChild(renderer.domElement);
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points) {
@@ -2578,6 +2696,10 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
         const manifest = (await response.json()) as InitiateManifest;
         if (cancelled) return;
         const activeAvatars = (manifest.avatars ?? []).filter((avatar) => ACTIVE_AVATAR_IDS.has(avatar.id));
+        if (telegram) {
+          telegramAvatarCatalogRef.current = new Map(activeAvatars.map((avatar) => [avatar.id, avatar]));
+          setTelegramAvatarCatalogRevision((revision) => revision + 1);
+        }
         const allAvatars = telegram
           ? activeAvatars.filter((avatar) => avatar.id === controlledAvatarId).slice(0, 1)
           : activeAvatars;
@@ -2632,6 +2754,130 @@ export function MeshySceneConstructor({ plain = false, telegram = false, telegra
       if (avatarGroupRef.current === avatarLayer) avatarGroupRef.current = null;
     };
   }, [sceneAvatarMotion, controlledAvatarId, isReady, plain, telegram, templateRevision]);
+
+  useEffect(() => {
+    if (!plain || !telegram || !isReady || !loaderRef.current || !remoteAvatarLayerRef.current) return;
+
+    const loader = loaderRef.current;
+    const layer = remoteAvatarLayerRef.current;
+    const ownParticipantId = telegramParticipantIdRef.current;
+    const desiredParticipants = telegramParticipants.filter((participant) => participant.participantId !== ownParticipantId);
+    const desiredIds = new Set(desiredParticipants.map((participant) => participant.participantId));
+
+    remoteAvatarRuntimesRef.current.forEach((runtime, participantId) => {
+      if (desiredIds.has(participantId)) return;
+      layer.remove(runtime.root);
+      disposeObjectTree(runtime.root);
+      remoteAvatarRuntimesRef.current.delete(participantId);
+    });
+
+    const getTargetPosition = (participant: TelegramPresenceParticipant, index: number) => {
+      const [x, y, z] = participant.position.map(Number);
+      const hasStoredPosition = [x, y, z].every(Number.isFinite) && Math.abs(x) + Math.abs(y) + Math.abs(z) > 0.01;
+      if (hasStoredPosition) {
+        return new THREE.Vector3(
+          clamp(x, -ROOM_WIDTH / 2 + 2, ROOM_WIDTH / 2 - 2),
+          clamp(y, 0, ROOM_HEIGHT - 1),
+          clamp(z, -ROOM_DEPTH / 2 + 2, ROOM_DEPTH / 2 - 2)
+        );
+      }
+      let hash = 0;
+      for (const character of participant.participantId) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+      const angle = ((hash % 360) * Math.PI) / 180 + index * 0.47;
+      const radius = 21 + (hash % 4);
+      return new THREE.Vector3(
+        AVATAR_TABLE_CENTER.x + Math.sin(angle) * radius,
+        0,
+        AVATAR_TABLE_CENTER.z + Math.cos(angle) * radius
+      );
+    };
+
+    desiredParticipants.forEach((participant, index) => {
+      const targetPosition = getTargetPosition(participant, index);
+      const targetYaw = Number.isFinite(Number(participant.rotationY)) ? Number(participant.rotationY) : 0;
+      const existing = remoteAvatarRuntimesRef.current.get(participant.participantId);
+      if (existing && existing.avatarId === participant.avatarId) {
+        existing.targetPosition.copy(targetPosition);
+        existing.targetYaw = targetYaw;
+        existing.animation = participant.animation || "idle";
+        return;
+      }
+      if (existing) {
+        layer.remove(existing.root);
+        disposeObjectTree(existing.root);
+        remoteAvatarRuntimesRef.current.delete(participant.participantId);
+      }
+      if (remoteAvatarLoadingRef.current.has(participant.participantId)) return;
+
+      const avatar = telegramAvatarCatalogRef.current.get(participant.avatarId);
+      if (!avatar) return;
+      const defaultMotion = getDefaultAvatarMotion(avatar);
+      const task = avatar.animationTasks?.[defaultMotion];
+      const sourceUrl = task?.localModel
+        ?? avatar.basicAnimations?.walking
+        ?? avatar.riggedModel
+        ?? avatar.localModel
+        ?? "";
+      if (!sourceUrl) return;
+
+      remoteAvatarLoadingRef.current.add(participant.participantId);
+      const versionedUrl = `${sourceUrl}${sourceUrl.includes("?") ? "&" : "?"}v=${AVATAR_ASSET_VERSION}`;
+      loader.load(
+        versionedUrl,
+        (gltf) => {
+          remoteAvatarLoadingRef.current.delete(participant.participantId);
+          const currentParticipant = telegramParticipantsRef.current.find((item) => item.participantId === participant.participantId);
+          if (!currentParticipant || currentParticipant.participantId === telegramParticipantIdRef.current || remoteAvatarLayerRef.current !== layer) {
+            disposeObjectTree(gltf.scene);
+            return;
+          }
+
+          const model = gltf.scene;
+          cloneMaterials(model);
+          normalizeAvatarObject(model, AVATAR_TARGET_HEIGHT);
+          const root = new THREE.Group();
+          root.name = `remote-participant-${participant.participantId}`;
+          root.userData.participantId = participant.participantId;
+          root.userData.nickname = participant.nickname;
+          root.userData.avatarId = participant.avatarId;
+          root.position.copy(getTargetPosition(currentParticipant, index));
+          root.rotation.y = (Number(currentParticipant.rotationY) || 0) + AVATAR_MODEL_FORWARD_OFFSET;
+          root.add(model);
+
+          const sourceClip = (task?.clipName
+            ? gltf.animations.find((clip) => clip.name === task.clipName)
+            : null) ?? gltf.animations[0] ?? null;
+          const animationClip = sourceClip ? sanitizeAvatarAnimationClip(sourceClip, defaultMotion, model) : null;
+          const mixer = animationClip ? new THREE.AnimationMixer(model) : null;
+          const action = mixer && animationClip ? mixer.clipAction(animationClip) : null;
+          if (action) {
+            action.setLoop(THREE.LoopRepeat, Infinity);
+            action.play();
+            action.paused = true;
+          }
+
+          const runtime: RemoteAvatarRuntime = {
+            participantId: participant.participantId,
+            avatarId: participant.avatarId,
+            root,
+            mixer,
+            action,
+            targetPosition: getTargetPosition(currentParticipant, index),
+            targetYaw: Number(currentParticipant.rotationY) || 0,
+            animation: currentParticipant.animation || "idle",
+            wasMoving: false
+          };
+          layer.add(root);
+          remoteAvatarRuntimesRef.current.set(participant.participantId, runtime);
+        },
+        undefined,
+        (error) => {
+          remoteAvatarLoadingRef.current.delete(participant.participantId);
+          console.error("Failed to load remote Telegram avatar", participant.avatarId, error);
+        }
+      );
+    });
+  }, [isReady, plain, telegram, telegramAvatarCatalogRevision, telegramParticipantId, telegramParticipants]);
 
   useEffect(() => {
     if (controlledAvatarId !== DLANIS_AVATAR_ID) return;
