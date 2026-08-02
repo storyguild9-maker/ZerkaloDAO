@@ -65,8 +65,6 @@ type CouncilHologramWorldRuntime = {
   group: THREE.Group;
   anchor: THREE.Object3D;
   rings: THREE.Mesh[];
-  beamMaterial: THREE.MeshBasicMaterial;
-  panelMaterial: THREE.MeshBasicMaterial;
   light: THREE.PointLight;
   tabletopY: number | null;
   viewportWidth: number;
@@ -77,160 +75,119 @@ const createCouncilHologramWorldRuntime = (): CouncilHologramWorldRuntime => {
   group.name = "council-hologram-world-projector";
   group.visible = false;
 
-  const baseMaterial = new THREE.MeshPhysicalMaterial({
+  const darkMetal = new THREE.MeshPhysicalMaterial({
     color: 0x171019,
-    emissive: 0x362048,
-    emissiveIntensity: 0.38,
-    metalness: 0.86,
-    roughness: 0.24,
-    clearcoat: 0.9,
-    clearcoatRoughness: 0.12,
+    emissive: 0x241331,
+    emissiveIntensity: 0.3,
+    metalness: 0.9,
+    roughness: 0.2,
+    clearcoat: 0.95,
+    clearcoatRoughness: 0.1,
   });
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.62, 0.16, 32), baseMaterial);
-  base.position.y = 0.08;
-  base.renderOrder = 8;
-  group.add(base);
+  const goldMetal = new THREE.MeshPhysicalMaterial({
+    color: 0xb68a3d,
+    emissive: 0x5a3610,
+    emissiveIntensity: 0.28,
+    metalness: 0.94,
+    roughness: 0.18,
+    clearcoat: 1,
+  });
+  const crystalMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x9d77dc,
+    emissive: 0x8d56e8,
+    emissiveIntensity: 2.4,
+    roughness: 0.08,
+    metalness: 0.05,
+    transmission: 0.24,
+    transparent: true,
+    opacity: 0.94,
+  });
 
-  const rings = [0.42, 0.58, 0.72].map((radius, index) => {
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(radius, index === 2 ? 0.026 : 0.018, 10, 72),
-      new THREE.MeshBasicMaterial({
-        color: index === 1 ? 0xb278ef : 0xf1d392,
-        transparent: true,
-        opacity: 0.58 - index * 0.08,
-        depthWrite: false,
-      })
-    );
+  const pedestal = new THREE.Group();
+  pedestal.name = "council-hologram-pedestal";
+  group.add(pedestal);
+
+  const addTier = (
+    topRadius: number,
+    bottomRadius: number,
+    height: number,
+    y: number,
+    material: THREE.Material,
+  ) => {
+    const tier = new THREE.Mesh(new THREE.CylinderGeometry(topRadius, bottomRadius, height, 48), material);
+    tier.position.y = y;
+    tier.castShadow = true;
+    tier.receiveShadow = true;
+    pedestal.add(tier);
+  };
+
+  addTier(0.77, 0.88, 0.14, 0.07, darkMetal);
+  addTier(0.66, 0.76, 0.13, 0.2, goldMetal);
+  addTier(0.48, 0.62, 0.24, 0.385, darkMetal);
+  addTier(0.31, 0.46, 0.12, 0.565, goldMetal);
+
+  [
+    { radius: 0.79, y: 0.135, tube: 0.026 },
+    { radius: 0.67, y: 0.27, tube: 0.022 },
+    { radius: 0.49, y: 0.51, tube: 0.02 },
+  ].forEach(({ radius, y, tube }) => {
+    const trim = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 8, 64), goldMetal);
+    trim.rotation.x = Math.PI / 2;
+    trim.position.y = y;
+    pedestal.add(trim);
+  });
+
+  for (let index = 0; index < 6; index += 1) {
+    const angle = (index / 6) * Math.PI * 2;
+    const rib = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.28, 0.065), goldMetal);
+    rib.position.set(Math.cos(angle) * 0.51, 0.39, Math.sin(angle) * 0.51);
+    rib.rotation.y = -angle;
+    pedestal.add(rib);
+  }
+
+  const emitter = new THREE.Mesh(new THREE.OctahedronGeometry(0.17, 0), crystalMaterial);
+  emitter.position.y = 0.73;
+  emitter.rotation.y = Math.PI / 4;
+  pedestal.add(emitter);
+
+  const emitterFrame = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.225, 0),
+    new THREE.MeshBasicMaterial({ color: 0xe2bd6c, wireframe: true }),
+  );
+  emitterFrame.position.copy(emitter.position);
+  emitterFrame.rotation.copy(emitter.rotation);
+  pedestal.add(emitterFrame);
+
+  const ringMaterial = new THREE.MeshBasicMaterial({
+    color: 0xb99aef,
+    transparent: true,
+    opacity: 0.7,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const rings = [0.29, 0.39].map((radius, index) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.012, 6, 48), ringMaterial.clone());
     ring.rotation.x = Math.PI / 2;
-    ring.position.y = 0.18 + index * 0.018;
-    ring.renderOrder = 10;
-    group.add(ring);
+    ring.position.y = 0.7 + index * 0.06;
+    pedestal.add(ring);
     return ring;
   });
 
-  const orbShellMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x1a141c,
-    emissive: 0x2a1732,
-    emissiveIntensity: 0.3,
-    metalness: 0.92,
-    roughness: 0.2,
-    clearcoat: 1,
-    clearcoatRoughness: 0.08,
-  });
-  const orbGoldMaterial = new THREE.MeshBasicMaterial({
-    color: 0xe6bf69,
-    transparent: true,
-    opacity: 0.9,
-    wireframe: true,
-  });
-  const orbCoreMaterial = new THREE.MeshBasicMaterial({
-    color: 0x8ef5ff,
-    transparent: true,
-    opacity: 0.95,
-    blending: THREE.AdditiveBlending,
-  });
-
-  [-2.28, 2.28].forEach((x, orbIndex) => {
-    const orb = new THREE.Group();
-    orb.name = orbIndex === 0 ? "council-projector-orb-left" : "council-projector-orb-right";
-    orb.position.set(x, 1.9, 0.12);
-
-    const shell = new THREE.Mesh(new THREE.SphereGeometry(0.28, 32, 24), orbShellMaterial);
-    shell.renderOrder = 10;
-    orb.add(shell);
-
-    const filigree = new THREE.Mesh(new THREE.IcosahedronGeometry(0.292, 2), orbGoldMaterial);
-    filigree.renderOrder = 11;
-    orb.add(filigree);
-
-    const core = new THREE.Mesh(new THREE.SphereGeometry(0.105, 24, 18), orbCoreMaterial);
-    core.position.z = 0.25;
-    core.renderOrder = 13;
-    orb.add(core);
-
-    const orbRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.34, 0.012, 8, 48),
-      new THREE.MeshBasicMaterial({ color: 0xb8f6ff, transparent: true, opacity: 0.58, depthWrite: false })
-    );
-    orbRing.rotation.y = Math.PI / 2;
-    orbRing.renderOrder = 12;
-    orb.add(orbRing);
-    rings.push(orbRing);
-
-    const coreLight = new THREE.PointLight(0x8defff, 1.5, 2.8, 1.8);
-    coreLight.position.z = 0.32;
-    orb.add(coreLight);
-    group.add(orb);
-  });
-
-  const beamMaterial = new THREE.MeshBasicMaterial({
-    color: 0xa66ee5,
-    transparent: true,
-    opacity: 0.11,
-    side: THREE.DoubleSide,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  });
-  const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.72, 0.22, 2.25, 4, 1, true), beamMaterial);
-  beam.position.y = 1.28;
-  beam.rotation.y = Math.PI / 4;
-  beam.renderOrder = 7;
-  group.add(beam);
-
   const panelFrame = new THREE.Group();
   panelFrame.name = "council-hologram-world-panel";
-  panelFrame.position.set(0, 1.9, 0);
+  panelFrame.position.set(0, 1.62, 0);
   panelFrame.rotation.x = -0.08;
   group.add(panelFrame);
-
-  const panelGeometry = new THREE.PlaneGeometry(3.9, 1.95);
-  const panelMaterial = new THREE.MeshBasicMaterial({
-    color: 0x321e46,
-    transparent: true,
-    opacity: 0.12,
-    side: THREE.DoubleSide,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  });
-  const panel = new THREE.Mesh(panelGeometry, panelMaterial);
-  panel.renderOrder = 9;
-  panelFrame.add(panel);
-
-  const outline = new THREE.LineSegments(
-    new THREE.EdgesGeometry(panelGeometry),
-    new THREE.LineBasicMaterial({ color: 0xf1d392, transparent: true, opacity: 0.62, depthWrite: false })
-  );
-  outline.position.z = 0.012;
-  outline.renderOrder = 11;
-  panelFrame.add(outline);
-
-  for (let index = -3; index <= 3; index += 1) {
-    const scanline = new THREE.Mesh(
-      new THREE.PlaneGeometry(3.72, 0.006),
-      new THREE.MeshBasicMaterial({ color: 0xc997ff, transparent: true, opacity: 0.16, depthWrite: false })
-    );
-    scanline.position.set(0, index * 0.235, 0.018);
-    scanline.renderOrder = 10;
-    panelFrame.add(scanline);
-  }
-
-  const crest = new THREE.Mesh(
-    new THREE.OctahedronGeometry(0.16, 0),
-    new THREE.MeshBasicMaterial({ color: 0xf5dca0, transparent: true, opacity: 0.84, depthWrite: false })
-  );
-  crest.position.set(0, -1.32, 0.04);
-  crest.renderOrder = 12;
-  panelFrame.add(crest);
 
   const anchor = new THREE.Object3D();
   anchor.name = "council-hologram-dom-anchor";
   panelFrame.add(anchor);
 
-  const light = new THREE.PointLight(0xb57bf0, 4.2, 8.5, 1.7);
-  light.position.set(0, 1.35, 0.35);
+  const light = new THREE.PointLight(0xb57bf0, 4.2, 7.2, 1.7);
+  light.position.set(0, 0.8, 0.3);
   group.add(light);
 
-  return { group, anchor, rings, beamMaterial, panelMaterial, light, tabletopY: null, viewportWidth: 0 };
+  return { group, anchor, rings, light, tabletopY: null, viewportWidth: 0 };
 };
 
 type MeshySceneConstructorProps = {
@@ -2481,7 +2438,7 @@ export function MeshySceneConstructor({
 
         world.tabletopY = tabletopY;
         world.viewportWidth = rendererBounds.width;
-        world.group.position.copy(tableCenter).addScaledVector(avatarRadial, 5.85);
+        world.group.position.copy(tableCenter).addScaledVector(avatarRadial, 6.45);
         world.group.position.y = tabletopY;
         world.group.lookAt(camera.position.x, tabletopY, camera.position.z);
       }
@@ -2495,8 +2452,6 @@ export function MeshySceneConstructor({
         const material = ring.material as THREE.MeshBasicMaterial;
         material.opacity = 0.38 + pulse * 0.18 - index * 0.035;
       });
-      world.beamMaterial.opacity = 0.075 + pulse * 0.055;
-      world.panelMaterial.opacity = 0.085 + pulse * 0.045;
       world.light.intensity = 3.2 + pulse * 2.4;
 
       if (!panelElement) return;
