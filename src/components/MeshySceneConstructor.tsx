@@ -2475,29 +2475,18 @@ export function MeshySceneConstructor({
       if (world.tabletopY === null) {
         const tableCenter = getCouncilTableCenter();
         const tabletopY = getCouncilTableSurfaceY();
-        const viewDirection = camera.getWorldDirection(new THREE.Vector3()).normalize();
-        const fallbackRadial = runtime.root.position.clone().sub(tableCenter).setY(0);
-        if (fallbackRadial.lengthSq() < 0.001) fallbackRadial.set(Math.sin(runtime.yaw), 0, Math.cos(runtime.yaw));
-        fallbackRadial.normalize();
-        const fallbackPosition = tableCenter.clone().addScaledVector(fallbackRadial, 5.4).setY(tabletopY);
-        const tableIntersectionDistance = viewDirection.y < -0.025 ? (tabletopY - camera.position.y) / viewDirection.y : -1;
-        const projectedPosition = tableIntersectionDistance > 0 && tableIntersectionDistance < 28
-          ? camera.position.clone().addScaledVector(viewDirection, tableIntersectionDistance).setY(tabletopY)
-          : fallbackPosition;
-        const fromTableCenter = projectedPosition.clone().sub(tableCenter).setY(0);
-        if (fromTableCenter.lengthSq() < 0.001) fromTableCenter.copy(fallbackRadial);
-        const constrainedRadius = clamp(fromTableCenter.length(), 2.8, 6.5);
-        fromTableCenter.normalize();
+        const avatarRadial = runtime.root.position.clone().sub(tableCenter).setY(0);
+        if (avatarRadial.lengthSq() < 0.001) avatarRadial.set(Math.sin(runtime.yaw), 0, Math.cos(runtime.yaw));
+        avatarRadial.normalize();
 
         world.tabletopY = tabletopY;
         world.viewportWidth = rendererBounds.width;
-        world.group.position.copy(tableCenter).addScaledVector(fromTableCenter, constrainedRadius);
+        world.group.position.copy(tableCenter).addScaledVector(avatarRadial, 5.85);
         world.group.position.y = tabletopY;
         world.group.lookAt(camera.position.x, tabletopY, camera.position.z);
       }
       const projectorVisible = panelElement?.dataset.projectorVisible === "true";
-      const introComplete = panelElement?.dataset.introComplete === "true";
-      world.group.visible = projectorVisible && introComplete;
+      world.group.visible = projectorVisible;
 
       const pulse = (Math.sin(elapsedSeconds * 3.4) + 1) * 0.5;
       world.rings.forEach((ring, index) => {

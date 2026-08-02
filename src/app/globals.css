@@ -4630,26 +4630,6 @@ main:has(.animate-page)::after {
   pointer-events: none;
 }
 
-.council-hologram__intro {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  left: 50%;
-  width: 148%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.council-hologram__intro video {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  mix-blend-mode: screen;
-}
-
 .council-hologram__projector-toggle {
   position: absolute;
   z-index: 7;
@@ -4667,17 +4647,10 @@ main:has(.animate-page)::after {
   pointer-events: auto;
 }
 
-.council-hologram[data-intro-complete="false"] .council-hologram__surface,
 .council-hologram[data-projector-visible="false"] .council-hologram__surface {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-}
-
-.council-hologram[data-intro-complete="true"] .council-hologram__surface {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 220ms ease;
 }
 
 .council-hologram__beam {

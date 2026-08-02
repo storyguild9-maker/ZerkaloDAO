@@ -23,8 +23,6 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
   const [activeTab, setActiveTab] = useState<CouncilPanelTab>("wallet");
   const [collapsed, setCollapsed] = useState(false);
   const [projectorVisible, setProjectorVisible] = useState(true);
-  const [introComplete, setIntroComplete] = useState(false);
-  const [introKey, setIntroKey] = useState(0);
 
   useEffect(() => {
     setMounted(true);
@@ -35,26 +33,8 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
       setActiveTab("wallet");
       setCollapsed(false);
       setProjectorVisible(true);
-      setIntroComplete(false);
-      return;
     }
-
-    setProjectorVisible(true);
-    setIntroComplete(false);
-    setIntroKey((value) => value + 1);
   }, [visible]);
-
-  const toggleProjector = () => {
-    if (projectorVisible) {
-      setProjectorVisible(false);
-      setIntroComplete(false);
-      return;
-    }
-
-    setProjectorVisible(true);
-    setIntroComplete(false);
-    setIntroKey((value) => value + 1);
-  };
 
   if (!visible || !mounted) return null;
 
@@ -63,29 +43,13 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
       aria-label="Личная консоль участника"
       className="council-hologram"
       data-collapsed={collapsed}
-      data-intro-complete={introComplete}
       data-projector-visible={projectorVisible}
       data-world-visible="false"
       ref={(node) => {
         panelRef.current = node;
       }}
     >
-      {projectorVisible && !introComplete ? (
-        <div aria-hidden="true" className="council-hologram__intro">
-          <video
-            autoPlay
-            key={introKey}
-            muted
-            onEnded={() => setIntroComplete(true)}
-            onError={() => setIntroComplete(true)}
-            playsInline
-            preload="auto"
-            src="/media/council-hologram-projector-v1.mp4"
-          />
-        </div>
-      ) : null}
-
-      <button className="council-hologram__projector-toggle" onClick={toggleProjector} type="button">
+      <button className="council-hologram__projector-toggle" onClick={() => setProjectorVisible((value) => !value)} type="button">
         {projectorVisible ? "Скрыть экран" : "Показать экран"}
       </button>
 
