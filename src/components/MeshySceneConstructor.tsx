@@ -11,6 +11,8 @@ import { createCelestialSpheres } from "@/lib/celestialSpheres";
 import { getTelegramAvatarId, getTelegramAvatarMotion, isTelegramSceneAsset } from "@/lib/telegramScene";
 import { CouncilHologramPanel } from "@/components/CouncilHologramPanel";
 
+const TELEGRAM_POSE_SAMPLE_MS = 50;
+
 type MeshyAsset = {
   slug: string;
   sourceImage?: string;
@@ -2302,8 +2304,8 @@ export function MeshySceneConstructor({
       remoteAvatarRuntimesRef.current.forEach((runtime) => {
         const distanceSquared = runtime.root.position.distanceToSquared(runtime.targetPosition);
         const moving = runtime.looping && (distanceSquared > 0.015 || runtime.animation !== "idle");
-        const positionLerp = 1 - Math.exp(-delta * 5.2);
-        const rotationLerp = 1 - Math.exp(-delta * 7.5);
+        const positionLerp = 1 - Math.exp(-delta * 10);
+        const rotationLerp = 1 - Math.exp(-delta * 12);
         runtime.root.position.lerp(runtime.targetPosition, positionLerp);
         runtime.root.rotation.y = lerpAngle(
           runtime.root.rotation.y,
@@ -2332,7 +2334,7 @@ export function MeshySceneConstructor({
         runtime.wasMoving = moving;
       });
 
-      if (telegram && controlledRuntime && onTelegramPoseRef.current && now - lastTelegramPoseEmitAtRef.current >= 1000) {
+      if (telegram && controlledRuntime && onTelegramPoseRef.current && now - lastTelegramPoseEmitAtRef.current >= TELEGRAM_POSE_SAMPLE_MS) {
         lastTelegramPoseEmitAtRef.current = now;
         onTelegramPoseRef.current({
           position: [

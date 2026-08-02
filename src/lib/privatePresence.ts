@@ -171,6 +171,24 @@ export async function requirePrivateSession(token: string) {
   return session;
 }
 
+export async function authorizeRealtimeParticipant(token: string, authUserId: string) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(authUserId)) {
+    throw new Error("Realtime identity is invalid");
+  }
+  const session = await requirePrivateSession(token);
+  await supabaseRequest("realtime_participants?on_conflict=auth_user_id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify({
+      auth_user_id: authUserId,
+      participant_id: session.participant_id,
+      room_key: ROOM_KEY,
+      expires_at: session.expires_at,
+      updated_at: new Date().toISOString()
+    })
+  });
+}
+
 export async function updateOwnPresence(token: string, updates: {
   nickname?: unknown;
   avatarGender?: unknown;

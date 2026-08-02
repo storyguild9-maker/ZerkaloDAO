@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { createClient, type RealtimeChannel } from "@supabase/supabase-js";
 import * as THREE from "three";
 import {
   MeshySceneConstructor,
@@ -49,6 +50,45 @@ const WORLD_LOAD_STALL_MS = 35000;
 const PRESENCE_HEARTBEAT_MS = 3000;
 const CHAT_POLL_OPEN_MS = 2500;
 const CHAT_POLL_CLOSED_MS = 9000;
+const AVATAR_MOTION_TOPIC = "room:temple-main:avatar-motion";
+const AVATAR_MOTION_EVENT = "avatar-pose";
+const AVATAR_IDLE_KEYFRAME_MS = 2000;
+
+type RealtimeAvatarPoseMessage = {
+  participantId: string;
+  sequence: number;
+  sentAt: number;
+  pose: TelegramAvatarPose;
+};
+
+const realtimeNetworkHz = (participantCount: number) => {
+  const count = Math.max(1, participantCount);
+  return Math.max(4, Math.min(20, Math.floor(80 / (count * count))));
+};
+
+const poseChanged = (previous: TelegramAvatarPose | null, next: TelegramAvatarPose) => {
+  if (!previous || previous.animation !== next.animation) return true;
+  if (Math.abs(previous.rotationY - next.rotationY) > 0.002) return true;
+  return previous.position.some((value, index) => Math.abs(value - next.position[index]) > 0.003);
+};
+
+const parseRealtimePose = (value: unknown): RealtimeAvatarPoseMessage | null => {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Partial<RealtimeAvatarPoseMessage>;
+  const pose = candidate.pose;
+  if (
+    typeof candidate.participantId !== "string"
+    || !Number.isSafeInteger(candidate.sequence)
+    || typeof candidate.sentAt !== "number"
+    || !pose
+    || !Array.isArray(pose.position)
+    || pose.position.length !== 3
+    || !pose.position.every(Number.isFinite)
+    || !Number.isFinite(pose.rotationY)
+    || typeof pose.animation !== "string"
+  ) return null;
+  return candidate as RealtimeAvatarPoseMessage;
+};
 
 const formatWorldItem = (url: string) => {
   const normalized = url.toLowerCase();
@@ -89,6 +129,15 @@ export function TelegramMiniAppShell() {
   const chatOpenRef = useRef(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const lastChatMessageIdRef = useRef("");
+  const participantsRef = useRef<TelegramPresenceParticipant[]>([]);
+  const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
+  const realtimeSubscribedRef = useRef(false);
+  const realtimeSequenceRef = useRef(0);
+  const realtimeRemoteSequenceRef = useRef(new Map<string, number>());
+  const realtimeLastSentAtRef = useRef(0);
+  const realtimeLastIdleKeyframeAtRef = useRef(0);
+  const realtimeLastSentPoseRef = useRef<TelegramAvatarPose | null>(null);
+  const sendRealtimePoseRef = useRef<(pose: TelegramAvatarPose) => void>(() => undefined);
   const latestAvatarPoseRef = useRef<TelegramAvatarPose>({
     position: [0, 0, 0],
     rotationY: 0,
@@ -113,6 +162,121 @@ export function TelegramMiniAppShell() {
     chatOpenRef.current = chatOpen;
     if (chatOpen) setChatUnread(0);
   }, [chatOpen]);
+
+  useEffect(() => {
+    participantsRef.current = participants;
+  }, [participants]);
+
+  useEffect(() => {
+    if (!entered || !session) return;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) return;
+
+    let cancelled = false;
+    const client = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+        persistSession: true
+      }
+    });
+
+    const connect = async () => {
+      const currentAuth = await client.auth.getSession();
+      if (currentAuth.error) throw currentAuth.error;
+      let authSession = currentAuth.data.session;
+      if (!authSession) {
+        const anonymousAuth = await client.auth.signInAnonymously();
+        if (anonymousAuth.error) throw anonymousAuth.error;
+        authSession = anonymousAuth.data.session;
+      }
+      if (!authSession) throw new Error("Realtime authentication failed");
+      const authorizationResponse = await fetch("/api/telegram/realtime", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ supabaseAccessToken: authSession.access_token })
+      });
+      if (!authorizationResponse.ok) throw new Error("Realtime authorization failed");
+      if (cancelled) return;
+
+      const channel = client.channel(AVATAR_MOTION_TOPIC, {
+        config: {
+          private: true,
+          broadcast: { ack: false, self: false }
+        }
+      });
+      realtimeChannelRef.current = channel;
+      channel
+        .on("broadcast", { event: AVATAR_MOTION_EVENT }, ({ payload }) => {
+          const message = parseRealtimePose(payload);
+          if (!message || message.participantId === session.participantId) return;
+          if (!participantsRef.current.some((participant) => participant.participantId === message.participantId)) return;
+          const previousSequence = realtimeRemoteSequenceRef.current.get(message.participantId) ?? -1;
+          if (message.sequence <= previousSequence) return;
+          realtimeRemoteSequenceRef.current.set(message.participantId, message.sequence);
+          setParticipants((current) => current.map((participant) => participant.participantId === message.participantId
+            ? {
+              ...participant,
+              position: [...message.pose.position] as [number, number, number],
+              rotationY: message.pose.rotationY,
+              animation: message.pose.animation,
+              lastSeenAt: new Date(message.sentAt).toISOString()
+            }
+            : participant));
+        })
+        .subscribe((channelStatus) => {
+          realtimeSubscribedRef.current = channelStatus === "SUBSCRIBED";
+        });
+
+      sendRealtimePoseRef.current = (pose) => {
+        if (!realtimeSubscribedRef.current || document.visibilityState !== "visible") return;
+        const now = performance.now();
+        const count = Math.max(1, participantsRef.current.length);
+        const minimumInterval = 1000 / realtimeNetworkHz(count);
+        if (now - realtimeLastSentAtRef.current < minimumInterval) return;
+
+        const changed = poseChanged(realtimeLastSentPoseRef.current, pose);
+        const moving = pose.animation !== "idle";
+        if (!moving && !changed && now - realtimeLastIdleKeyframeAtRef.current < AVATAR_IDLE_KEYFRAME_MS) return;
+
+        realtimeLastSentAtRef.current = now;
+        if (!moving) realtimeLastIdleKeyframeAtRef.current = now;
+        realtimeLastSentPoseRef.current = {
+          position: [...pose.position] as [number, number, number],
+          rotationY: pose.rotationY,
+          animation: pose.animation
+        };
+        realtimeSequenceRef.current += 1;
+        void channel.send({
+          type: "broadcast",
+          event: AVATAR_MOTION_EVENT,
+          payload: {
+            participantId: session.participantId,
+            sequence: realtimeSequenceRef.current,
+            sentAt: Date.now(),
+            pose
+          } satisfies RealtimeAvatarPoseMessage
+        });
+      };
+    };
+
+    void connect().catch(() => {
+      realtimeSubscribedRef.current = false;
+    });
+
+    return () => {
+      cancelled = true;
+      realtimeSubscribedRef.current = false;
+      sendRealtimePoseRef.current = () => undefined;
+      const channel = realtimeChannelRef.current;
+      realtimeChannelRef.current = null;
+      if (channel) void client.removeChannel(channel);
+    };
+  }, [entered, session]);
 
   useEffect(() => {
     const manager = THREE.DefaultLoadingManager;
@@ -408,6 +572,7 @@ export function TelegramMiniAppShell() {
           key={"telegram-world-" + loadAttempt}
           onTelegramPose={(pose) => {
             latestAvatarPoseRef.current = pose;
+            sendRealtimePoseRef.current(pose);
           }}
           plain
           telegram
