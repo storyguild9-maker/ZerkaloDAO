@@ -2174,6 +2174,9 @@ export function MeshySceneConstructor({
       if (runtime.idleModel) {
         runtime.idleModel.visible = !moving && !runtime.isSeated;
         runtime.model.visible = moving || runtime.isSeated;
+      } else if (!runtime.isSeated) {
+        runtime.model.visible = true;
+        runtime.model.position.copy(runtime.baseModelPosition);
       }
       const accelerated = keys.has("ShiftLeft") || keys.has("ShiftRight");
       const motionTimeScale =
@@ -3526,7 +3529,11 @@ export function MeshySceneConstructor({
     if (runtime.seatedModel) runtime.seatedModel.visible = false;
     if (runtime.idleModel) {
       runtime.idleModel.visible = true;
+      if (runtime.baseIdleModelPosition) runtime.idleModel.position.copy(runtime.baseIdleModelPosition);
       runtime.model.visible = false;
+    } else {
+      runtime.model.visible = true;
+      runtime.model.position.copy(runtime.baseModelPosition);
     }
     const defaultMotion = getDefaultAvatarMotion(avatar);
     if (avatarMotionRef.current === "walk-to-seat" && defaultMotion !== "walk-to-seat") setAvatarMotion(defaultMotion);
