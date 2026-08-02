@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { assetUrl } from "@/lib/assetUrl";
+import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -33,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <source src={assetUrl("/videos/dao-intro-loop-4k-hq.mp4")} type="video/mp4" />
             <source src={assetUrl("/videos/dao-intro-loop-1080p.mp4")} type="video/mp4" />
           </video>
-        </div><main className="min-h-screen px-5 py-8 sm:px-8">{children}</main>
+        </div><Providers><main className="min-h-screen px-5 py-8 sm:px-8">{children}</main></Providers>
       </body>
     </html>
   );

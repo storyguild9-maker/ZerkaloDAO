@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, type MutableRefObject } from "react";
+import {
+  useIsConnectionRestored,
+  useTonAddress,
+  useTonConnectUI,
+  useTonWallet
+} from "@tonconnect/ui-react";
+import { useEffect, useMemo, useState, type MutableRefObject } from "react";
 import { createPortal } from "react-dom";
 
 type CouncilPanelTab = "wallet" | "votes" | "profile";
@@ -18,11 +24,27 @@ const PANEL_TABS: Array<{ id: CouncilPanelTab; label: string }> = [
   { id: "profile", label: "DAO-профиль" }
 ];
 
+const shortenAddress = (address: string) => address.length > 14
+  ? `${address.slice(0, 7)}...${address.slice(-6)}`
+  : address;
+
 export function CouncilHologramPanel({ participantName, visible, onLeave, panelRef }: CouncilHologramPanelProps) {
+  const [tonConnectUI] = useTonConnectUI();
+  const wallet = useTonWallet();
+  const walletAddress = useTonAddress();
+  const connectionRestored = useIsConnectionRestored();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<CouncilPanelTab>("wallet");
   const [collapsed, setCollapsed] = useState(false);
   const [projectorVisible, setProjectorVisible] = useState(true);
+  const [walletBusy, setWalletBusy] = useState(false);
+  const [walletMessage, setWalletMessage] = useState("");
+
+  const walletNetwork = wallet
+    ? String(wallet.account.chain) === "-239" ? "Основная сеть TON" : "Тестовая сеть TON"
+    : "";
+  const walletName = wallet?.device.appName || "TON Wallet";
+  const compactAddress = useMemo(() => shortenAddress(walletAddress), [walletAddress]);
 
   useEffect(() => {
     setMounted(true);
@@ -39,8 +61,43 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
       setActiveTab("wallet");
       setCollapsed(false);
       setProjectorVisible(true);
+      setWalletMessage("");
     }
   }, [visible]);
+
+  const connectWallet = async () => {
+    setWalletBusy(true);
+    setWalletMessage("");
+    try {
+      await tonConnectUI.openModal();
+    } catch {
+      setWalletMessage("Не удалось открыть выбор кошелька. Попробуйте ещё раз.");
+    } finally {
+      setWalletBusy(false);
+    }
+  };
+
+  const disconnectWallet = async () => {
+    setWalletBusy(true);
+    setWalletMessage("");
+    try {
+      await tonConnectUI.disconnect();
+    } catch {
+      setWalletMessage("Не удалось отключить кошелёк.");
+    } finally {
+      setWalletBusy(false);
+    }
+  };
+
+  const copyAddress = async () => {
+    if (!walletAddress) return;
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      setWalletMessage("Адрес скопирован");
+    } catch {
+      setWalletMessage("Не удалось скопировать адрес");
+    }
+  };
 
   if (!visible || !mounted) return null;
 
@@ -55,7 +112,6 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
         panelRef.current = node;
       }}
     >
-
       <div className="council-hologram__surface">
         <header className="council-hologram__header">
           <div>
@@ -92,16 +148,36 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
 
             <div className="council-hologram__content">
               {activeTab === "wallet" ? (
-                <div className="council-hologram__wallet" role="tabpanel">
+                <div className="council-hologram__wallet" data-connected={Boolean(wallet)} role="tabpanel">
                   <div className="council-hologram__orb" aria-hidden="true">TON</div>
-                  <div>
-                    <p className="council-hologram__eyebrow">TON Connect</p>
-                    <h2>Кошелёк не подключён</h2>
-                    <p>Адрес и баланс появятся здесь после безопасного подтверждения в кошельке.</p>
+                  <div className="council-hologram__wallet-copy">
+                    <p className="council-hologram__eyebrow">{wallet ? walletName : "TON Connect"}</p>
+                    <h2>{wallet ? compactAddress : "Кошелёк не подключён"}</h2>
+                    <p>
+                      {wallet
+                        ? `${walletNetwork}. Соединение восстановится при следующем входе.`
+                        : "Подключение проходит напрямую через TON Connect. Приложение не получает доступ к ключам."}
+                    </p>
+                    {walletMessage ? <small role="status">{walletMessage}</small> : null}
                   </div>
-                  <button disabled title="Подключение TON Connect будет добавлено следующим этапом" type="button">
-                    Подключение готовится
-                  </button>
+                  <div className="council-hologram__wallet-actions">
+                    {wallet ? (
+                      <>
+                        <button onClick={() => void copyAddress()} title={walletAddress} type="button">Копировать</button>
+                        <button disabled={walletBusy} onClick={() => void disconnectWallet()} type="button">
+                          {walletBusy ? "Отключаю..." : "Отключить"}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        disabled={!connectionRestored || walletBusy}
+                        onClick={() => void connectWallet()}
+                        type="button"
+                      >
+                        {!connectionRestored ? "Восстанавливаю..." : walletBusy ? "Открываю..." : "Подключить кошелёк"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ) : null}
 

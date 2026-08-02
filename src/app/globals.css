@@ -4834,14 +4834,48 @@ main:has(.animate-page)::after {
   line-height: 1.55;
 }
 
-.council-hologram__wallet > button {
+.council-hologram__wallet-copy {
+  min-width: 0;
+}
+
+.council-hologram__wallet-copy h2 {
+  overflow-wrap: anywhere;
+}
+
+.council-hologram__wallet-copy small {
+  display: block;
+  margin-top: 0.45rem;
+  color: #b9e8d1;
+  font-size: 0.68rem;
+}
+
+.council-hologram__wallet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.council-hologram__wallet-actions button {
   min-height: 2.55rem;
-  border: 1px solid rgba(240, 217, 156, 0.2);
+  border: 1px solid rgba(240, 217, 156, 0.32);
   border-radius: 999px;
-  background: rgba(240, 217, 156, 0.07);
-  color: rgba(240, 217, 156, 0.46);
-  padding: 0.55rem 0.8rem;
+  background: linear-gradient(135deg, rgba(240, 217, 156, 0.14), rgba(157, 102, 226, 0.14));
+  color: #fff0bf;
+  padding: 0.55rem 0.85rem;
   font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.council-hologram__wallet-actions button:hover:not(:disabled) {
+  border-color: rgba(240, 217, 156, 0.58);
+  background: linear-gradient(135deg, rgba(240, 217, 156, 0.22), rgba(157, 102, 226, 0.2));
+}
+
+.council-hologram__wallet-actions button:disabled {
+  color: rgba(240, 217, 156, 0.46);
+  cursor: wait;
+  opacity: 0.72;
 }
 
 .council-hologram__empty {
@@ -4968,9 +5002,15 @@ main:has(.animate-page)::after {
     grid-template-columns: auto 1fr;
   }
 
-  .council-hologram__wallet > button {
+  .council-hologram__wallet-actions {
     grid-column: 1 / -1;
-    justify-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    width: 100%;
+  }
+
+  .council-hologram__wallet-actions button {
+    width: 100%;
   }
 
   .council-hologram__profile {
