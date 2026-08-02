@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MutableRefObject } from "react";
 import { createPortal } from "react-dom";
 
 type CouncilPanelTab = "wallet" | "votes" | "profile";
@@ -9,6 +9,7 @@ type CouncilHologramPanelProps = {
   participantName?: string;
   visible: boolean;
   onLeave: () => void;
+  panelRef: MutableRefObject<HTMLElement | null>;
 };
 
 const PANEL_TABS: Array<{ id: CouncilPanelTab; label: string }> = [
@@ -17,7 +18,7 @@ const PANEL_TABS: Array<{ id: CouncilPanelTab; label: string }> = [
   { id: "profile", label: "DAO-профиль" }
 ];
 
-export function CouncilHologramPanel({ participantName, visible, onLeave }: CouncilHologramPanelProps) {
+export function CouncilHologramPanel({ participantName, visible, onLeave, panelRef }: CouncilHologramPanelProps) {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<CouncilPanelTab>("wallet");
   const [collapsed, setCollapsed] = useState(false);
@@ -36,10 +37,15 @@ export function CouncilHologramPanel({ participantName, visible, onLeave }: Coun
   if (!visible || !mounted) return null;
 
   return createPortal(
-    <section aria-label="Личная консоль участника" className="council-hologram" data-collapsed={collapsed}>
-      <div aria-hidden="true" className="council-hologram__beam" />
-      <div aria-hidden="true" className="council-hologram__sigil">✦</div>
-
+    <section
+      aria-label="Личная консоль участника"
+      className="council-hologram"
+      data-collapsed={collapsed}
+      data-world-visible="false"
+      ref={(node) => {
+        panelRef.current = node;
+      }}
+    >
       <div className="council-hologram__surface">
         <header className="council-hologram__header">
           <div>

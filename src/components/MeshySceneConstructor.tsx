@@ -61,6 +61,123 @@ export type TelegramPresenceParticipant = {
 
 export type TelegramAvatarPose = Pick<TelegramPresenceParticipant, "position" | "rotationY" | "animation">;
 
+type CouncilHologramWorldRuntime = {
+  group: THREE.Group;
+  anchor: THREE.Object3D;
+  rings: THREE.Mesh[];
+  beamMaterial: THREE.MeshBasicMaterial;
+  panelMaterial: THREE.MeshBasicMaterial;
+  light: THREE.PointLight;
+  tabletopY: number | null;
+  viewportWidth: number;
+};
+
+const createCouncilHologramWorldRuntime = (): CouncilHologramWorldRuntime => {
+  const group = new THREE.Group();
+  group.name = "council-hologram-world-projector";
+  group.visible = false;
+
+  const baseMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x171019,
+    emissive: 0x362048,
+    emissiveIntensity: 0.38,
+    metalness: 0.86,
+    roughness: 0.24,
+    clearcoat: 0.9,
+    clearcoatRoughness: 0.12,
+  });
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.62, 0.16, 32), baseMaterial);
+  base.position.y = 0.08;
+  base.renderOrder = 8;
+  group.add(base);
+
+  const rings = [0.42, 0.58, 0.72].map((radius, index) => {
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(radius, index === 2 ? 0.026 : 0.018, 10, 72),
+      new THREE.MeshBasicMaterial({
+        color: index === 1 ? 0xb278ef : 0xf1d392,
+        transparent: true,
+        opacity: 0.58 - index * 0.08,
+        depthWrite: false,
+      })
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.18 + index * 0.018;
+    ring.renderOrder = 10;
+    group.add(ring);
+    return ring;
+  });
+
+  const beamMaterial = new THREE.MeshBasicMaterial({
+    color: 0xa66ee5,
+    transparent: true,
+    opacity: 0.11,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.72, 0.22, 2.25, 4, 1, true), beamMaterial);
+  beam.position.y = 1.28;
+  beam.rotation.y = Math.PI / 4;
+  beam.renderOrder = 7;
+  group.add(beam);
+
+  const panelFrame = new THREE.Group();
+  panelFrame.name = "council-hologram-world-panel";
+  panelFrame.position.set(0, 1.9, 0);
+  panelFrame.rotation.x = -0.08;
+  group.add(panelFrame);
+
+  const panelGeometry = new THREE.PlaneGeometry(3.9, 1.95);
+  const panelMaterial = new THREE.MeshBasicMaterial({
+    color: 0x321e46,
+    transparent: true,
+    opacity: 0.12,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const panel = new THREE.Mesh(panelGeometry, panelMaterial);
+  panel.renderOrder = 9;
+  panelFrame.add(panel);
+
+  const outline = new THREE.LineSegments(
+    new THREE.EdgesGeometry(panelGeometry),
+    new THREE.LineBasicMaterial({ color: 0xf1d392, transparent: true, opacity: 0.62, depthWrite: false })
+  );
+  outline.position.z = 0.012;
+  outline.renderOrder = 11;
+  panelFrame.add(outline);
+
+  for (let index = -3; index <= 3; index += 1) {
+    const scanline = new THREE.Mesh(
+      new THREE.PlaneGeometry(3.72, 0.006),
+      new THREE.MeshBasicMaterial({ color: 0xc997ff, transparent: true, opacity: 0.16, depthWrite: false })
+    );
+    scanline.position.set(0, index * 0.235, 0.018);
+    scanline.renderOrder = 10;
+    panelFrame.add(scanline);
+  }
+
+  const crest = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.16, 0),
+    new THREE.MeshBasicMaterial({ color: 0xf5dca0, transparent: true, opacity: 0.84, depthWrite: false })
+  );
+  crest.position.set(0, -1.32, 0.04);
+  crest.renderOrder = 12;
+  panelFrame.add(crest);
+
+  const anchor = new THREE.Object3D();
+  anchor.name = "council-hologram-dom-anchor";
+  panelFrame.add(anchor);
+
+  const light = new THREE.PointLight(0xb57bf0, 4.2, 8.5, 1.7);
+  light.position.set(0, 1.35, 0.35);
+  group.add(light);
+
+  return { group, anchor, rings, beamMaterial, panelMaterial, light, tabletopY: null, viewportWidth: 0 };
+};
+
 type MeshySceneConstructorProps = {
   plain?: boolean;
   telegram?: boolean;
@@ -1099,6 +1216,8 @@ export function MeshySceneConstructor({
   const avatarMixersRef = useRef<THREE.AnimationMixer[]>([]);
   const dlanisPoseRef = useRef<DlanisPoseRuntime | null>(null);
   const dlanisRootRef = useRef<THREE.Group | null>(null);
+  const councilHologramWorldRef = useRef<CouncilHologramWorldRuntime | null>(null);
+  const councilHologramPanelRef = useRef<HTMLElement | null>(null);
   const breathingGuardRootRef = useRef<THREE.Group | null>(null);
   const dlanisWeaponGroupsRef = useRef(new Map<DlanisWeaponId, THREE.Group>());
   const dlanisPlacementRef = useRef<DlanisPlacement | null>(null);
@@ -1465,6 +1584,15 @@ export function MeshySceneConstructor({
     });
     if (tableItem) return new THREE.Vector3(tableItem.position[0], 0, tableItem.position[2]);
     return AVATAR_TABLE_CENTER.clone();
+  };
+
+  const getCouncilTableSurfaceY = () => {
+    const baseTable = objectRefs.current.get("base-table");
+    if (baseTable && baseTable.visible !== false) {
+      const bounds = new THREE.Box3().setFromObject(baseTable);
+      if (Number.isFinite(bounds.max.y)) return bounds.max.y + 0.035;
+    }
+    return 2.35;
   };
 
   const getChairCandidatePriority = (item: PlacedAsset) => {
@@ -1957,6 +2085,10 @@ export function MeshySceneConstructor({
     remoteAvatarRuntimesRef.current.clear();
     remoteAvatarLoadingRef.current.clear();
 
+    const councilHologramWorld = createCouncilHologramWorldRuntime();
+    scene.add(councilHologramWorld.group);
+    councilHologramWorldRef.current = councilHologramWorld;
+
     const roomTextureLoader = new THREE.TextureLoader();
     const configureRoomTexture = (texture: THREE.Texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
@@ -2267,6 +2399,93 @@ export function MeshySceneConstructor({
       camera.lookAt(orbit.target);
       return true;
     };
+    const updateCouncilHologramWorld = (elapsedSeconds: number) => {
+      const world = councilHologramWorldRef.current;
+      const runtime = controlledAvatarRef.current;
+      const panelElement = councilHologramPanelRef.current;
+      const active = Boolean(telegram && runtime?.isSeated);
+
+      if (!world || !active || !runtime) {
+        if (world) {
+          world.group.visible = false;
+          world.tabletopY = null;
+          world.viewportWidth = 0;
+        }
+        if (panelElement) panelElement.dataset.worldVisible = "false";
+        return;
+      }
+
+      const rendererBounds = renderer.domElement.getBoundingClientRect();
+      if (Math.abs(world.viewportWidth - rendererBounds.width) > 16) world.tabletopY = null;
+      if (world.tabletopY === null) {
+        const tableCenter = getCouncilTableCenter();
+        const tabletopY = getCouncilTableSurfaceY();
+        const viewDirection = camera.getWorldDirection(new THREE.Vector3()).normalize();
+        const fallbackRadial = runtime.root.position.clone().sub(tableCenter).setY(0);
+        if (fallbackRadial.lengthSq() < 0.001) fallbackRadial.set(Math.sin(runtime.yaw), 0, Math.cos(runtime.yaw));
+        fallbackRadial.normalize();
+        const fallbackPosition = tableCenter.clone().addScaledVector(fallbackRadial, 5.4).setY(tabletopY);
+        const tableIntersectionDistance = viewDirection.y < -0.025 ? (tabletopY - camera.position.y) / viewDirection.y : -1;
+        const projectedPosition = tableIntersectionDistance > 0 && tableIntersectionDistance < 28
+          ? camera.position.clone().addScaledVector(viewDirection, tableIntersectionDistance).setY(tabletopY)
+          : fallbackPosition;
+        const fromTableCenter = projectedPosition.clone().sub(tableCenter).setY(0);
+        if (fromTableCenter.lengthSq() < 0.001) fromTableCenter.copy(fallbackRadial);
+        const constrainedRadius = clamp(fromTableCenter.length(), 2.8, 6.5);
+        fromTableCenter.normalize();
+
+        world.tabletopY = tabletopY;
+        world.viewportWidth = rendererBounds.width;
+        world.group.position.copy(tableCenter).addScaledVector(fromTableCenter, constrainedRadius);
+        world.group.position.y = tabletopY;
+        world.group.lookAt(camera.position.x, tabletopY, camera.position.z);
+      }
+      world.group.visible = true;
+
+      const pulse = (Math.sin(elapsedSeconds * 3.4) + 1) * 0.5;
+      world.rings.forEach((ring, index) => {
+        const ringPulse = 1 + Math.sin(elapsedSeconds * (1.15 + index * 0.24) + index) * 0.055;
+        ring.scale.setScalar(ringPulse);
+        const material = ring.material as THREE.MeshBasicMaterial;
+        material.opacity = 0.38 + pulse * 0.18 - index * 0.035;
+      });
+      world.beamMaterial.opacity = 0.075 + pulse * 0.055;
+      world.panelMaterial.opacity = 0.085 + pulse * 0.045;
+      world.light.intensity = 3.2 + pulse * 2.4;
+
+      if (!panelElement) return;
+      world.group.updateMatrixWorld(true);
+      camera.updateMatrixWorld(true);
+
+      const anchorWorld = world.anchor.getWorldPosition(new THREE.Vector3());
+      const projected = anchorWorld.clone().project(camera);
+      const panelQuaternion = world.anchor.getWorldQuaternion(new THREE.Quaternion());
+      const panelNormal = new THREE.Vector3(0, 0, 1).applyQuaternion(panelQuaternion).normalize();
+      const towardCamera = camera.position.clone().sub(anchorWorld).normalize();
+      const facesCamera = panelNormal.dot(towardCamera) > -0.08;
+      const insideView = projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < 1.12 && Math.abs(projected.y) < 1.16;
+
+      if (!facesCamera || !insideView || rendererBounds.width <= 0 || rendererBounds.height <= 0) {
+        panelElement.dataset.worldVisible = "false";
+        return;
+      }
+
+      const screenX = rendererBounds.left + (projected.x * 0.5 + 0.5) * rendererBounds.width;
+      const screenY = rendererBounds.top + (-projected.y * 0.5 + 0.5) * rendererBounds.height;
+      const viewPosition = anchorWorld.clone().applyMatrix4(camera.matrixWorldInverse);
+      const viewDistance = Math.max(0.1, -viewPosition.z);
+      const pixelsPerWorldUnit = rendererBounds.height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * viewDistance);
+      const projectedPanelWidth = 3.9 * pixelsPerWorldUnit;
+      const collapsed = panelElement.dataset.collapsed === "true";
+      const basePanelWidth = Math.min(collapsed ? 432 : 720, Math.max(1, window.innerWidth - 16));
+      const maxPanelScale = rendererBounds.width <= 680 ? 0.96 : 1.08;
+      const panelScale = clamp(projectedPanelWidth / basePanelWidth, 0.48, maxPanelScale);
+
+      panelElement.style.setProperty("--council-world-x", `${screenX}px`);
+      panelElement.style.setProperty("--council-world-y", `${screenY}px`);
+      panelElement.style.setProperty("--council-world-scale", panelScale.toFixed(4));
+      panelElement.dataset.worldVisible = "true";
+    };
     const animate = () => {
       const now = performance.now();
       const delta = Math.min((now - lastFrameTime) / 1000, 0.04);
@@ -2355,6 +2574,7 @@ export function MeshySceneConstructor({
 
       avatarMixersRef.current.forEach((mixer) => mixer.update(delta));
       updateDlanisPoseRuntime(dlanisPoseRef.current, delta);
+      updateCouncilHologramWorld((now - celestialStartedAt) / 1000);
       renderer.render(scene, camera);
       frame = window.requestAnimationFrame(animate);
     };
@@ -2461,6 +2681,7 @@ export function MeshySceneConstructor({
       remoteAvatarRuntimesRef.current.clear();
       remoteAvatarLoadingRef.current.clear();
       remoteAvatarLayerRef.current = null;
+      if (councilHologramWorldRef.current === councilHologramWorld) councilHologramWorldRef.current = null;
       mount.removeChild(renderer.domElement);
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points) {
@@ -3777,6 +3998,7 @@ export function MeshySceneConstructor({
       {telegram ? (
         <CouncilHologramPanel
           onLeave={leaveCouncilTable}
+          panelRef={councilHologramPanelRef}
           participantName={telegramParticipantNickname}
           visible={avatarIsSeated}
         />
