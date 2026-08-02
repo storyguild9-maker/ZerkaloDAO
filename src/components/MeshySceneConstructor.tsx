@@ -108,6 +108,61 @@ const createCouncilHologramWorldRuntime = (): CouncilHologramWorldRuntime => {
     return ring;
   });
 
+  const orbShellMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x1a141c,
+    emissive: 0x2a1732,
+    emissiveIntensity: 0.3,
+    metalness: 0.92,
+    roughness: 0.2,
+    clearcoat: 1,
+    clearcoatRoughness: 0.08,
+  });
+  const orbGoldMaterial = new THREE.MeshBasicMaterial({
+    color: 0xe6bf69,
+    transparent: true,
+    opacity: 0.9,
+    wireframe: true,
+  });
+  const orbCoreMaterial = new THREE.MeshBasicMaterial({
+    color: 0x8ef5ff,
+    transparent: true,
+    opacity: 0.95,
+    blending: THREE.AdditiveBlending,
+  });
+
+  [-2.28, 2.28].forEach((x, orbIndex) => {
+    const orb = new THREE.Group();
+    orb.name = orbIndex === 0 ? "council-projector-orb-left" : "council-projector-orb-right";
+    orb.position.set(x, 1.9, 0.12);
+
+    const shell = new THREE.Mesh(new THREE.SphereGeometry(0.28, 32, 24), orbShellMaterial);
+    shell.renderOrder = 10;
+    orb.add(shell);
+
+    const filigree = new THREE.Mesh(new THREE.IcosahedronGeometry(0.292, 2), orbGoldMaterial);
+    filigree.renderOrder = 11;
+    orb.add(filigree);
+
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.105, 24, 18), orbCoreMaterial);
+    core.position.z = 0.25;
+    core.renderOrder = 13;
+    orb.add(core);
+
+    const orbRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.34, 0.012, 8, 48),
+      new THREE.MeshBasicMaterial({ color: 0xb8f6ff, transparent: true, opacity: 0.58, depthWrite: false })
+    );
+    orbRing.rotation.y = Math.PI / 2;
+    orbRing.renderOrder = 12;
+    orb.add(orbRing);
+    rings.push(orbRing);
+
+    const coreLight = new THREE.PointLight(0x8defff, 1.5, 2.8, 1.8);
+    coreLight.position.z = 0.32;
+    orb.add(coreLight);
+    group.add(orb);
+  });
+
   const beamMaterial = new THREE.MeshBasicMaterial({
     color: 0xa66ee5,
     transparent: true,
@@ -2440,7 +2495,9 @@ export function MeshySceneConstructor({
         world.group.position.y = tabletopY;
         world.group.lookAt(camera.position.x, tabletopY, camera.position.z);
       }
-      world.group.visible = true;
+      const projectorVisible = panelElement?.dataset.projectorVisible === "true";
+      const introComplete = panelElement?.dataset.introComplete === "true";
+      world.group.visible = projectorVisible && introComplete;
 
       const pulse = (Math.sin(elapsedSeconds * 3.4) + 1) * 0.5;
       world.rings.forEach((ring, index) => {
