@@ -1166,6 +1166,7 @@ export function MeshySceneConstructor({
   const avatarNearTableRef = useRef(false);
   const avatarIsSeatedRef = useRef(false);
   const seatedLookRef = useRef({ yaw: 0, pitch: -0.14 });
+  const thirdPersonLookRef = useRef({ yaw: 0, pitch: 0 });
   const thirdPersonCameraEnabledRef = useRef(true);
   const controlledAvatarPoseRef = useRef<Record<string, { position: THREE.Vector3; yaw: number }>>({});
   const avatarSeatMapRef = useRef<Record<string, number>>(DEFAULT_AVATAR_SEATS);
@@ -1905,7 +1906,8 @@ export function MeshySceneConstructor({
     renderer.shadowMap.enabled = !telegram;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.tabIndex = 0;
-    renderer.domElement.setAttribute("aria-label", "3D сцена: управление аватаром через WASD и стрелки");
+    renderer.domElement.style.touchAction = "none";
+    renderer.domElement.setAttribute("aria-label", "3D сцена: управление аватаром через WASD, стрелки и жесты");
     mount.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -2149,6 +2151,9 @@ export function MeshySceneConstructor({
 
     let lastFrameTime = performance.now();
     let mouseLookActive = false;
+    let touchLookPointerId: number | null = null;
+    let touchLookLastX = 0;
+    let touchLookLastY = 0;
     let frame = 0;
     const updateControlledAvatar = (delta: number) => {
       const runtime = controlledAvatarRef.current;
@@ -2381,8 +2386,13 @@ export function MeshySceneConstructor({
       }
 
       const target = runtime.root.position.clone().add(new THREE.Vector3(0, 3.35, 0));
-      const backward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), runtime.yaw).multiplyScalar(12.5);
-      const desiredPosition = target.clone().add(backward).add(new THREE.Vector3(0, 4.4, 0));
+      const thirdPersonLook = thirdPersonLookRef.current;
+      const cameraDistance = 12.5;
+      const horizontalDistance = Math.cos(thirdPersonLook.pitch) * cameraDistance;
+      const backward = new THREE.Vector3(0, 0, 1)
+        .applyAxisAngle(new THREE.Vector3(0, 1, 0), runtime.yaw + thirdPersonLook.yaw)
+        .multiplyScalar(horizontalDistance);
+      const desiredPosition = target.clone().add(backward).add(new THREE.Vector3(0, 4.4 + Math.sin(thirdPersonLook.pitch) * cameraDistance, 0));
       desiredPosition.x = clamp(desiredPosition.x, -ROOM_WIDTH / 2 + 1.25, ROOM_WIDTH / 2 - 1.25);
       desiredPosition.y = clamp(desiredPosition.y, 2.6, ROOM_HEIGHT - 0.7);
       desiredPosition.z = clamp(desiredPosition.z, -ROOM_DEPTH / 2 + 1.25, ROOM_DEPTH / 2 - 1.25);
@@ -2605,6 +2615,21 @@ export function MeshySceneConstructor({
           }
         }
       }
+      if (event.pointerType === "touch" && event.button === 0 && !isTransformDragging) {
+        const runtime = controlledAvatarRef.current;
+        const usesCustomTouchLook =
+          flyModeRef.current ||
+          Boolean(runtime?.isSeated && avatarControlEnabledRef.current) ||
+          Boolean(runtime && avatarControlEnabledRef.current && thirdPersonCameraEnabledRef.current);
+        if (usesCustomTouchLook && touchLookPointerId === null) {
+          touchLookPointerId = event.pointerId;
+          touchLookLastX = event.clientX;
+          touchLookLastY = event.clientY;
+          renderer.domElement.setPointerCapture(event.pointerId);
+          event.preventDefault();
+          return;
+        }
+      }
       if (isTransformDragging || event.button !== 2) return;
       const seatedLookActive = Boolean(controlledAvatarRef.current?.isSeated && avatarControlEnabledRef.current);
       if (!flyModeRef.current && !seatedLookActive) return;
@@ -2613,11 +2638,53 @@ export function MeshySceneConstructor({
       event.preventDefault();
     };
     const onPointerUp = (event: PointerEvent) => {
+      if (touchLookPointerId === event.pointerId) {
+        touchLookPointerId = null;
+        if (renderer.domElement.hasPointerCapture(event.pointerId)) {
+          renderer.domElement.releasePointerCapture(event.pointerId);
+        }
+        event.preventDefault();
+        return;
+      }
       if (!mouseLookActive) return;
       mouseLookActive = false;
-      renderer.domElement.releasePointerCapture(event.pointerId);
+      if (renderer.domElement.hasPointerCapture(event.pointerId)) {
+        renderer.domElement.releasePointerCapture(event.pointerId);
+      }
     };
     const onPointerMove = (event: PointerEvent) => {
+      if (touchLookPointerId === event.pointerId) {
+        const movementX = event.clientX - touchLookLastX;
+        const movementY = event.clientY - touchLookLastY;
+        touchLookLastX = event.clientX;
+        touchLookLastY = event.clientY;
+
+        const runtime = controlledAvatarRef.current;
+        if (runtime?.isSeated && avatarControlEnabledRef.current && !flyModeRef.current) {
+          seatedLookRef.current.yaw -= movementX * 0.0042;
+          seatedLookRef.current.pitch = clamp(
+            seatedLookRef.current.pitch - movementY * 0.0042,
+            -Math.PI / 2 + 0.12,
+            Math.PI / 2 - 0.12
+          );
+        } else if (flyModeRef.current) {
+          flyYawPitchRef.current.yaw -= movementX * 0.0042;
+          flyYawPitchRef.current.pitch = clamp(
+            flyYawPitchRef.current.pitch - movementY * 0.0042,
+            -Math.PI / 2 + 0.05,
+            Math.PI / 2 - 0.05
+          );
+        } else if (runtime && avatarControlEnabledRef.current && thirdPersonCameraEnabledRef.current) {
+          thirdPersonLookRef.current.yaw -= movementX * 0.0042;
+          thirdPersonLookRef.current.pitch = clamp(
+            thirdPersonLookRef.current.pitch - movementY * 0.0034,
+            -0.28,
+            0.68
+          );
+        }
+        event.preventDefault();
+        return;
+      }
       if (!mouseLookActive) return;
       const seatedLookActive = Boolean(controlledAvatarRef.current?.isSeated && avatarControlEnabledRef.current && !flyModeRef.current);
       if (seatedLookActive) {
