@@ -323,9 +323,9 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   // The remaining grahas occupy increasingly high external celestial tiers
   // above the council table, while Surya and Chandra travel around the hall.
   const grahas = [
-    { name: "Shukra", orbitFactor: 1.22, tier: 0, displaySize: 8, color: 0xffe3ab, emissive: 0xffbd64, glow: 1.15, reflectColor: 0xffd79a, reflectIntensity: 0.84, lift: 0.12, metalnessCap: 0.68, auraOpacity: 0.25, auraScale: 1.7, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
-    { name: "Budha", orbitFactor: 1.46, tier: 7, displaySize: 6, color: 0x75d6aa, emissive: 0x2aa97f, glow: 1.08, reflectColor: 0x75d6aa, reflectIntensity: 0.9, lift: 0.14, metalnessCap: 0.64, auraOpacity: 0.28, auraScale: 1.75, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
-    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 7.2, color: 0xc85c4b, emissive: 0xa61e16, glow: 1.18, reflectColor: 0xcf523d, reflectIntensity: 0.82, lift: 0.13, metalnessCap: 0.66, auraOpacity: 0.25, auraScale: 1.7, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
+    { name: "Shukra", orbitFactor: 1.22, tier: 0, displaySize: 8, color: 0xffe3ab, emissive: 0xffbd64, glow: 0.4, reflectColor: 0xffd79a, reflectIntensity: 0.26, lift: 0.05, metalnessCap: 0.68, auraOpacity: 0.11, auraScale: 1.45, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
+    { name: "Budha", orbitFactor: 1.46, tier: 7, displaySize: 6, color: 0x75d6aa, emissive: 0x2aa97f, glow: 0.42, reflectColor: 0x75d6aa, reflectIntensity: 0.28, lift: 0.05, metalnessCap: 0.64, auraOpacity: 0.12, auraScale: 1.47, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
+    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 7.2, color: 0xc85c4b, emissive: 0xa61e16, glow: 0.4, reflectColor: 0xcf523d, reflectIntensity: 0.27, lift: 0.05, metalnessCap: 0.66, auraOpacity: 0.11, auraScale: 1.44, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
     { name: "Brihaspati", orbitFactor: 2.24, tier: 24, displaySize: 19, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.38, reflectColor: 0xffd98a, reflectIntensity: 0.28, lift: 0.06, metalnessCap: 0.62, auraOpacity: 0.1, auraScale: 1.42, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
     { name: "Shani", orbitFactor: 2.78, tier: 36, displaySize: 20.5, color: 0x91a9bd, emissive: 0x6f93bd, glow: 0.42, reflectColor: 0x8bb4df, reflectIntensity: 0.32, lift: 0.04, metalnessCap: 0.46, auraOpacity: 0.14, auraScale: 1.5, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
   ];
@@ -345,10 +345,17 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     bodyMount.position.x = radius;
     pivot.add(bodyMount);
 
-    if (graha.name === "Brihaspati" || graha.name === "Shani") {
-      const isShani = graha.name === "Shani";
+    const lightProfile = {
+      Shukra: { key: 0xffe8bc, rim: 0xd79646 },
+      Budha: { key: 0x91e8c2, rim: 0x2b8f70 },
+      Mangala: { key: 0xff896f, rim: 0x8e241c },
+      Brihaspati: { key: 0xffdfa0, rim: 0xb87832 },
+      Shani: { key: 0x9fc9ff, rim: 0x6d8fca },
+    }[graha.name];
+
+    if (lightProfile) {
       const surfaceKey = new THREE.PointLight(
-        isShani ? 0x9fc9ff : 0xffdfa0,
+        lightProfile.key,
         telegram ? 34 : 48,
         graha.displaySize * 7,
         1.55,
@@ -362,7 +369,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       bodyMount.add(surfaceKey);
 
       const surfaceRim = new THREE.PointLight(
-        isShani ? 0x6d8fca : 0xb87832,
+        lightProfile.rim,
         telegram ? 13 : 18,
         graha.displaySize * 5.5,
         1.7,
