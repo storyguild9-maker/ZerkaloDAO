@@ -296,8 +296,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     map: solarGlowTexture,
     color: 0xffd75a,
     transparent: true,
-    opacity: 0.96,
-    depthTest: false,
+    opacity: 0.82,
+    depthTest: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   }));
@@ -312,8 +312,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     map: solarGlowTexture,
     color: 0xffffdf,
     transparent: true,
-    opacity: 0.9,
-    depthTest: false,
+    opacity: 0.34,
+    depthTest: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   }));
@@ -326,20 +326,6 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   disposables.add(solarCoronaMaterial);
   disposables.add(solarCoreMaterial);
 
-  const solarShellMaterial = setNoFog(new THREE.MeshBasicMaterial({
-    color: 0xffd447,
-    transparent: true,
-    opacity: 0.72,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  }));
-  solarShellMaterial.toneMapped = false;
-  const solarShell = new THREE.Mesh(bodyGeometry, solarShellMaterial);
-  solarShell.name = "surya-luminous-sphere";
-  solarShell.scale.setScalar(7.5);
-  solarShell.renderOrder = 19;
-  suryaMount.add(solarShell);
-  disposables.add(solarShellMaterial);
   const chandraLight = new THREE.PointLight(0xc9dcff, telegram ? 12 : 24, 72, 1.45);
   chandraLight.name = "chandra-local-radiance";
   chandraMount.add(chandraLight);
@@ -741,12 +727,10 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     chandraMount.rotation.y = -(luminaryPhase + Math.PI);
     solarKey.position.copy(suryaMount.position);
     const solarPulse = 0.5 + Math.sin(elapsedSeconds * 0.72) * 0.5;
-    solarCoronaMaterial.opacity = 0.94 + solarPulse * 0.06;
+    solarCoronaMaterial.opacity = 0.76 + solarPulse * 0.12;
     solarCorona.scale.setScalar(34 + solarPulse * 7);
-    solarCoreMaterial.opacity = 0.86 + solarPulse * 0.14;
+    solarCoreMaterial.opacity = 0.28 + solarPulse * 0.12;
     solarCoreGlow.scale.setScalar(18 + solarPulse * 3.4);
-    solarShellMaterial.opacity = 0.62 + solarPulse * 0.18;
-    solarShell.scale.setScalar(7.48 + solarPulse * 0.18);
     suryaLight.intensity = 0;
     solarKey.intensity = (telegram ? 4.8 : 5.6) + solarPulse * (telegram ? 0.7 : 0.9);
     lunarAuraMaterial.opacity = 0.42 + (1 - solarPulse) * 0.16;
