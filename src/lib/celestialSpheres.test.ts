@@ -22,4 +22,11 @@ describe("getDiametricLuminaryPositions", () => {
     expect(moonOffset.y).toBeCloseTo(-sunOffset.y, 8);
     expect(moonOffset.z).toBeCloseTo(-sunOffset.z, 8);
   });
+
+  it("keeps both luminaries at one height on the horizontal Vedic orbit", () => {
+    const positions = getDiametricLuminaryPositions(0.73, 88, 42, 0);
+
+    expect(positions.sun.y).toBeCloseTo(42, 8);
+    expect(positions.moon.y).toBeCloseTo(42, 8);
+  });
 });

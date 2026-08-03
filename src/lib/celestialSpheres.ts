@@ -275,7 +275,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const chandraMount = createLuminary(
     "Chandra",
     "/models/celestial-grahas/chandra-web-v1.glb",
-    2.2,
+    6.2,
     0xf2f5e9,
     0xc8dcff,
     1.35,
@@ -294,9 +294,10 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
   const solarCoronaMaterial = setNoFog(new THREE.SpriteMaterial({
     map: solarGlowTexture,
-    color: 0xffb83f,
+    color: 0xffd75a,
     transparent: true,
-    opacity: 0.78,
+    opacity: 0.96,
+    depthTest: false,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   }));
@@ -309,9 +310,10 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
   const solarCoreMaterial = setNoFog(new THREE.SpriteMaterial({
     map: solarGlowTexture,
-    color: 0xfff4c4,
+    color: 0xffffdf,
     transparent: true,
-    opacity: 0.32,
+    opacity: 0.9,
+    depthTest: false,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   }));
@@ -323,6 +325,21 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   suryaMount.add(solarCoreGlow);
   disposables.add(solarCoronaMaterial);
   disposables.add(solarCoreMaterial);
+
+  const solarShellMaterial = setNoFog(new THREE.MeshBasicMaterial({
+    color: 0xffd447,
+    transparent: true,
+    opacity: 0.72,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  }));
+  solarShellMaterial.toneMapped = false;
+  const solarShell = new THREE.Mesh(bodyGeometry, solarShellMaterial);
+  solarShell.name = "surya-luminous-sphere";
+  solarShell.scale.setScalar(7.5);
+  solarShell.renderOrder = 19;
+  suryaMount.add(solarShell);
+  disposables.add(solarShellMaterial);
   const chandraLight = new THREE.PointLight(0xc9dcff, telegram ? 12 : 24, 72, 1.45);
   chandraLight.name = "chandra-local-radiance";
   chandraMount.add(chandraLight);
@@ -454,7 +471,6 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
         const gltf = await gltfLoader.loadAsync(assetUrl(entry.modelUrl));
         const model = gltf.scene;
         model.name = `${entry.mount.name}-meshy`;
-        if (entry.radiance === "moon") model.rotation.x = Math.PI / 2;
         model.traverse((child) => {
           if (!(child instanceof THREE.Mesh)) return;
           child.castShadow = false;
@@ -466,8 +482,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
               material.fog = false;
               material.envMapIntensity = Math.max(material.envMapIntensity, 1.15);
               if (entry.radiance === "sun") {
-                material.emissive.set(0xffb126);
-                material.emissiveIntensity = Math.max(material.emissiveIntensity, 8.5);
+                material.emissive.set(0xffd34d);
+                material.emissiveIntensity = Math.max(material.emissiveIntensity, 14);
                 material.toneMapped = false;
               } else if (entry.radiance === "moon") {
                 material.emissive.set(0x9dbfff);
@@ -710,7 +726,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
   const baseOrbitRotation = orbitLayer.rotation.y;
   const luminaryOrbitCenterY = options.roomHeight * 1.9 - root.position.y;
-  const luminaryOrbitInclination = THREE.MathUtils.degToRad(14);
+  const luminaryOrbitInclination = 0;
   const update = (elapsedSeconds: number) => {
     const luminaryPhase = Math.PI * 0.5 + (elapsedSeconds / 240) * TAU;
     const luminaryPositions = getDiametricLuminaryPositions(
@@ -725,14 +741,16 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     chandraMount.rotation.y = -(luminaryPhase + Math.PI);
     solarKey.position.copy(suryaMount.position);
     const solarPulse = 0.5 + Math.sin(elapsedSeconds * 0.72) * 0.5;
-    solarCoronaMaterial.opacity = 0.9 + solarPulse * 0.1;
-    solarCorona.scale.setScalar(29 + solarPulse * 5);
-    solarCoreMaterial.opacity = 0.68 + solarPulse * 0.2;
-    solarCoreGlow.scale.setScalar(19 + solarPulse * 2.8);
+    solarCoronaMaterial.opacity = 0.94 + solarPulse * 0.06;
+    solarCorona.scale.setScalar(34 + solarPulse * 7);
+    solarCoreMaterial.opacity = 0.86 + solarPulse * 0.14;
+    solarCoreGlow.scale.setScalar(18 + solarPulse * 3.4);
+    solarShellMaterial.opacity = 0.62 + solarPulse * 0.18;
+    solarShell.scale.setScalar(7.48 + solarPulse * 0.18);
     suryaLight.intensity = 0;
-    solarKey.intensity = (telegram ? 2.25 : 2.7) + solarPulse * (telegram ? 0.3 : 0.4);
+    solarKey.intensity = (telegram ? 4.8 : 5.6) + solarPulse * (telegram ? 0.7 : 0.9);
     lunarAuraMaterial.opacity = 0.42 + (1 - solarPulse) * 0.16;
-    lunarAura.scale.setScalar(8.4 + (1 - solarPulse) * 1.4);
+    lunarAura.scale.setScalar(15.5 + (1 - solarPulse) * 2.5);
     chandraLight.intensity = (telegram ? 10 : 20) + (1 - solarPulse) * (telegram ? 4 : 8);
     orbitRuntimes.forEach((runtime, index) => {
       runtime.pivot.rotation.y = runtime.phase + elapsedSeconds * runtime.speed;
