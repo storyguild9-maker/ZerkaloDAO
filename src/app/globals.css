@@ -3716,6 +3716,68 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
   color: #f0d99b;
 }
 
+.telegram-chat-room-directory {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.telegram-chat-room-directory > p,
+.telegram-chat-room-directory > small {
+  margin: 0;
+  color: rgba(222, 229, 224, 0.56);
+  font-size: 0.66rem;
+}
+
+.telegram-chat-room-directory__list {
+  display: grid;
+  gap: 0.35rem;
+  max-height: 9.5rem;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
+.telegram-chat-room-directory__list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2.65rem;
+  border: 1px solid rgba(236, 205, 135, 0.16);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(248, 247, 242, 0.82);
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+}
+
+.telegram-chat-room-directory__list button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.telegram-chat-room-directory__list button small {
+  color: rgba(240, 217, 156, 0.52);
+  font-size: 0.62rem;
+}
+
+.telegram-chat-room-directory__list button.is-active {
+  border-color: rgba(240, 217, 156, 0.55);
+  background: rgba(240, 217, 156, 0.1);
+  color: #f0d99b;
+}
+
+.telegram-chat-room-directory__empty {
+  min-height: 2.65rem;
+  border: 1px dashed rgba(236, 205, 135, 0.15);
+  border-radius: 6px;
+  color: rgba(222, 229, 224, 0.42);
+  padding: 0.75rem;
+  text-align: center;
+}
+
 .telegram-chat-room-form label {
   display: grid;
   min-width: 0;

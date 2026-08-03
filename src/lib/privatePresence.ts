@@ -13,6 +13,7 @@ const CHAT_MESSAGE_LIMIT = 500;
 const CHAT_RATE_WINDOW_SECONDS = 10;
 const CHAT_RATE_LIMIT = 5;
 const PRIVATE_ROOM_LIMIT = 12;
+const PRIVATE_ROOM_DIRECTORY_LIMIT = 48;
 const PRIVATE_ROOM_CODE_LENGTH = 8;
 const PRIVATE_ROOM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -46,7 +47,7 @@ export type PublicChatMessage = {
 export type PublicChatRoom = {
   id: string;
   name: string;
-  code: string;
+  joined: boolean;
   createdAt: string;
   expiresAt: string;
 };
@@ -86,6 +87,8 @@ type ChatRoomRow = {
   created_at: string;
   expires_at: string;
 };
+type ChatRoomPublicRow = Pick<ChatRoomRow, "id" | "name" | "created_at" | "expires_at">;
+
 
 type ChatRoomMemberRow = {
   room_id: string;
@@ -329,31 +332,32 @@ export async function listActivePresence(token: string): Promise<PublicPresence[
   return (rows ?? []).map(mapPresence);
 }
 
-function mapChatRoom(row: ChatRoomRow): PublicChatRoom {
+function mapChatRoom(row: ChatRoomPublicRow, joined = true): PublicChatRoom {
   return {
     id: row.id,
     name: row.name,
-    code: row.invite_code,
+    joined,
     createdAt: row.created_at,
     expiresAt: row.expires_at
   };
 }
 
-async function listJoinedChatRoomsForSession(session: PrivateSessionRow): Promise<PublicChatRoom[]> {
+async function listChatRoomDirectoryForSession(session: PrivateSessionRow): Promise<PublicChatRoom[]> {
   const now = new Date().toISOString();
   const memberships = await supabaseRequest<ChatRoomMemberRow[]>(
     `pseudonymous_chat_room_members?select=room_id,expires_at&participant_id=eq.${encodeURIComponent(session.participant_id)}&expires_at=gt.${encodeURIComponent(now)}&order=joined_at.asc&limit=${PRIVATE_ROOM_LIMIT}`
   );
-  const roomIds = (memberships ?? []).map((membership) => membership.room_id).filter((id) => UUID_PATTERN.test(id));
-  if (roomIds.length === 0) return [];
-  const rows = await supabaseRequest<ChatRoomRow[]>(
-    `pseudonymous_chat_rooms?select=id,invite_code,name,password_salt,password_hash,created_at,expires_at&id=in.(${roomIds.join(",")})&expires_at=gt.${encodeURIComponent(now)}&order=created_at.asc`
+  const joinedRoomIds = new Set(
+    (memberships ?? []).map((membership) => membership.room_id).filter((id) => UUID_PATTERN.test(id))
   );
-  return (rows ?? []).map(mapChatRoom);
+  const rows = await supabaseRequest<ChatRoomPublicRow[]>(
+    `pseudonymous_chat_rooms?select=id,name,created_at,expires_at&expires_at=gt.${encodeURIComponent(now)}&order=created_at.asc&limit=${PRIVATE_ROOM_DIRECTORY_LIMIT}`
+  );
+  return (rows ?? []).map((row) => mapChatRoom(row, joinedRoomIds.has(row.id)));
 }
 
-export async function listJoinedChatRooms(token: string): Promise<PublicChatRoom[]> {
-  return listJoinedChatRoomsForSession(await requirePrivateSession(token));
+export async function listChatRoomDirectory(token: string): Promise<PublicChatRoom[]> {
+  return listChatRoomDirectoryForSession(await requirePrivateSession(token));
 }
 
 export async function createPrivateChatRoom(
@@ -362,7 +366,7 @@ export async function createPrivateChatRoom(
   passwordValue: unknown
 ): Promise<PublicChatRoom> {
   const session = await requirePrivateSession(token);
-  const joinedRooms = await listJoinedChatRoomsForSession(session);
+  const joinedRooms = (await listChatRoomDirectoryForSession(session)).filter((room) => room.joined);
   if (joinedRooms.length >= PRIVATE_ROOM_LIMIT) {
     throw new Error("Достигнут лимит закрытых комнат");
   }
@@ -397,7 +401,37 @@ export async function createPrivateChatRoom(
       expires_at: expiresAt
     })
   });
-  return mapChatRoom(room);
+  return mapChatRoom(room, true);
+}
+
+export async function joinListedPrivateChatRoom(
+  token: string,
+  roomIdValue: unknown,
+  passwordValue: unknown
+): Promise<PublicChatRoom> {
+  const session = await requirePrivateSession(token);
+  const roomId = normalizeChatRoomId(roomIdValue);
+  if (!roomId) throw new Error("Выберите диалог");
+  const now = new Date().toISOString();
+  const rows = await supabaseRequest<ChatRoomRow[]>(
+    `pseudonymous_chat_rooms?select=id,invite_code,name,password_salt,password_hash,created_at,expires_at&id=eq.${encodeURIComponent(roomId)}&expires_at=gt.${encodeURIComponent(now)}&limit=1`
+  );
+  const room = rows?.[0];
+  if (!room || !verifyChatRoomPassword(passwordValue, room.password_salt, room.password_hash)) {
+    throw new Error("Неверный пароль");
+  }
+
+  const expiresAt = new Date(Math.min(Date.parse(session.expires_at), Date.parse(room.expires_at))).toISOString();
+  await supabaseRequest("pseudonymous_chat_room_members?on_conflict=room_id,participant_id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify({
+      room_id: room.id,
+      participant_id: session.participant_id,
+      expires_at: expiresAt
+    })
+  });
+  return mapChatRoom(room, true);
 }
 
 export async function joinPrivateChatRoom(
@@ -426,7 +460,7 @@ export async function joinPrivateChatRoom(
       expires_at: expiresAt
     })
   });
-  return mapChatRoom(room);
+  return mapChatRoom(room, true);
 }
 
 async function resolveChatRoomKey(session: PrivateSessionRow, roomIdValue?: unknown) {

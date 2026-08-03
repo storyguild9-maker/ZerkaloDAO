@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import {
   createPrivateChatRoom,
+  joinListedPrivateChatRoom,
   joinPrivateChatRoom,
-  listJoinedChatRooms
+  listChatRoomDirectory
 } from "@/lib/privatePresence";
 
 export const runtime = "nodejs";
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
   try {
     const token = bearerToken(request);
     if (!token) return noStore({ ok: false, error: "Сессия не найдена" }, { status: 401 });
-    return noStore({ ok: true, rooms: await listJoinedChatRooms(token) });
+    return noStore({ ok: true, rooms: await listChatRoomDirectory(token) });
   } catch (error) {
     return roomError(error);
   }
@@ -56,7 +57,9 @@ export async function POST(request: Request) {
     const room = body.action === "create"
       ? await createPrivateChatRoom(token, body.name, body.password)
       : body.action === "join"
-        ? await joinPrivateChatRoom(token, body.code, body.password)
+        ? body.roomId
+          ? await joinListedPrivateChatRoom(token, body.roomId, body.password)
+          : await joinPrivateChatRoom(token, body.code, body.password)
         : null;
     if (!room) return noStore({ ok: false, error: "Неизвестное действие" }, { status: 400 });
     return noStore({ ok: true, room }, { status: body.action === "create" ? 201 : 200 });
