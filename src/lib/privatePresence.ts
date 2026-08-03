@@ -52,8 +52,9 @@ export type PublicChatRoom = {
   expiresAt: string;
 };
 
-type PrivateSessionRow = {
+export type PrivateSessionRow = {
   participant_id: string;
+  subject_hash: string;
   expires_at: string;
   revoked_at: string | null;
 };
@@ -248,7 +249,7 @@ export async function requirePrivateSession(token: string) {
   if (!token || token.length < 32) throw new Error("Private session is missing");
   const tokenHash = hashSessionToken(token);
   const rows = await supabaseRequest<PrivateSessionRow[]>(
-    `telegram_private_sessions?select=participant_id,expires_at,revoked_at&token_hash=eq.${encodeURIComponent(tokenHash)}&limit=1`
+    `telegram_private_sessions?select=participant_id,subject_hash,expires_at,revoked_at&token_hash=eq.${encodeURIComponent(tokenHash)}&limit=1`
   );
   const session = rows?.[0];
   if (!session || session.revoked_at || Date.parse(session.expires_at) <= Date.now()) {

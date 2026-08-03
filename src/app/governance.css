@@ -1,0 +1,234 @@
+.council-governance {
+  display: grid;
+  max-height: min(25rem, 52vh);
+  gap: 0.8rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.2rem;
+  scrollbar-color: rgba(240, 217, 156, 0.4) transparent;
+}
+
+.council-governance__heading,
+.council-governance__proposal > header,
+.council-governance__proposal > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.council-governance__heading h2 {
+  margin-bottom: 0;
+}
+
+.council-governance__heading-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.council-governance button,
+.council-governance input,
+.council-governance textarea {
+  font: inherit;
+}
+
+.council-governance button {
+  min-height: 2.25rem;
+  border: 1px solid rgba(240, 217, 156, 0.28);
+  border-radius: 999px;
+  background: rgba(10, 13, 14, 0.62);
+  color: #f4dc9f;
+  padding: 0.42rem 0.72rem;
+  cursor: pointer;
+}
+
+.council-governance button:hover:not(:disabled) {
+  border-color: rgba(240, 217, 156, 0.56);
+  background: rgba(240, 217, 156, 0.1);
+}
+
+.council-governance button:disabled {
+  cursor: default;
+  opacity: 0.48;
+}
+
+.council-governance__creator {
+  display: grid;
+  gap: 0.62rem;
+  border-top: 1px solid rgba(240, 217, 156, 0.18);
+  border-bottom: 1px solid rgba(240, 217, 156, 0.18);
+  padding: 0.78rem 0;
+}
+
+.council-governance__creator label {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.council-governance__creator label > span {
+  color: rgba(240, 217, 156, 0.64);
+  font-size: 0.63rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.council-governance__creator input,
+.council-governance__creator textarea {
+  width: 100%;
+  border: 1px solid rgba(240, 217, 156, 0.2);
+  border-radius: 0.35rem;
+  outline: 0;
+  background: rgba(3, 8, 8, 0.68);
+  color: rgba(255, 249, 233, 0.94);
+  padding: 0.55rem 0.62rem;
+  resize: vertical;
+}
+
+.council-governance__creator input:focus,
+.council-governance__creator textarea:focus {
+  border-color: rgba(195, 144, 255, 0.64);
+  box-shadow: 0 0 0 2px rgba(157, 102, 226, 0.12);
+}
+
+.council-governance__creator-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.62rem;
+}
+
+.council-governance__creator > button {
+  justify-self: start;
+  background: linear-gradient(135deg, rgba(240, 217, 156, 0.16), rgba(157, 102, 226, 0.18));
+}
+
+.council-governance__notice,
+.council-governance__loading,
+.council-governance__empty p {
+  margin: 0;
+  color: rgba(202, 236, 219, 0.82);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.council-governance__notice {
+  border-left: 2px solid rgba(181, 232, 205, 0.58);
+  padding-left: 0.6rem;
+}
+
+.council-governance__list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.council-governance__proposal {
+  border: 1px solid rgba(240, 217, 156, 0.18);
+  border-radius: 0.4rem;
+  background: linear-gradient(135deg, rgba(240, 217, 156, 0.045), rgba(157, 102, 226, 0.06));
+  padding: 0.76rem;
+}
+
+.council-governance__proposal[data-status="closed"],
+.council-governance__proposal[data-status="cancelled"] {
+  opacity: 0.72;
+}
+
+.council-governance__proposal header span,
+.council-governance__proposal footer span {
+  color: rgba(215, 224, 220, 0.56);
+  font-size: 0.64rem;
+}
+
+.council-governance__proposal header strong {
+  color: #fff0bf;
+  font-size: 0.78rem;
+}
+
+.council-governance__proposal h3 {
+  margin: 0.16rem 0 0;
+  color: #fff9e9;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.council-governance__proposal > p {
+  margin: 0.52rem 0;
+  color: rgba(216, 222, 218, 0.7);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.council-governance__choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.42rem;
+  margin-top: 0.58rem;
+}
+
+.council-governance__choices button {
+  position: relative;
+  overflow: hidden;
+  min-height: 2.8rem;
+  border-radius: 0.35rem;
+  text-align: left;
+}
+
+.council-governance__choices button[aria-pressed="true"] {
+  border-color: rgba(181, 232, 205, 0.56);
+  color: #d9ffe9;
+}
+
+.council-governance__choices button span {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.45rem;
+}
+
+.council-governance__choices button b,
+.council-governance__choices button em {
+  font-size: 0.67rem;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.council-governance__choices button em {
+  color: rgba(240, 217, 156, 0.58);
+}
+
+.council-governance__choices button i {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #d8bd73, #a26ee2);
+}
+
+.council-governance__proposal > footer {
+  margin-top: 0.6rem;
+}
+
+.council-governance__proposal > footer button {
+  min-height: 1.9rem;
+  padding: 0.3rem 0.58rem;
+  font-size: 0.63rem;
+}
+
+@media (max-width: 680px) {
+  .council-governance {
+    max-height: min(27rem, 58vh);
+  }
+
+  .council-governance__heading {
+    align-items: flex-start;
+  }
+
+  .council-governance__heading-actions {
+    flex-direction: column;
+  }
+
+  .council-governance__creator-row,
+  .council-governance__choices {
+    grid-template-columns: 1fr;
+  }
+}

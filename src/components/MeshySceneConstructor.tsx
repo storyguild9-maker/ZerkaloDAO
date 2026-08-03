@@ -100,7 +100,7 @@ const createCouncilHologramWorldRuntime = (): CouncilHologramWorldRuntime => {
 
   const panelFrame = new THREE.Group();
   panelFrame.name = "council-hologram-world-panel";
-  panelFrame.position.set(0, 1.62, 0);
+  panelFrame.position.set(0, 1.28, 0);
   panelFrame.rotation.x = -0.08;
   group.add(panelFrame);
 
@@ -130,6 +130,7 @@ type MeshySceneConstructorProps = {
   telegramAvatarId?: string;
   telegramParticipantId?: string;
   telegramParticipantNickname?: string;
+  telegramSessionToken?: string;
   telegramParticipants?: TelegramPresenceParticipant[];
   onTelegramPose?: (pose: TelegramAvatarPose) => void;
 };
@@ -1128,6 +1129,7 @@ export function MeshySceneConstructor({
   telegramAvatarId,
   telegramParticipantId,
   telegramParticipantNickname,
+  telegramSessionToken,
   telegramParticipants = [],
   onTelegramPose
 }: MeshySceneConstructorProps = {}) {
@@ -4180,6 +4182,7 @@ export function MeshySceneConstructor({
           onLeave={leaveCouncilTable}
           panelRef={councilHologramPanelRef}
           participantName={telegramParticipantNickname}
+          sessionToken={telegramSessionToken}
           visible={avatarIsSeated}
         />
       ) : null}

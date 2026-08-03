@@ -783,6 +783,7 @@ export function TelegramMiniAppShell() {
           telegramAvatarId={session.avatarId}
           telegramParticipantId={session.participantId}
           telegramParticipantNickname={session.nickname}
+          telegramSessionToken={session.token}
           telegramParticipants={participants}
         />
         {!chatOpen ? (

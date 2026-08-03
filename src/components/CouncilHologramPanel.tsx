@@ -8,11 +8,13 @@ import {
 } from "@tonconnect/ui-react";
 import { useEffect, useMemo, useState, type MutableRefObject } from "react";
 import { createPortal } from "react-dom";
+import { CouncilGovernancePanel } from "@/components/CouncilGovernancePanel";
 
 type CouncilPanelTab = "wallet" | "votes" | "profile";
 
 type CouncilHologramPanelProps = {
   participantName?: string;
+  sessionToken?: string;
   visible: boolean;
   onLeave: () => void;
   panelRef: MutableRefObject<HTMLElement | null>;
@@ -28,7 +30,7 @@ const shortenAddress = (address: string) => address.length > 14
   ? `${address.slice(0, 7)}...${address.slice(-6)}`
   : address;
 
-export function CouncilHologramPanel({ participantName, visible, onLeave, panelRef }: CouncilHologramPanelProps) {
+export function CouncilHologramPanel({ participantName, sessionToken, visible, onLeave, panelRef }: CouncilHologramPanelProps) {
   const [tonConnectUI] = useTonConnectUI();
   const wallet = useTonWallet();
   const walletAddress = useTonAddress();
@@ -39,6 +41,7 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
   const [projectorVisible, setProjectorVisible] = useState(true);
   const [walletBusy, setWalletBusy] = useState(false);
   const [walletMessage, setWalletMessage] = useState("");
+  const [canManageGovernance, setCanManageGovernance] = useState(false);
 
   const walletNetwork = wallet
     ? String(wallet.account.chain) === "-239" ? "Основная сеть TON" : "Тестовая сеть TON"
@@ -182,17 +185,16 @@ export function CouncilHologramPanel({ participantName, visible, onLeave, panelR
               ) : null}
 
               {activeTab === "votes" ? (
-                <div className="council-hologram__empty" role="tabpanel">
-                  <p className="council-hologram__eyebrow">Совет Зеркала</p>
-                  <h2>Нет активных голосований</h2>
-                  <p>Когда предложение откроется, здесь появятся срок, кворум и подтверждение через TON.</p>
-                </div>
+                <CouncilGovernancePanel
+                  onManagementChange={setCanManageGovernance}
+                  sessionToken={sessionToken}
+                />
               ) : null}
 
               {activeTab === "profile" ? (
                 <div className="council-hologram__profile" role="tabpanel">
                   <div><span>Статус</span><strong>Присутствует</strong></div>
-                  <div><span>Роль</span><strong>Гость храма</strong></div>
+                  <div><span>Роль</span><strong>{canManageGovernance ? "Управляющий" : "Участник совета"}</strong></div>
                   <div><span>Сила голоса</span><strong>Не определена</strong></div>
                 </div>
               ) : null}
