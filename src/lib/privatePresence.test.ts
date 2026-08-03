@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   createTelegramSubjectHash,
+  hashChatRoomPassword,
   hashSessionToken,
   normalizeChatMessage,
-  normalizeSessionNickname
+  normalizeChatRoomCode,
+  normalizeChatRoomName,
+  normalizeChatRoomPassword,
+  normalizeSessionNickname,
+  verifyChatRoomPassword
 } from "./privatePresence";
 
 describe("private Telegram presence", () => {
@@ -32,4 +37,17 @@ describe("private Telegram presence", () => {
     expect(() => normalizeChatMessage("   ")).toThrow("пустым");
     expect(() => normalizeChatMessage("я".repeat(501))).toThrow("500");
   });
+  it("normalizes private room details and verifies only the correct password", () => {
+    expect(normalizeChatRoomName("  Тихий   совет  ")).toBe("Тихий совет");
+    expect(normalizeChatRoomCode("ab3d-ef7h")).toBe("AB3DEF7H");
+    expect(normalizeChatRoomPassword("  шесть знаков  ")).toBe("шесть знаков");
+
+    const salt = "12".repeat(16);
+    const hash = hashChatRoomPassword("светлый ключ", salt);
+    expect(hash).toHaveLength(128);
+    expect(verifyChatRoomPassword("светлый ключ", salt, hash)).toBe(true);
+    expect(verifyChatRoomPassword("другой ключ", salt, hash)).toBe(false);
+    expect(() => normalizeChatRoomPassword("12345")).toThrow("6");
+  });
+
 });

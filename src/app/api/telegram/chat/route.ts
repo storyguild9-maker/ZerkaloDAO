@@ -19,11 +19,13 @@ export async function GET(request: Request) {
   try {
     const token = bearerToken(request);
     if (!token) return noStore({ ok: false, error: "Сессия не найдена" }, { status: 401 });
-    return noStore({ ok: true, messages: await listSessionChat(token) });
+    const roomId = new URL(request.url).searchParams.get("roomId");
+    return noStore({ ok: true, messages: await listSessionChat(token, roomId) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
-    const status = /session/i.test(message) ? 401 : 503;
-    return noStore({ ok: false, error: status === 401 ? "Сессия истекла" : "Чат временно недоступен" }, { status });
+    const status = /session/i.test(message) ? 401 : /доступ|комнат/i.test(message) ? 403 : 503;
+    const clientMessage = status === 401 ? "Сессия истекла" : status === 503 ? "Чат временно недоступен" : message;
+    return noStore({ ok: false, error: clientMessage }, { status });
   }
 }
 
@@ -32,11 +34,11 @@ export async function POST(request: Request) {
     const token = bearerToken(request);
     if (!token) return noStore({ ok: false, error: "Сессия не найдена" }, { status: 401 });
     const body = await request.json().catch(() => ({}));
-    const message = await postSessionChatMessage(token, body.message);
+    const message = await postSessionChatMessage(token, body.message, body.roomId);
     return noStore({ ok: true, message }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Не удалось отправить сообщение";
-    const status = /session/i.test(message) ? 401 : /слишком много/i.test(message) ? 429 : /сообщени/i.test(message) ? 400 : 503;
+    const status = /session/i.test(message) ? 401 : /доступ|комнат/i.test(message) ? 403 : /слишком много/i.test(message) ? 429 : /сообщени/i.test(message) ? 400 : 503;
     const clientMessage = status === 401 ? "Сессия истекла" : status === 503 ? "Чат временно недоступен" : message;
     return noStore({ ok: false, error: clientMessage }, { status });
   }

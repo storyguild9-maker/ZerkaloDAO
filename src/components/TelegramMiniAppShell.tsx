@@ -28,6 +28,16 @@ type ChatMessage = {
   delivery?: "sending" | "failed";
 };
 
+type ChatRoom = {
+  id: string;
+  name: string;
+  code: string;
+  createdAt: string;
+  expiresAt: string;
+};
+
+type ChatRoomEditorMode = "create" | "join";
+
 type TelegramWebApp = {
   initData: string;
   ready: () => void;
@@ -111,6 +121,14 @@ export function TelegramMiniAppShell() {
   const [participants, setParticipants] = useState<TelegramPresenceParticipant[]>([]);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [activeChatRoomId, setActiveChatRoomId] = useState<string | null>(null);
+  const [chatRoomEditorMode, setChatRoomEditorMode] = useState<ChatRoomEditorMode | null>(null);
+  const [chatRoomNameDraft, setChatRoomNameDraft] = useState("");
+  const [chatRoomCodeDraft, setChatRoomCodeDraft] = useState("");
+  const [chatRoomPasswordDraft, setChatRoomPasswordDraft] = useState("");
+  const [chatRoomSaving, setChatRoomSaving] = useState(false);
+  const [chatRoomNotice, setChatRoomNotice] = useState("");
   const [chatDraft, setChatDraft] = useState("");
   const [chatSending, setChatSending] = useState(false);
   const [chatError, setChatError] = useState("");
@@ -179,11 +197,13 @@ export function TelegramMiniAppShell() {
   useEffect(() => {
     if (!chatOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setChatOpen(false);
+      if (event.key !== "Escape") return;
+      if (chatRoomEditorMode) setChatRoomEditorMode(null);
+      else setChatOpen(false);
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [chatOpen]);
+  }, [chatOpen, chatRoomEditorMode]);
 
   useEffect(() => {
     participantsRef.current = participants;
@@ -455,9 +475,46 @@ export function TelegramMiniAppShell() {
     if (!entered || !session) return;
     let cancelled = false;
 
+    const loadRooms = async () => {
+      try {
+        const response = await fetch("/api/telegram/chat/rooms", {
+          headers: { Authorization: `Bearer ${session.token}` },
+          cache: "no-store"
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok || cancelled || !Array.isArray(payload.rooms)) return;
+        const rooms = payload.rooms as ChatRoom[];
+        setChatRooms(rooms);
+        setActiveChatRoomId((current) => current && !rooms.some((room) => room.id === current) ? null : current);
+      } catch {
+        if (!cancelled && chatOpenRef.current) setChatRoomNotice("Не удалось обновить список комнат");
+      }
+    };
+
+    void loadRooms();
+    const interval = window.setInterval(() => void loadRooms(), chatOpen ? 8000 : 20000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [chatOpen, entered, session]);
+  useEffect(() => {
+    lastChatMessageIdRef.current = "";
+    chatShouldStickRef.current = true;
+    setChatMessages([]);
+    setChatNewBelow(0);
+    setChatError("");
+  }, [activeChatRoomId]);
+
+
+  useEffect(() => {
+    if (!entered || !session) return;
+    let cancelled = false;
+
     const loadChat = async () => {
       try {
-        const response = await fetch("/api/telegram/chat", {
+        const roomQuery = activeChatRoomId ? `?roomId=${encodeURIComponent(activeChatRoomId)}` : "";
+        const response = await fetch(`/api/telegram/chat${roomQuery}`, {
           headers: { Authorization: `Bearer ${session.token}` },
           cache: "no-store"
         });
@@ -496,7 +553,7 @@ export function TelegramMiniAppShell() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [chatOpen, entered, session]);
+  }, [activeChatRoomId, chatOpen, entered, session]);
 
   useEffect(() => {
     if (!chatOpen || !chatShouldStickRef.current) return;
@@ -600,7 +657,7 @@ export function TelegramMiniAppShell() {
           Authorization: `Bearer ${session.token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ message: body }),
+        body: JSON.stringify({ message: body, roomId: activeChatRoomId }),
         cache: "no-store"
       });
       const payload = await response.json();
@@ -645,6 +702,67 @@ export function TelegramMiniAppShell() {
     await postChatMessage(message.body, message.id);
   };
 
+  const selectChatRoom = (roomId: string | null) => {
+    setActiveChatRoomId(roomId);
+    setChatRoomEditorMode(null);
+    setChatRoomNotice("");
+  };
+
+  const openChatRoomEditor = (mode: ChatRoomEditorMode) => {
+    setChatRoomEditorMode(mode);
+    setChatRoomNotice("");
+    setChatRoomPasswordDraft("");
+  };
+
+  const submitChatRoom = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!session || !chatRoomEditorMode || chatRoomSaving) return;
+    setChatRoomSaving(true);
+    setChatRoomNotice("");
+    try {
+      const response = await fetch("/api/telegram/chat/rooms", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(chatRoomEditorMode === "create"
+          ? { action: "create", name: chatRoomNameDraft, password: chatRoomPasswordDraft }
+          : { action: "join", code: chatRoomCodeDraft, password: chatRoomPasswordDraft }),
+        cache: "no-store"
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.error || "Не удалось открыть комнату");
+      const room = payload.room as ChatRoom;
+      setChatRooms((current) => current.some((item) => item.id === room.id)
+        ? current.map((item) => item.id === room.id ? room : item)
+        : [...current, room]);
+      setChatRoomNameDraft("");
+      setChatRoomCodeDraft("");
+      setChatRoomPasswordDraft("");
+      setChatRoomEditorMode(null);
+      setChatRoomNotice(chatRoomEditorMode === "create" ? `Комната создана · код ${room.code}` : "Вход выполнен");
+      setActiveChatRoomId(room.id);
+    } catch (reason) {
+      setChatRoomNotice(reason instanceof Error ? reason.message : "Не удалось открыть комнату");
+    } finally {
+      setChatRoomSaving(false);
+    }
+  };
+
+  const copyChatRoomCode = async (room: ChatRoom) => {
+    try {
+      await navigator.clipboard.writeText(room.code);
+      setChatRoomNotice("Код комнаты скопирован");
+    } catch {
+      setChatRoomNotice(`Код комнаты: ${room.code}`);
+    }
+  };
+
+  const activeChatRoom = activeChatRoomId
+    ? chatRooms.find((room) => room.id === activeChatRoomId) ?? null
+    : null;
+
   if (entered && session) {
     return (
       <div className="telegram-mini-app telegram-mini-app--entered">
@@ -688,10 +806,112 @@ export function TelegramMiniAppShell() {
               <button aria-label="Свернуть чат" onClick={() => setChatOpen(false)} title="Свернуть чат" type="button">←</button>
               <div>
                 <p className="dao-kicker">Пространство</p>
-                <h2>Общий чат</h2>
-                <span>Сейчас в храме: {Math.max(1, presenceCount)}</span>
+                <h2>{activeChatRoom?.name ?? "Стена чата"}</h2>
+                <span>{activeChatRoom ? "Закрытый диалог" : `Сейчас в храме: ${Math.max(1, presenceCount)}`}</span>
               </div>
             </header>
+            <div className="telegram-chat-room-switcher">
+              <nav aria-label="Диалоги" className="telegram-chat-rooms">
+                <button
+                  className={!activeChatRoomId ? "is-active" : ""}
+                  onClick={() => selectChatRoom(null)}
+                  type="button"
+                >
+                  Стена
+                </button>
+                {chatRooms.map((room) => (
+                  <button
+                    className={activeChatRoomId === room.id ? "is-active" : ""}
+                    key={room.id}
+                    onClick={() => selectChatRoom(room.id)}
+                    title={room.name}
+                    type="button"
+                  >
+                    {room.name}
+                  </button>
+                ))}
+                <button
+                  aria-label="Создать или открыть закрытый диалог"
+                  className="telegram-chat-rooms__add"
+                  onClick={() => {
+                    if (chatRoomEditorMode) setChatRoomEditorMode(null);
+                    else openChatRoomEditor("create");
+                  }}
+                  title="Создать или открыть комнату"
+                  type="button"
+                >
+                  +
+                </button>
+              </nav>
+              {activeChatRoom ? (
+                <div className="telegram-chat-room-meta">
+                  <span>Доступ по коду и паролю</span>
+                  <button onClick={() => void copyChatRoomCode(activeChatRoom)} type="button">
+                    Код {activeChatRoom.code}
+                  </button>
+                </div>
+              ) : null}
+              {chatRoomEditorMode ? (
+                <form className="telegram-chat-room-form" onSubmit={(event) => void submitChatRoom(event)}>
+                  <div aria-label="Действие с комнатой" className="telegram-chat-room-form__modes">
+                    <button
+                      className={chatRoomEditorMode === "create" ? "is-active" : ""}
+                      onClick={() => openChatRoomEditor("create")}
+                      type="button"
+                    >
+                      Создать
+                    </button>
+                    <button
+                      className={chatRoomEditorMode === "join" ? "is-active" : ""}
+                      onClick={() => openChatRoomEditor("join")}
+                      type="button"
+                    >
+                      Войти
+                    </button>
+                  </div>
+                  {chatRoomEditorMode === "create" ? (
+                    <label>
+                      <span>Название</span>
+                      <input
+                        autoComplete="off"
+                        maxLength={32}
+                        onChange={(event) => setChatRoomNameDraft(event.target.value)}
+                        placeholder="Например, Совет"
+                        value={chatRoomNameDraft}
+                      />
+                    </label>
+                  ) : (
+                    <label>
+                      <span>Код комнаты</span>
+                      <input
+                        autoCapitalize="characters"
+                        autoComplete="off"
+                        maxLength={11}
+                        onChange={(event) => setChatRoomCodeDraft(event.target.value.toUpperCase())}
+                        placeholder="8 символов"
+                        value={chatRoomCodeDraft}
+                      />
+                    </label>
+                  )}
+                  <label>
+                    <span>Пароль</span>
+                    <input
+                      autoComplete="new-password"
+                      maxLength={72}
+                      minLength={6}
+                      onChange={(event) => setChatRoomPasswordDraft(event.target.value)}
+                      placeholder="Не менее 6 символов"
+                      type="password"
+                      value={chatRoomPasswordDraft}
+                    />
+                  </label>
+                  <button disabled={chatRoomSaving} type="submit">
+                    {chatRoomSaving ? "..." : chatRoomEditorMode === "create" ? "Создать комнату" : "Войти по коду"}
+                  </button>
+                </form>
+              ) : null}
+              {chatRoomNotice ? <p className="telegram-chat-room-notice" role="status">{chatRoomNotice}</p> : null}
+            </div>
             <div className="telegram-chat-history">
               <div
                 aria-live="polite"

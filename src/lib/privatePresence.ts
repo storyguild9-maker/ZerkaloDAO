@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import {
   getTelegramAvatarId,
   getTelegramAvatarIdForGender,
@@ -12,6 +12,10 @@ const CHAT_HISTORY_LIMIT = 80;
 const CHAT_MESSAGE_LIMIT = 500;
 const CHAT_RATE_WINDOW_SECONDS = 10;
 const CHAT_RATE_LIMIT = 5;
+const PRIVATE_ROOM_LIMIT = 12;
+const PRIVATE_ROOM_CODE_LENGTH = 8;
+const PRIVATE_ROOM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type PrivatePresenceSession = {
   participantId: string;
@@ -39,6 +43,14 @@ export type PublicChatMessage = {
   mine: boolean;
 };
 
+export type PublicChatRoom = {
+  id: string;
+  name: string;
+  code: string;
+  createdAt: string;
+  expiresAt: string;
+};
+
 type PrivateSessionRow = {
   participant_id: string;
   expires_at: string;
@@ -63,6 +75,21 @@ type ChatRow = {
   nickname_snapshot: string;
   body: string;
   created_at: string;
+};
+
+type ChatRoomRow = {
+  id: string;
+  invite_code: string;
+  name: string;
+  password_salt: string;
+  password_hash: string;
+  created_at: string;
+  expires_at: string;
+};
+
+type ChatRoomMemberRow = {
+  room_id: string;
+  expires_at: string;
 };
 
 function supabaseConfiguration() {
@@ -130,6 +157,62 @@ export function normalizeChatMessage(value: unknown) {
     throw new Error(`Сообщение должно быть не длиннее ${CHAT_MESSAGE_LIMIT} символов`);
   }
   return body;
+}
+
+export function normalizeChatRoomName(value: unknown) {
+  if (typeof value !== "string") throw new Error("Введите название комнаты");
+  const name = value.normalize("NFKC").replace(/\s+/g, " ").trim();
+  if (name.length < 2 || name.length > 32) {
+    throw new Error("Название должно содержать от 2 до 32 символов");
+  }
+  if (/[<>\u0000-\u001f\u007f]/u.test(name)) {
+    throw new Error("В названии есть недопустимые символы");
+  }
+  return name;
+}
+
+export function normalizeChatRoomPassword(value: unknown) {
+  if (typeof value !== "string") throw new Error("Введите пароль");
+  const password = value.normalize("NFKC").trim();
+  if (password.length < 6 || password.length > 72) {
+    throw new Error("Пароль должен содержать от 6 до 72 символов");
+  }
+  if (/[\u0000-\u001f\u007f]/u.test(password)) {
+    throw new Error("В пароле есть недопустимые символы");
+  }
+  return password;
+}
+
+export function normalizeChatRoomCode(value: unknown) {
+  if (typeof value !== "string") throw new Error("Введите код комнаты");
+  const code = value.normalize("NFKC").toUpperCase().replace(/[\s-]+/g, "");
+  if (code.length !== PRIVATE_ROOM_CODE_LENGTH || !new RegExp(`^[${PRIVATE_ROOM_CODE_ALPHABET}]+$`).test(code)) {
+    throw new Error("Код комнаты должен содержать 8 символов");
+  }
+  return code;
+}
+
+export function hashChatRoomPassword(password: string, salt: string) {
+  if (!/^[0-9a-f]{32}$/i.test(salt)) throw new Error("Password salt is invalid");
+  return scryptSync(normalizeChatRoomPassword(password), Buffer.from(salt, "hex"), 64).toString("hex");
+}
+
+export function verifyChatRoomPassword(password: unknown, salt: string, expectedHash: string) {
+  if (!/^[0-9a-f]{128}$/i.test(expectedHash)) return false;
+  const actual = Buffer.from(hashChatRoomPassword(normalizeChatRoomPassword(password), salt), "hex");
+  const expected = Buffer.from(expectedHash, "hex");
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
+function createChatRoomCode() {
+  const bytes = randomBytes(PRIVATE_ROOM_CODE_LENGTH);
+  return Array.from(bytes, (value) => PRIVATE_ROOM_CODE_ALPHABET[value % PRIVATE_ROOM_CODE_ALPHABET.length]).join("");
+}
+
+function normalizeChatRoomId(value: unknown) {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string" || !UUID_PATTERN.test(value)) throw new Error("Комната не найдена");
+  return value.toLowerCase();
 }
 
 function createDefaultNickname(participantId: string) {
@@ -246,17 +329,130 @@ export async function listActivePresence(token: string): Promise<PublicPresence[
   return (rows ?? []).map(mapPresence);
 }
 
-export async function listSessionChat(token: string): Promise<PublicChatMessage[]> {
+function mapChatRoom(row: ChatRoomRow): PublicChatRoom {
+  return {
+    id: row.id,
+    name: row.name,
+    code: row.invite_code,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at
+  };
+}
+
+async function listJoinedChatRoomsForSession(session: PrivateSessionRow): Promise<PublicChatRoom[]> {
+  const now = new Date().toISOString();
+  const memberships = await supabaseRequest<ChatRoomMemberRow[]>(
+    `pseudonymous_chat_room_members?select=room_id,expires_at&participant_id=eq.${encodeURIComponent(session.participant_id)}&expires_at=gt.${encodeURIComponent(now)}&order=joined_at.asc&limit=${PRIVATE_ROOM_LIMIT}`
+  );
+  const roomIds = (memberships ?? []).map((membership) => membership.room_id).filter((id) => UUID_PATTERN.test(id));
+  if (roomIds.length === 0) return [];
+  const rows = await supabaseRequest<ChatRoomRow[]>(
+    `pseudonymous_chat_rooms?select=id,invite_code,name,password_salt,password_hash,created_at,expires_at&id=in.(${roomIds.join(",")})&expires_at=gt.${encodeURIComponent(now)}&order=created_at.asc`
+  );
+  return (rows ?? []).map(mapChatRoom);
+}
+
+export async function listJoinedChatRooms(token: string): Promise<PublicChatRoom[]> {
+  return listJoinedChatRoomsForSession(await requirePrivateSession(token));
+}
+
+export async function createPrivateChatRoom(
+  token: string,
+  nameValue: unknown,
+  passwordValue: unknown
+): Promise<PublicChatRoom> {
   const session = await requirePrivateSession(token);
+  const joinedRooms = await listJoinedChatRoomsForSession(session);
+  if (joinedRooms.length >= PRIVATE_ROOM_LIMIT) {
+    throw new Error("Достигнут лимит закрытых комнат");
+  }
+
+  const name = normalizeChatRoomName(nameValue);
+  const password = normalizeChatRoomPassword(passwordValue);
+  const salt = randomBytes(16).toString("hex");
+  const expiresAt = session.expires_at;
+  const rows = await supabaseRequest<ChatRoomRow[]>(
+    "pseudonymous_chat_rooms?select=id,invite_code,name,password_salt,password_hash,created_at,expires_at",
+    {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        invite_code: createChatRoomCode(),
+        name,
+        password_salt: salt,
+        password_hash: hashChatRoomPassword(password, salt),
+        creator_participant_id: session.participant_id,
+        expires_at: expiresAt
+      })
+    }
+  );
+  const room = rows?.[0];
+  if (!room) throw new Error("Комната не была создана");
+  await supabaseRequest("pseudonymous_chat_room_members?on_conflict=room_id,participant_id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify({
+      room_id: room.id,
+      participant_id: session.participant_id,
+      expires_at: expiresAt
+    })
+  });
+  return mapChatRoom(room);
+}
+
+export async function joinPrivateChatRoom(
+  token: string,
+  codeValue: unknown,
+  passwordValue: unknown
+): Promise<PublicChatRoom> {
+  const session = await requirePrivateSession(token);
+  const code = normalizeChatRoomCode(codeValue);
+  const now = new Date().toISOString();
+  const rows = await supabaseRequest<ChatRoomRow[]>(
+    `pseudonymous_chat_rooms?select=id,invite_code,name,password_salt,password_hash,created_at,expires_at&invite_code=eq.${encodeURIComponent(code)}&expires_at=gt.${encodeURIComponent(now)}&limit=1`
+  );
+  const room = rows?.[0];
+  if (!room || !verifyChatRoomPassword(passwordValue, room.password_salt, room.password_hash)) {
+    throw new Error("Неверный код или пароль");
+  }
+
+  const expiresAt = new Date(Math.min(Date.parse(session.expires_at), Date.parse(room.expires_at))).toISOString();
+  await supabaseRequest("pseudonymous_chat_room_members?on_conflict=room_id,participant_id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify({
+      room_id: room.id,
+      participant_id: session.participant_id,
+      expires_at: expiresAt
+    })
+  });
+  return mapChatRoom(room);
+}
+
+async function resolveChatRoomKey(session: PrivateSessionRow, roomIdValue?: unknown) {
+  const roomId = normalizeChatRoomId(roomIdValue);
+  if (!roomId) return ROOM_KEY;
+  const now = new Date().toISOString();
+  const rows = await supabaseRequest<ChatRoomMemberRow[]>(
+    `pseudonymous_chat_room_members?select=room_id,expires_at&room_id=eq.${encodeURIComponent(roomId)}&participant_id=eq.${encodeURIComponent(session.participant_id)}&expires_at=gt.${encodeURIComponent(now)}&limit=1`
+  );
+  if (!rows?.[0]) throw new Error("Нет доступа к комнате");
+  return roomId;
+}
+
+export async function listSessionChat(token: string, roomId?: unknown): Promise<PublicChatMessage[]> {
+  const session = await requirePrivateSession(token);
+  const roomKey = await resolveChatRoomKey(session, roomId);
   const now = new Date().toISOString();
   const rows = await supabaseRequest<ChatRow[]>(
-    `pseudonymous_chat_messages?select=id,participant_id,nickname_snapshot,body,created_at&room_key=eq.${ROOM_KEY}&expires_at=gt.${encodeURIComponent(now)}&order=created_at.desc&limit=${CHAT_HISTORY_LIMIT}`
+    `pseudonymous_chat_messages?select=id,participant_id,nickname_snapshot,body,created_at&room_key=eq.${encodeURIComponent(roomKey)}&expires_at=gt.${encodeURIComponent(now)}&order=created_at.desc&limit=${CHAT_HISTORY_LIMIT}`
   );
   return (rows ?? []).reverse().map((row) => mapChatMessage(row, session.participant_id));
 }
 
-export async function postSessionChatMessage(token: string, value: unknown): Promise<PublicChatMessage> {
+export async function postSessionChatMessage(token: string, value: unknown, roomId?: unknown): Promise<PublicChatMessage> {
   const session = await requirePrivateSession(token);
+  const roomKey = await resolveChatRoomKey(session, roomId);
   const body = normalizeChatMessage(value);
   const recentAfter = new Date(Date.now() - CHAT_RATE_WINDOW_SECONDS * 1000).toISOString();
   const recentRows = await supabaseRequest<Array<{ id: string }>>(
@@ -278,7 +474,7 @@ export async function postSessionChatMessage(token: string, value: unknown): Pro
     method: "POST",
     headers: { Prefer: "return=representation" },
     body: JSON.stringify({
-      room_key: ROOM_KEY,
+      room_key: roomKey,
       participant_id: session.participant_id,
       nickname_snapshot: presence.nickname,
       body,
