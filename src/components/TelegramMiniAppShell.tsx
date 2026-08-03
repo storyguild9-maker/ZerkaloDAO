@@ -25,6 +25,7 @@ type ChatMessage = {
   body: string;
   createdAt: string;
   mine: boolean;
+  delivery?: "sending" | "failed";
 };
 
 type TelegramWebApp = {
@@ -114,6 +115,7 @@ export function TelegramMiniAppShell() {
   const [chatSending, setChatSending] = useState(false);
   const [chatError, setChatError] = useState("");
   const [chatUnread, setChatUnread] = useState(0);
+  const [chatNewBelow, setChatNewBelow] = useState(0);
   const [status, setStatus] = useState("Проверяем вход через Telegram...");
   const [error, setError] = useState("");
   const [entered, setEntered] = useState(false);
@@ -128,6 +130,9 @@ export function TelegramMiniAppShell() {
   const stallTimerRef = useRef<number | null>(null);
   const chatOpenRef = useRef(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const chatMessagesRef = useRef<HTMLDivElement | null>(null);
+  const chatTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const chatShouldStickRef = useRef(true);
   const lastChatMessageIdRef = useRef("");
   const participantsRef = useRef<TelegramPresenceParticipant[]>([]);
   const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
@@ -160,7 +165,24 @@ export function TelegramMiniAppShell() {
 
   useEffect(() => {
     chatOpenRef.current = chatOpen;
-    if (chatOpen) setChatUnread(0);
+    if (chatOpen) {
+      setChatUnread(0);
+      setChatNewBelow(0);
+      chatShouldStickRef.current = true;
+      window.requestAnimationFrame(() => {
+        const messages = chatMessagesRef.current;
+        messages?.scrollTo({ top: messages.scrollHeight });
+      });
+    }
+  }, [chatOpen]);
+
+  useEffect(() => {
+    if (!chatOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setChatOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
   }, [chatOpen]);
 
   useEffect(() => {
@@ -444,12 +466,24 @@ export function TelegramMiniAppShell() {
         const messages = payload.messages as ChatMessage[];
         const latestId = messages.at(-1)?.id ?? "";
         const previousId = lastChatMessageIdRef.current;
-        if (!chatOpenRef.current && previousId && latestId && latestId !== previousId) {
-          const previousIndex = messages.findIndex((message) => message.id === previousId);
-          setChatUnread((current) => Math.min(99, current + (previousIndex >= 0 ? messages.length - previousIndex - 1 : 1)));
+        const previousIndex = previousId ? messages.findIndex((message) => message.id === previousId) : -1;
+        const addedCount = previousId && latestId && latestId !== previousId
+          ? Math.max(1, previousIndex >= 0 ? messages.length - previousIndex - 1 : 1)
+          : 0;
+        if (!chatOpenRef.current && addedCount > 0) {
+          setChatUnread((current) => Math.min(99, current + addedCount));
+        } else if (chatOpenRef.current && !chatShouldStickRef.current && addedCount > 0) {
+          setChatNewBelow((current) => Math.min(99, current + addedCount));
         }
         lastChatMessageIdRef.current = latestId;
-        setChatMessages(messages);
+        setChatMessages((current) => {
+          const transient = current.filter((message) => message.delivery && !messages.some((saved) => (
+            saved.mine
+            && saved.body === message.body
+            && Math.abs(Date.parse(saved.createdAt) - Date.parse(message.createdAt)) < 30_000
+          )));
+          return [...messages, ...transient];
+        });
         setChatError("");
       } catch {
         if (!cancelled && chatOpenRef.current) setChatError("Не удалось обновить сообщения");
@@ -465,9 +499,18 @@ export function TelegramMiniAppShell() {
   }, [chatOpen, entered, session]);
 
   useEffect(() => {
-    if (!chatOpen) return;
-    chatEndRef.current?.scrollIntoView({ block: "end" });
+    if (!chatOpen || !chatShouldStickRef.current) return;
+    window.requestAnimationFrame(() => {
+      chatEndRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+    });
   }, [chatMessages, chatOpen]);
+
+  useEffect(() => {
+    const textarea = chatTextareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 112)}px`;
+  }, [chatDraft]);
 
   const saveEntryProfile = async () => {
     if (!session) return false;
@@ -537,9 +580,17 @@ export function TelegramMiniAppShell() {
     setLoadAttempt((attempt) => attempt + 1);
   };
 
-  const sendChatMessage = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!session || chatSending || !chatDraft.trim()) return;
+  const scrollChatToBottom = (behavior: ScrollBehavior = "smooth") => {
+    chatShouldStickRef.current = true;
+    setChatNewBelow(0);
+    window.requestAnimationFrame(() => {
+      const messages = chatMessagesRef.current;
+      messages?.scrollTo({ top: messages.scrollHeight, behavior });
+    });
+  };
+
+  const postChatMessage = async (body: string, temporaryId: string) => {
+    if (!session || chatSending) return;
     setChatSending(true);
     setChatError("");
     try {
@@ -549,20 +600,49 @@ export function TelegramMiniAppShell() {
           Authorization: `Bearer ${session.token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ message: chatDraft }),
+        body: JSON.stringify({ message: body }),
         cache: "no-store"
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok) throw new Error(payload.error || "Не удалось отправить сообщение");
       const message = payload.message as ChatMessage;
       lastChatMessageIdRef.current = message.id;
-      setChatMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
-      setChatDraft("");
+      setChatMessages((current) => {
+        const withoutTemporary = current.filter((item) => item.id !== temporaryId);
+        return withoutTemporary.some((item) => item.id === message.id) ? withoutTemporary : [...withoutTemporary, message];
+      });
     } catch (reason) {
-      setChatError(reason instanceof Error ? reason.message : "Не удалось отправить сообщение");
+      const message = reason instanceof Error ? reason.message : "Не удалось отправить сообщение";
+      setChatMessages((current) => current.map((item) => item.id === temporaryId ? { ...item, delivery: "failed" } : item));
+      setChatError(message);
     } finally {
       setChatSending(false);
     }
+  };
+
+  const sendChatMessage = async (event: FormEvent) => {
+    event.preventDefault();
+    const body = chatDraft.trim();
+    if (!session || chatSending || !body) return;
+    const temporaryId = `pending-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    chatShouldStickRef.current = true;
+    setChatMessages((current) => [...current, {
+      id: temporaryId,
+      nickname: session.nickname,
+      body,
+      createdAt: new Date().toISOString(),
+      mine: true,
+      delivery: "sending"
+    }]);
+    setChatDraft("");
+    await postChatMessage(body, temporaryId);
+  };
+
+  const retryChatMessage = async (message: ChatMessage) => {
+    if (chatSending || message.delivery !== "failed") return;
+    setChatMessages((current) => current.map((item) => item.id === message.id ? { ...item, delivery: "sending" } : item));
+    chatShouldStickRef.current = true;
+    await postChatMessage(message.body, message.id);
   };
 
   if (entered && session) {
@@ -608,24 +688,51 @@ export function TelegramMiniAppShell() {
               <button aria-label="Свернуть чат" onClick={() => setChatOpen(false)} title="Свернуть чат" type="button">←</button>
               <div>
                 <p className="dao-kicker">Пространство</p>
-                <h2>Внутренний чат</h2>
+                <h2>Общий чат</h2>
+                <span>Сейчас в храме: {Math.max(1, presenceCount)}</span>
               </div>
             </header>
-            <div aria-live="polite" className="telegram-chat-messages" role="log">
-              {chatMessages.length === 0 ? (
-                <p className="telegram-chat-empty">Здесь пока тихо. Начните разговор.</p>
-              ) : chatMessages.map((message) => (
-                <article className={message.mine ? "is-mine" : ""} key={message.id}>
-                  <div>
-                    <strong>{message.nickname}</strong>
-                    <time dateTime={message.createdAt}>
-                      {new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit" }).format(new Date(message.createdAt))}
-                    </time>
-                  </div>
-                  <p>{message.body}</p>
-                </article>
-              ))}
-              <div ref={chatEndRef} />
+            <div className="telegram-chat-history">
+              <div
+                aria-live="polite"
+                className="telegram-chat-messages"
+                onScroll={(event) => {
+                  const element = event.currentTarget;
+                  const atBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 64;
+                  chatShouldStickRef.current = atBottom;
+                  if (atBottom) setChatNewBelow(0);
+                }}
+                ref={chatMessagesRef}
+                role="log"
+              >
+                {chatMessages.length === 0 ? (
+                  <p className="telegram-chat-empty">Здесь пока тихо. Начните разговор.</p>
+                ) : chatMessages.map((message) => (
+                  <article
+                    className={`${message.mine ? "is-mine" : ""}${message.delivery ? ` is-${message.delivery}` : ""}`}
+                    key={message.id}
+                  >
+                    <div>
+                      <strong>{message.nickname}</strong>
+                      <time dateTime={message.createdAt}>
+                        {message.delivery === "sending"
+                          ? "отправка"
+                          : new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit" }).format(new Date(message.createdAt))}
+                      </time>
+                    </div>
+                    <p>{message.body}</p>
+                    {message.delivery === "failed" ? (
+                      <button onClick={() => void retryChatMessage(message)} type="button">Повторить отправку</button>
+                    ) : null}
+                  </article>
+                ))}
+                <div ref={chatEndRef} />
+              </div>
+              {chatNewBelow > 0 ? (
+                <button className="telegram-chat-new" onClick={() => scrollChatToBottom()} type="button">
+                  Новые сообщения · {chatNewBelow} ↓
+                </button>
+              ) : null}
             </div>
             <form className="telegram-chat-compose" onSubmit={(event) => void sendChatMessage(event)}>
               <label>
@@ -635,20 +742,27 @@ export function TelegramMiniAppShell() {
                   maxLength={500}
                   onChange={(event) => setChatDraft(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter" && !event.shiftKey) {
+                    if (
+                      event.key === "Enter"
+                      && !event.shiftKey
+                      && !event.nativeEvent.isComposing
+                      && window.matchMedia("(pointer: fine)").matches
+                    ) {
                       event.preventDefault();
                       event.currentTarget.form?.requestSubmit();
                     }
                   }}
-                  placeholder="Написать от имени временного ника"
-                  rows={2}
+                  placeholder={`Сообщение от ${session.nickname}`}
+                  ref={chatTextareaRef}
+                  rows={1}
                   value={chatDraft}
                 />
               </label>
               <button disabled={chatSending || !chatDraft.trim()} type="submit">
                 {chatSending ? "..." : "Отправить"}
               </button>
-              <p role="status">{chatError || "Профили Telegram участникам не показываются"}</p>
+              <p role="status">{chatError || "Анонимно: профиль Telegram скрыт"}</p>
+              <span className={chatDraft.length > 420 ? "is-visible" : ""}>{chatDraft.length}/500</span>
             </form>
           </aside>
         ) : null}
