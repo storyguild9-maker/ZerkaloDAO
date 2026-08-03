@@ -1,17 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { assetUrl } from "@/lib/assetUrl";
+import {
+  findAvatarExitPosition,
+  resolveAvatarGroundMovement,
+  type AvatarGroundCollider,
+} from "@/lib/avatarCollision";
 import { createCelestialSpheres } from "@/lib/celestialSpheres";
 import { getTelegramAvatarId, getTelegramAvatarMotion, isTelegramSceneAsset } from "@/lib/telegramScene";
 import { CouncilHologramPanel } from "@/components/CouncilHologramPanel";
 
 const TELEGRAM_POSE_SAMPLE_MS = 50;
+const AVATAR_COLLISION_RADIUS = 0.68;
+const AVATAR_COLLISION_MIN_HEIGHT = 0.58;
+const AVATAR_COLLISION_MAX_BASE_Y = 2.35;
 
 type MeshyAsset = {
   slug: string;
@@ -1141,6 +1149,7 @@ export function MeshySceneConstructor({
   const sourceCacheRef = useRef(new Map<string, THREE.Object3D>());
   const assetsRef = useRef<MeshyAsset[]>([]);
   const objectRefs = useRef(new Map<string, THREE.Group>());
+  const avatarGroundCollidersRef = useRef<AvatarGroundCollider[]>([]);
   const selectedIdRef = useRef<string | null>(null);
   const selectedIdsRef = useRef<string[]>([]);
   const placedRef = useRef<PlacedAsset[]>([]);
@@ -1533,6 +1542,89 @@ export function MeshySceneConstructor({
     }
     return 2.35;
   };
+
+  const rebuildAvatarGroundColliders = useCallback(() => {
+    const nextColliders: AvatarGroundCollider[] = [];
+    const inverseRootMatrix = new THREE.Matrix4();
+    const meshPoint = new THREE.Vector3();
+    const localBounds = new THREE.Box3();
+    const worldBounds = new THREE.Box3();
+    const localCenter = new THREE.Vector3();
+    const localSize = new THREE.Vector3();
+    const worldCenter = new THREE.Vector3();
+    const worldScale = new THREE.Vector3();
+    const worldQuaternion = new THREE.Quaternion();
+    const worldEuler = new THREE.Euler(0, 0, 0, "YXZ");
+
+    placedRef.current.forEach((item) => {
+      if (item.visible === false || item.surface !== "floor") return;
+      const object = objectRefs.current.get(item.id);
+      if (!object || object.visible === false) return;
+      object.updateWorldMatrix(true, true);
+      worldBounds.setFromObject(object);
+      const height = worldBounds.max.y - worldBounds.min.y;
+      if (!Number.isFinite(height) || height < AVATAR_COLLISION_MIN_HEIGHT || worldBounds.min.y > AVATAR_COLLISION_MAX_BASE_Y) return;
+
+      inverseRootMatrix.copy(object.matrixWorld).invert();
+      localBounds.makeEmpty();
+      object.traverse((child) => {
+        if (!(child instanceof THREE.Mesh) || child.visible === false || !child.geometry) return;
+        if (!child.geometry.boundingBox) child.geometry.computeBoundingBox();
+        const bounds = child.geometry.boundingBox;
+        if (!bounds || bounds.isEmpty()) return;
+        for (const x of [bounds.min.x, bounds.max.x]) {
+          for (const y of [bounds.min.y, bounds.max.y]) {
+            for (const z of [bounds.min.z, bounds.max.z]) {
+              meshPoint.set(x, y, z).applyMatrix4(child.matrixWorld).applyMatrix4(inverseRootMatrix);
+              localBounds.expandByPoint(meshPoint);
+            }
+          }
+        }
+      });
+      if (localBounds.isEmpty()) return;
+
+      localBounds.getCenter(localCenter);
+      localBounds.getSize(localSize);
+      worldCenter.copy(localCenter).applyMatrix4(object.matrixWorld);
+      object.getWorldScale(worldScale);
+      object.getWorldQuaternion(worldQuaternion);
+      worldEuler.setFromQuaternion(worldQuaternion, "YXZ");
+      const halfWidth = Math.abs(localSize.x * worldScale.x) * 0.5;
+      const halfDepth = Math.abs(localSize.z * worldScale.z) * 0.5;
+      if (halfWidth < 0.1 && halfDepth < 0.1) return;
+
+      const signature = `${item.id} ${item.slug} ${item.label}`.toLowerCase();
+      const isRoundCouncilTable = item.id === "base-table" || /council.*(?:round.*)?table|round.*table|кругл.*стол/.test(signature);
+      if (isRoundCouncilTable) {
+        nextColliders.push({
+          id: item.id,
+          shape: "circle",
+          centerX: worldCenter.x,
+          centerZ: worldCenter.z,
+          radius: Math.max(0.2, Math.min(halfWidth, halfDepth) * 0.94),
+        });
+        return;
+      }
+
+      nextColliders.push({
+        id: item.id,
+        shape: "box",
+        centerX: worldCenter.x,
+        centerZ: worldCenter.z,
+        halfWidth: Math.max(0.1, halfWidth * 0.96),
+        halfDepth: Math.max(0.1, halfDepth * 0.96),
+        rotationY: worldEuler.y,
+      });
+    });
+
+    avatarGroundCollidersRef.current = nextColliders;
+  }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+    const frame = window.requestAnimationFrame(rebuildAvatarGroundColliders);
+    return () => window.cancelAnimationFrame(frame);
+  }, [isReady, placed, rebuildAvatarGroundColliders]);
 
   const getChairCandidatePriority = (item: PlacedAsset) => {
     const signature = `${item.id} ${item.slug} ${item.label}`.toLowerCase();
@@ -2347,9 +2439,19 @@ export function MeshySceneConstructor({
           currentAvatarMotion === "fast-walk-loop" ? (accelerated ? 8.4 : 5.8) :
           currentAvatarMotion === "daily-walk-loop" ? (accelerated ? 6.4 : 3.8) :
           (accelerated ? 7.2 : 4.1);
-        if (hasTranslation) runtime.root.position.addScaledVector(move, speed * delta);
-        runtime.root.position.x = clamp(runtime.root.position.x, -ROOM_WIDTH / 2 + 2, ROOM_WIDTH / 2 - 2);
-        runtime.root.position.z = clamp(runtime.root.position.z, -ROOM_DEPTH / 2 + 2, ROOM_DEPTH / 2 - 2);
+        if (hasTranslation) {
+          const desiredPosition = runtime.root.position.clone().addScaledVector(move, speed * delta);
+          desiredPosition.x = clamp(desiredPosition.x, -ROOM_WIDTH / 2 + 2, ROOM_WIDTH / 2 - 2);
+          desiredPosition.z = clamp(desiredPosition.z, -ROOM_DEPTH / 2 + 2, ROOM_DEPTH / 2 - 2);
+          const resolvedPosition = resolveAvatarGroundMovement(
+            { x: runtime.root.position.x, z: runtime.root.position.z },
+            { x: desiredPosition.x, z: desiredPosition.z },
+            AVATAR_COLLISION_RADIUS,
+            avatarGroundCollidersRef.current
+          );
+          runtime.root.position.x = resolvedPosition.x;
+          runtime.root.position.z = resolvedPosition.z;
+        }
         runtime.mixer?.update(delta);
         applyDlanisWeaponVisibility(runtime.model, currentAvatarMotion);
         runtime.model.position.copy(runtime.baseModelPosition);
@@ -3802,7 +3904,18 @@ export function MeshySceneConstructor({
     awayFromTable.y = 0;
     if (awayFromTable.lengthSq() < 0.01) awayFromTable.set(Math.sin(runtime.yaw), 0, Math.cos(runtime.yaw));
     awayFromTable.normalize();
-    runtime.root.position.addScaledVector(awayFromTable, 3.2);
+    const safeExitPosition = findAvatarExitPosition(
+      { x: runtime.root.position.x, z: runtime.root.position.z },
+      { x: awayFromTable.x, z: awayFromTable.z },
+      AVATAR_COLLISION_RADIUS,
+      avatarGroundCollidersRef.current
+    );
+    if (safeExitPosition) {
+      runtime.root.position.x = clamp(safeExitPosition.x, -ROOM_WIDTH / 2 + 2, ROOM_WIDTH / 2 - 2);
+      runtime.root.position.z = clamp(safeExitPosition.z, -ROOM_DEPTH / 2 + 2, ROOM_DEPTH / 2 - 2);
+    } else {
+      runtime.root.position.addScaledVector(awayFromTable, 3.2);
+    }
     runtime.root.position.y = 0;
     runtime.seating = null;
     runtime.isSeated = false;
