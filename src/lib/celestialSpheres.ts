@@ -36,6 +36,7 @@ type GrahaModelMount = {
     lift: number;
     metalnessCap: number;
     mappedIntensityCap?: number;
+    preserveRadiance?: boolean;
   };
 };
 
@@ -350,8 +351,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   // above the council table, while Surya and Chandra travel around the hall.
   const grahas = [
     { name: "Shukra", orbitFactor: 1.22, tier: 0, displaySize: 8, color: 0xffe3ab, emissive: 0xffbd64, glow: 0.4, reflectColor: 0xffd79a, reflectIntensity: 0.26, lift: 0.05, metalnessCap: 0.68, auraOpacity: 0.11, auraScale: 1.45, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
-    { name: "Budha", orbitFactor: 1.46, tier: 7, displaySize: 6, color: 0x75d6aa, emissive: 0x2aa97f, glow: 0.42, reflectColor: 0x75d6aa, reflectIntensity: 0.28, lift: 0.05, metalnessCap: 0.64, auraOpacity: 0.12, auraScale: 1.47, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
-    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 7.2, color: 0xf05235, emissive: 0xff210d, glow: 1.8, reflectColor: 0xff351f, reflectIntensity: 1.2, mappedIntensityCap: 1.15, lift: 0.12, metalnessCap: 0.58, auraOpacity: 0.46, auraScale: 1.92, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
+    { name: "Budha", orbitFactor: 1.46, tier: 7, displaySize: 6, color: 0x75d6aa, emissive: 0x39d7a3, glow: 0.95, reflectColor: 0x6effc2, reflectIntensity: 1.35, mappedIntensityCap: 0.85, lift: 0.14, metalnessCap: 0.56, auraOpacity: 0.32, auraScale: 1.72, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
+    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 7.2, color: 0xff4a2d, emissive: 0xff250d, glow: 2.4, reflectColor: 0xff4328, reflectIntensity: 2.2, mappedIntensityCap: 1.65, lift: 0.18, metalnessCap: 0.52, auraOpacity: 0.58, auraScale: 2.05, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
     { name: "Brihaspati", orbitFactor: 2.24, tier: 24, displaySize: 19, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.38, reflectColor: 0xffd98a, reflectIntensity: 0.28, lift: 0.06, metalnessCap: 0.62, auraOpacity: 0.1, auraScale: 1.42, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
     { name: "Shani", orbitFactor: 2.78, tier: 36, displaySize: 20.5, color: 0x91a9bd, emissive: 0x6f93bd, glow: 0.42, reflectColor: 0x8bb4df, reflectIntensity: 0.32, lift: 0.04, metalnessCap: 0.46, auraOpacity: 0.14, auraScale: 1.5, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
   ];
@@ -378,14 +379,16 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       Brihaspati: { key: 0xffdfa0, rim: 0xb87832 },
       Shani: { key: 0x9fc9ff, rim: 0x6d8fca },
     }[graha.name];
-    const lightIntensityScale = graha.name === "Mangala" ? 3.1 : 1;
+    const selfLitGraha = graha.name === "Budha" || graha.name === "Mangala";
+    const lightIntensityScale = graha.name === "Mangala" ? 4.2 : graha.name === "Budha" ? 2.6 : 1;
+    const lightDecay = selfLitGraha ? 1.12 : 1.55;
 
     if (lightProfile) {
       const surfaceKey = new THREE.PointLight(
         lightProfile.key,
         (telegram ? 34 : 48) * lightIntensityScale,
-        graha.displaySize * 7,
-        1.55,
+        graha.displaySize * (selfLitGraha ? 10 : 7),
+        lightDecay,
       );
       surfaceKey.name = `${graha.name}-surface-key-light`;
       surfaceKey.position.set(
@@ -398,8 +401,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       const surfaceRim = new THREE.PointLight(
         lightProfile.rim,
         (telegram ? 13 : 18) * lightIntensityScale,
-        graha.displaySize * 5.5,
-        1.7,
+        graha.displaySize * (selfLitGraha ? 8 : 5.5),
+        selfLitGraha ? 1.2 : 1.7,
       );
       surfaceRim.name = `${graha.name}-surface-rim-light`;
       surfaceRim.position.set(
@@ -444,6 +447,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
         lift: graha.lift,
         metalnessCap: graha.metalnessCap,
         mappedIntensityCap: graha.mappedIntensityCap,
+        preserveRadiance: selfLitGraha,
       },
     });
     orbitRuntimes.push({ pivot, speed: graha.speed, phase: graha.phase, body: bodyMount });
@@ -489,6 +493,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
                 material.color.offsetHSL(0, 0, entry.reflectedLight.lift);
                 material.roughness = THREE.MathUtils.clamp(material.roughness, 0.26, 0.58);
                 material.metalness = Math.min(material.metalness, entry.reflectedLight.metalnessCap);
+                if (entry.reflectedLight.preserveRadiance) material.toneMapped = false;
               }
               material.needsUpdate = true;
             }
