@@ -30,7 +30,13 @@ type GrahaModelMount = {
   displaySize: number;
   normalizeToSphere?: boolean;
   radiance?: "sun" | "moon";
-  reflectedLight?: { color: number; intensity: number; lift: number; metalnessCap: number };
+  reflectedLight?: {
+    color: number;
+    intensity: number;
+    lift: number;
+    metalnessCap: number;
+    mappedIntensityCap?: number;
+  };
 };
 
 const TAU = Math.PI * 2;
@@ -342,7 +348,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const grahas = [
     { name: "Shukra", orbitFactor: 1.22, tier: 0, displaySize: 8, color: 0xffe3ab, emissive: 0xffbd64, glow: 0.4, reflectColor: 0xffd79a, reflectIntensity: 0.26, lift: 0.05, metalnessCap: 0.68, auraOpacity: 0.11, auraScale: 1.45, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
     { name: "Budha", orbitFactor: 1.46, tier: 7, displaySize: 6, color: 0x75d6aa, emissive: 0x2aa97f, glow: 0.42, reflectColor: 0x75d6aa, reflectIntensity: 0.28, lift: 0.05, metalnessCap: 0.64, auraOpacity: 0.12, auraScale: 1.47, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
-    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 7.2, color: 0xc85c4b, emissive: 0xa61e16, glow: 0.4, reflectColor: 0xcf523d, reflectIntensity: 0.27, lift: 0.05, metalnessCap: 0.66, auraOpacity: 0.11, auraScale: 1.44, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
+    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 7.2, color: 0xe46b50, emissive: 0xd8321e, glow: 0.82, reflectColor: 0xff6848, reflectIntensity: 0.5, mappedIntensityCap: 0.5, lift: 0.09, metalnessCap: 0.58, auraOpacity: 0.22, auraScale: 1.62, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
     { name: "Brihaspati", orbitFactor: 2.24, tier: 24, displaySize: 19, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.38, reflectColor: 0xffd98a, reflectIntensity: 0.28, lift: 0.06, metalnessCap: 0.62, auraOpacity: 0.1, auraScale: 1.42, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
     { name: "Shani", orbitFactor: 2.78, tier: 36, displaySize: 20.5, color: 0x91a9bd, emissive: 0x6f93bd, glow: 0.42, reflectColor: 0x8bb4df, reflectIntensity: 0.32, lift: 0.04, metalnessCap: 0.46, auraOpacity: 0.14, auraScale: 1.5, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
   ];
@@ -369,11 +375,12 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       Brihaspati: { key: 0xffdfa0, rim: 0xb87832 },
       Shani: { key: 0x9fc9ff, rim: 0x6d8fca },
     }[graha.name];
+    const lightIntensityScale = graha.name === "Mangala" ? 1.7 : 1;
 
     if (lightProfile) {
       const surfaceKey = new THREE.PointLight(
         lightProfile.key,
-        telegram ? 34 : 48,
+        (telegram ? 34 : 48) * lightIntensityScale,
         graha.displaySize * 7,
         1.55,
       );
@@ -387,7 +394,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
 
       const surfaceRim = new THREE.PointLight(
         lightProfile.rim,
-        telegram ? 13 : 18,
+        (telegram ? 13 : 18) * lightIntensityScale,
         graha.displaySize * 5.5,
         1.7,
       );
@@ -428,7 +435,13 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       placeholder,
       modelUrl: graha.modelUrl,
       displaySize: graha.displaySize * (telegram ? 0.94 : 1),
-      reflectedLight: { color: graha.reflectColor, intensity: graha.reflectIntensity, lift: graha.lift, metalnessCap: graha.metalnessCap },
+      reflectedLight: {
+        color: graha.reflectColor,
+        intensity: graha.reflectIntensity,
+        lift: graha.lift,
+        metalnessCap: graha.metalnessCap,
+        mappedIntensityCap: graha.mappedIntensityCap,
+      },
     });
     orbitRuntimes.push({ pivot, speed: graha.speed, phase: graha.phase, body: bodyMount });
   });
@@ -465,7 +478,10 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
                 material.emissiveIntensity = Math.max(
                   material.emissiveIntensity,
                   material.map
-                    ? Math.min(entry.reflectedLight.intensity, 0.32)
+                    ? Math.min(
+                      entry.reflectedLight.intensity,
+                      entry.reflectedLight.mappedIntensityCap ?? 0.32,
+                    )
                     : Math.min(entry.reflectedLight.intensity, 0.5),
                 );
                 material.color.offsetHSL(0, 0, entry.reflectedLight.lift);
