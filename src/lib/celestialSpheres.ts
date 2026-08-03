@@ -348,7 +348,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
   const grahas = [
     { name: "Shukra", orbitFactor: 1.22, tier: 0, displaySize: 8, color: 0xffe3ab, emissive: 0xffbd64, glow: 0.4, reflectColor: 0xffd79a, reflectIntensity: 0.26, lift: 0.05, metalnessCap: 0.68, auraOpacity: 0.11, auraScale: 1.45, speed: 0.018, phase: 1.85, inclination: -0.08, modelUrl: "/models/celestial-grahas/shukra-web-v1.glb" },
     { name: "Budha", orbitFactor: 1.46, tier: 7, displaySize: 6, color: 0x75d6aa, emissive: 0x2aa97f, glow: 0.42, reflectColor: 0x75d6aa, reflectIntensity: 0.28, lift: 0.05, metalnessCap: 0.64, auraOpacity: 0.12, auraScale: 1.47, speed: 0.023, phase: 2.7, inclination: 0.16, modelUrl: "/models/celestial-grahas/budha-web-v1.glb" },
-    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 7.2, color: 0xe46b50, emissive: 0xd8321e, glow: 0.82, reflectColor: 0xff6848, reflectIntensity: 0.5, mappedIntensityCap: 0.5, lift: 0.09, metalnessCap: 0.58, auraOpacity: 0.22, auraScale: 1.62, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
+    { name: "Mangala", orbitFactor: 1.78, tier: 14, displaySize: 7.2, color: 0xf05235, emissive: 0xff210d, glow: 1.8, reflectColor: 0xff351f, reflectIntensity: 1.2, mappedIntensityCap: 1.15, lift: 0.12, metalnessCap: 0.58, auraOpacity: 0.46, auraScale: 1.92, speed: 0.011, phase: 4.2, inclination: -0.12, modelUrl: "/models/celestial-grahas/mangala-web-v1.glb" },
     { name: "Brihaspati", orbitFactor: 2.24, tier: 24, displaySize: 19, color: 0xd4a85b, emissive: 0x9d6b21, glow: 0.38, reflectColor: 0xffd98a, reflectIntensity: 0.28, lift: 0.06, metalnessCap: 0.62, auraOpacity: 0.1, auraScale: 1.42, speed: 0.0062, phase: 5.25, inclination: 0.08, modelUrl: "/models/celestial-grahas/brihaspati-web-v1.glb" },
     { name: "Shani", orbitFactor: 2.78, tier: 36, displaySize: 20.5, color: 0x91a9bd, emissive: 0x6f93bd, glow: 0.42, reflectColor: 0x8bb4df, reflectIntensity: 0.32, lift: 0.04, metalnessCap: 0.46, auraOpacity: 0.14, auraScale: 1.5, speed: 0.0038, phase: 3.35, inclination: -0.17, modelUrl: "/models/celestial-grahas/shani-web-v1.glb" },
   ];
@@ -375,7 +375,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
       Brihaspati: { key: 0xffdfa0, rim: 0xb87832 },
       Shani: { key: 0x9fc9ff, rim: 0x6d8fca },
     }[graha.name];
-    const lightIntensityScale = graha.name === "Mangala" ? 1.7 : 1;
+    const lightIntensityScale = graha.name === "Mangala" ? 3.1 : 1;
 
     if (lightProfile) {
       const surfaceKey = new THREE.PointLight(
@@ -454,7 +454,7 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
         const gltf = await gltfLoader.loadAsync(assetUrl(entry.modelUrl));
         const model = gltf.scene;
         model.name = `${entry.mount.name}-meshy`;
-        if (entry.radiance === "moon") model.rotation.y = Math.PI / 2;
+        if (entry.radiance === "moon") model.rotation.x = Math.PI / 2;
         model.traverse((child) => {
           if (!(child instanceof THREE.Mesh)) return;
           child.castShadow = false;
@@ -466,8 +466,8 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
               material.fog = false;
               material.envMapIntensity = Math.max(material.envMapIntensity, 1.15);
               if (entry.radiance === "sun") {
-                material.emissive.set(0xff9b2f);
-                material.emissiveIntensity = Math.max(material.emissiveIntensity, 2.6);
+                material.emissive.set(0xffb126);
+                material.emissiveIntensity = Math.max(material.emissiveIntensity, 8.5);
                 material.toneMapped = false;
               } else if (entry.radiance === "moon") {
                 material.emissive.set(0x9dbfff);
@@ -725,12 +725,12 @@ export function createCelestialSpheres(options: CelestialSpheresOptions): Celest
     chandraMount.rotation.y = -(luminaryPhase + Math.PI);
     solarKey.position.copy(suryaMount.position);
     const solarPulse = 0.5 + Math.sin(elapsedSeconds * 0.72) * 0.5;
-    solarCoronaMaterial.opacity = 0.55 + solarPulse * 0.16;
-    solarCorona.scale.setScalar(24 + solarPulse * 4);
-    solarCoreMaterial.opacity = 0.24 + solarPulse * 0.1;
-    solarCoreGlow.scale.setScalar(15.8 + solarPulse * 2);
+    solarCoronaMaterial.opacity = 0.9 + solarPulse * 0.1;
+    solarCorona.scale.setScalar(29 + solarPulse * 5);
+    solarCoreMaterial.opacity = 0.68 + solarPulse * 0.2;
+    solarCoreGlow.scale.setScalar(19 + solarPulse * 2.8);
     suryaLight.intensity = 0;
-    solarKey.intensity = (telegram ? 0.72 : 0.84) + solarPulse * (telegram ? 0.08 : 0.1);
+    solarKey.intensity = (telegram ? 2.25 : 2.7) + solarPulse * (telegram ? 0.3 : 0.4);
     lunarAuraMaterial.opacity = 0.42 + (1 - solarPulse) * 0.16;
     lunarAura.scale.setScalar(8.4 + (1 - solarPulse) * 1.4);
     chandraLight.intensity = (telegram ? 10 : 20) + (1 - solarPulse) * (telegram ? 4 : 8);
