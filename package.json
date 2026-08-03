@@ -22,7 +22,8 @@
         "meshy:batch": "node scripts/meshy-assets.mjs batch",
         "meshy:initiates": "node scripts/meshy-initiates.mjs",
         "meshy:animate": "node scripts/meshy-initiate-animate.mjs",
-        "assets:r2": "node --env-file=.env.local scripts/upload-assets-r2.mjs"
+        "assets:r2": "node --env-file=.env.local scripts/upload-assets-r2.mjs",
+        "telegram:private-menu": "node --env-file=.env.local scripts/configure-telegram-private-menu.mjs"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.1098.0",

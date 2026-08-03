@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPrivatePresenceSession, createTelegramSubjectHash } from "@/lib/privatePresence";
+import { isTelegramUserAllowed } from "@/lib/telegramAccess";
 import { validateTelegramInitData } from "@/lib/telegramAuth";
 
 export const runtime = "nodejs";
@@ -36,6 +37,10 @@ export async function POST(request: Request) {
       }
       const maxAgeSeconds = Number(process.env.TELEGRAM_INIT_DATA_MAX_AGE_SECONDS ?? 3600);
       telegramUserId = validateTelegramInitData(initData, botToken, maxAgeSeconds).user.id;
+    }
+
+    if (initData && !isTelegramUserAllowed(telegramUserId)) {
+      return noStore({ ok: false, error: "Доступ к пространству пока не открыт" }, { status: 403 });
     }
 
     const sessionSecret = process.env.TELEGRAM_SESSION_SECRET;
