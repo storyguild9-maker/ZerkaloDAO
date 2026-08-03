@@ -695,6 +695,13 @@ export function TelegramMiniAppShell() {
     await postChatMessage(body, temporaryId);
   };
 
+  const sendQuickChatMessage = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!chatDraft.trim() || chatSending) return;
+    setChatOpen(true);
+    await sendChatMessage(event);
+  };
+
   const retryChatMessage = async (message: ChatMessage) => {
     if (chatSending || message.delivery !== "failed") return;
     setChatMessages((current) => current.map((item) => item.id === message.id ? { ...item, delivery: "sending" } : item));
@@ -779,6 +786,19 @@ export function TelegramMiniAppShell() {
           telegramParticipantNickname={session.nickname}
           telegramParticipants={participants}
         />
+        {!chatOpen ? (
+          <form className="telegram-quick-chat" onSubmit={(event) => void sendQuickChatMessage(event)}>
+            <input
+              aria-label="Быстрое сообщение"
+              autoComplete="off"
+              maxLength={500}
+              onChange={(event) => setChatDraft(event.target.value)}
+              placeholder={activeChatRoom ? `Сообщение в «${activeChatRoom.name}»` : "Сообщение в чат"}
+              value={chatDraft}
+            />
+            <button disabled={chatSending || !chatDraft.trim()} type="submit">Отправить</button>
+          </form>
+        ) : null}
         <div className="telegram-presence-badge" aria-live="polite">
           <strong>{session.nickname}</strong>
           <span>В храме: {Math.max(1, presenceCount)}</span>

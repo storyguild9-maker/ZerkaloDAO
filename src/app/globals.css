@@ -3322,8 +3322,7 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
 }
 
 .meshy-constructor--telegram .meshy-constructor__hint {
-  bottom: max(0.8rem, env(safe-area-inset-bottom));
-  max-width: min(72vw, 34rem);
+  display: none;
 }
 
 .meshy-telegram-hud {
@@ -3504,6 +3503,56 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
   font-size: 0.72rem;
 }
 
+
+.telegram-quick-chat {
+  position: fixed;
+  z-index: 56;
+  left: 50%;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: grid;
+  width: min(34rem, 68vw);
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  transform: translateX(-50%);
+  border: 1px solid rgba(236, 205, 135, 0.28);
+  border-radius: 8px;
+  background: rgba(4, 12, 9, 0.9);
+  box-shadow: 0 16px 46px rgba(0, 0, 0, 0.38);
+  padding: 0.38rem;
+  backdrop-filter: blur(16px);
+}
+
+.telegram-quick-chat input {
+  min-width: 0;
+  min-height: 2.45rem;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #f8f7f2;
+  padding: 0.45rem 0.62rem;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.telegram-quick-chat input::placeholder {
+  color: rgba(222, 229, 224, 0.48);
+}
+
+.telegram-quick-chat button {
+  min-height: 2.45rem;
+  border: 1px solid rgba(236, 205, 135, 0.28);
+  border-radius: 6px;
+  background: rgba(240, 217, 156, 0.1);
+  color: #f0d99b;
+  padding: 0.45rem 0.75rem;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.telegram-quick-chat button:disabled {
+  opacity: 0.42;
+}
 .telegram-chat-panel {
   position: fixed;
   z-index: 70;
@@ -3903,6 +3952,13 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
     bottom: max(0.75rem, env(safe-area-inset-bottom));
   }
 
+
+  .telegram-quick-chat {
+    right: 6rem;
+    left: max(0.75rem, env(safe-area-inset-left));
+    width: auto;
+    transform: none;
+  }
   .telegram-chat-panel {
     width: 100vw;
     border-left: 0;
