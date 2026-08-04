@@ -144,6 +144,7 @@ export function TelegramMiniAppShell() {
   const [worldItem, setWorldItem] = useState("Открываю пространство");
   const enteredRef = useRef(false);
   const loadingFailedRef = useRef(false);
+  const worldLoadOverlayArmedRef = useRef(false);
   const settleTimerRef = useRef<number | null>(null);
   const stallTimerRef = useRef<number | null>(null);
   const chatOpenRef = useRef(false);
@@ -170,7 +171,8 @@ export function TelegramMiniAppShell() {
   const armInitialWorldTimeout = () => {
     if (stallTimerRef.current) window.clearTimeout(stallTimerRef.current);
     stallTimerRef.current = window.setTimeout(() => {
-      if (!enteredRef.current) return;
+      if (!enteredRef.current || !worldLoadOverlayArmedRef.current) return;
+      worldLoadOverlayArmedRef.current = false;
       loadingFailedRef.current = true;
       setWorldLoading(false);
       setWorldError("Загрузка остановилась. Проверьте соединение и продолжите.");
@@ -335,7 +337,8 @@ export function TelegramMiniAppShell() {
     const restartStallTimer = () => {
       if (stallTimerRef.current) window.clearTimeout(stallTimerRef.current);
       stallTimerRef.current = window.setTimeout(() => {
-        if (!enteredRef.current) return;
+        if (!enteredRef.current || !worldLoadOverlayArmedRef.current) return;
+        worldLoadOverlayArmedRef.current = false;
         loadingFailedRef.current = true;
         setWorldLoading(false);
         setWorldError("Загрузка остановилась. Проверьте соединение и продолжите.");
@@ -343,7 +346,7 @@ export function TelegramMiniAppShell() {
     };
 
     const updateProgress = (url: string, itemsLoaded: number, itemsTotal: number) => {
-      if (!enteredRef.current) return;
+      if (!enteredRef.current || !worldLoadOverlayArmedRef.current) return;
       if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
       setWorldLoading(true);
       setWorldItem(formatWorldItem(url));
@@ -356,7 +359,8 @@ export function TelegramMiniAppShell() {
     manager.onStart = updateProgress;
     manager.onProgress = updateProgress;
     manager.onLoad = () => {
-      if (!enteredRef.current || loadingFailedRef.current) return;
+      if (!enteredRef.current || !worldLoadOverlayArmedRef.current || loadingFailedRef.current) return;
+      worldLoadOverlayArmedRef.current = false;
       if (stallTimerRef.current) window.clearTimeout(stallTimerRef.current);
       setWorldProgress((current) => Math.max(current, 96));
       setWorldItem("Завершаю проявление мира");
@@ -366,8 +370,9 @@ export function TelegramMiniAppShell() {
       }, WORLD_LOAD_SETTLE_MS);
     };
     manager.onError = () => {
-      if (!enteredRef.current) return;
+      if (!enteredRef.current || !worldLoadOverlayArmedRef.current) return;
       clearTimers();
+      worldLoadOverlayArmedRef.current = false;
       loadingFailedRef.current = true;
       setWorldLoading(false);
       setWorldError("Не удалось загрузить часть мира. Уже полученные данные сохранены.");
@@ -612,6 +617,7 @@ export function TelegramMiniAppShell() {
     if (!session || !(await saveEntryProfile())) return;
     enteredRef.current = true;
     loadingFailedRef.current = false;
+    worldLoadOverlayArmedRef.current = true;
     setWorldProgress(0);
     setWorldError("");
     setWorldItem("Открываю пространство");
@@ -629,6 +635,7 @@ export function TelegramMiniAppShell() {
 
   const continueLoading = () => {
     loadingFailedRef.current = false;
+    worldLoadOverlayArmedRef.current = true;
     setWorldProgress(0);
     setWorldError("");
     setWorldItem("Продолжаю сборку пространства");
