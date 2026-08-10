@@ -23,7 +23,12 @@
         "meshy:initiates": "node scripts/meshy-initiates.mjs",
         "meshy:animate": "node scripts/meshy-initiate-animate.mjs",
         "assets:r2": "node --env-file=.env.local scripts/upload-assets-r2.mjs",
-        "telegram:private-menu": "node --env-file=.env.local scripts/configure-telegram-private-menu.mjs"
+        "telegram:private-menu": "node --env-file=.env.local scripts/configure-telegram-private-menu.mjs",
+        "ton:build": "cd ton-contracts && blueprint build --all",
+        "ton:test": "cd ton-contracts && jest --config jest.config.cjs --runInBand",
+        "ton:testnet:deploy": "cd ton-contracts && blueprint run deployFundStack --testnet --tonconnect --tonscan",
+        "ton:testnet:scenario": "cd ton-contracts && blueprint run runFundScenario --testnet --tonconnect --tonscan",
+        "ton:testnet:connect": "cd ton-contracts && ts-node --project tsconfig.json scripts/connectTonkeeper.ts"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.1098.0",
@@ -43,17 +48,31 @@
         "zustand": "^5.0.2"
     },
     "devDependencies": {
+        "@tact-lang/compiler": "1.6.13",
+        "@ton-community/func-js": "0.11.0",
+        "@ton/blueprint": "0.45.0",
+        "@ton/core": "0.63.1",
+        "@ton/sandbox": "0.44.0",
+        "@ton/test-utils": "0.12.0",
+        "@ton/tolk-js": "1.4.2",
+        "@tonconnect/sdk": "2.2.0",
+        "@types/jest": "29.5.14",
         "@types/node": "^20.17.10",
+        "@types/qrcode-terminal": "0.12.2",
         "@types/react": "^18.3.18",
         "@types/react-dom": "^18.3.5",
         "@types/three": "^0.185.0",
         "autoprefixer": "^10.4.20",
         "eslint": "^8.57.1",
         "eslint-config-next": "^14.2.23",
+        "jest": "29.7.0",
         "playwright-core": "^1.61.1",
         "postcss": "^8.4.49",
         "prisma": "^5.22.0",
+        "qrcode-terminal": "0.12.0",
         "tailwindcss": "^3.4.17",
+        "ts-jest": "29.4.5",
+        "ts-node": "10.9.2",
         "typescript": "^5.7.2",
         "vitest": "^2.1.8"
     }

@@ -12,6 +12,8 @@ coverage/
 .env.test.local
 .env.production.local
 !.env.example
+global.wallets.toml
+wallets.toml
 
 # Heavy runtime media stays local and is published to Cloudflare R2.
 public/models/
@@ -32,4 +34,3 @@ prisma/dev.db-journal
 .vercel
 .env*
 !.env.example
-
