@@ -4,6 +4,27 @@ import { FundGovernance } from '../wrappers/FundGovernance';
 import { PolicyVault } from '../wrappers/PolicyVault';
 import { TestYieldAdapter } from '../wrappers/TestYieldAdapter';
 
+const delay = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function waitForState(
+    label: string,
+    predicate: () => Promise<boolean>,
+    timeoutMilliseconds = 120_000,
+) {
+    const deadline = Date.now() + timeoutMilliseconds;
+    while (Date.now() < deadline) {
+        try {
+            if (await predicate()) {
+                return;
+            }
+        } catch {
+            // Public testnet APIs can briefly lag behind the accepted transaction.
+        }
+        await delay(2_000);
+    }
+    throw new Error(`${label} was not confirmed on-chain before the timeout.`);
+}
+
 export async function run(provider: NetworkProvider) {
     if (provider.network() !== 'testnet') {
         throw new Error('This script is testnet-only. Run it with --testnet.');
@@ -83,12 +104,21 @@ export async function run(provider: NetworkProvider) {
             adapterAddress: adapter.address,
             maxPerAction: toNano('0.5'),
         });
-        await provider.waitForLastTransaction();
+        await waitForState('Adapter registration', async () => {
+            const registered = await vault.getAdapterState(1);
+            return registered.enabled && registered.address.equals(adapter.address);
+        });
         await vault.sendBindGovernance(provider.sender(), {
             value: toNano('0.03'),
             governanceAddress: governance.address,
         });
-        await provider.waitForLastTransaction();
+        await waitForState('Governance binding', async () => {
+            const state = await vault.getVaultState();
+            if (!state.isBound) {
+                return false;
+            }
+            return (await vault.getGovernanceAddress()).equals(governance.address);
+        });
     }
 
     const finalState = await vault.getVaultState();

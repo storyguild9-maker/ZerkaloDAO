@@ -21,6 +21,30 @@ async function waitUntil(timestamp: number, label: string, provider: NetworkProv
     }
 }
 
+async function waitForState<T>(
+    label: string,
+    read: () => Promise<T>,
+    predicate: (value: T) => boolean,
+    timeoutMilliseconds = 120_000,
+) {
+    const deadline = Date.now() + timeoutMilliseconds;
+    let latest: T | undefined;
+    while (Date.now() < deadline) {
+        try {
+            latest = await read();
+            if (predicate(latest)) {
+                return latest;
+            }
+        } catch {
+            // Public testnet APIs can briefly lag behind the accepted transaction.
+        }
+        await delay(2_000);
+    }
+    throw new Error(
+        `${label} was not confirmed on-chain before the timeout${latest === undefined ? '' : `; latest value: ${String(latest)}`}.`,
+    );
+}
+
 export async function run(provider: NetworkProvider) {
     if (provider.network() !== 'testnet') {
         throw new Error('This scenario is testnet-only. Run it with --testnet.');
@@ -95,7 +119,11 @@ export async function run(provider: NetworkProvider) {
             value: toNano('0.31'),
             queryId: BigInt(Date.now()),
         });
-        await provider.waitForLastTransaction();
+        await waitForState(
+            'Contribution',
+            () => governance.getMemberShares(senderAddress),
+            (shares) => shares >= toNano('0.05'),
+        );
     }
     if ((await governance.getMemberShares(senderAddress)) < toNano('0.05')) {
         throw new Error('The test wallet does not have enough confirmed voting weight.');
@@ -109,37 +137,108 @@ export async function run(provider: NetworkProvider) {
         policyValue?: bigint;
     }) {
         const state = await governance.getGovernanceState();
+        let proposalId = state.nextProposalId;
+        let resumeExisting = false;
+
+        const matchesAction = (candidate: Awaited<ReturnType<typeof governance.getProposal>>) =>
+            candidate.actionKind === action.actionKind &&
+            candidate.adapterId === (action.adapterId ?? 0) &&
+            candidate.amount === (action.amount ?? 0n) &&
+            candidate.policyKey === (action.policyKey ?? 0) &&
+            candidate.policyValue === (action.policyValue ?? 0n);
+
         if (state.activeProposalId !== 0n) {
-            throw new Error(`Proposal ${state.activeProposalId} is still active; finish it before retrying ${label}.`);
+            const active = await governance.getProposal(state.activeProposalId);
+            if (!matchesAction(active)) {
+                throw new Error(`Proposal ${state.activeProposalId} is active with a different action.`);
+            }
+            proposalId = state.activeProposalId;
+            resumeExisting = true;
+        } else if (state.nextProposalId > 1n) {
+            const previousId = state.nextProposalId - 1n;
+            const previous = await governance.getProposal(previousId);
+            const unfinished =
+                previous.status !== GovernanceProposalStatus.EXECUTED &&
+                previous.status !== GovernanceProposalStatus.REJECTED;
+            if (unfinished && matchesAction(previous)) {
+                proposalId = previousId;
+                resumeExisting = true;
+            }
         }
-        const proposalId = state.nextProposalId;
-        provider.ui().write(`${label}: create proposal ${proposalId}`);
-        await governance.sendCreateProposal(provider.sender(), {
-            value: toNano('0.05'),
-            queryId: BigInt(Date.now()),
-            ...action,
-        });
-        await provider.waitForLastTransaction();
-        let proposal = await governance.getProposal(proposalId);
-        await waitUntil(proposal.voteEndsAt, `${label}: voting period`, provider);
-        await governance.sendFinalize(provider.sender(), {
-            value: toNano('0.05'),
-            proposalId,
-            queryId: BigInt(Date.now()),
-        });
-        await provider.waitForLastTransaction();
-        proposal = await governance.getProposal(proposalId);
-        if (proposal.status !== GovernanceProposalStatus.SCHEDULED) {
-            throw new Error(`${label}: proposal was not scheduled, status ${proposal.status}.`);
+
+        let proposal;
+        if (resumeExisting) {
+            provider.ui().write(`${label}: resume proposal ${proposalId}`);
+            proposal = await governance.getProposal(proposalId);
+        } else {
+            provider.ui().write(`${label}: create proposal ${proposalId}`);
+            await governance.sendCreateProposal(provider.sender(), {
+                value: toNano('0.05'),
+                queryId: BigInt(Date.now()),
+                ...action,
+            });
+            proposal = await waitForState(
+                `${label}: proposal creation`,
+                () => governance.getProposal(proposalId),
+                (current) => current.status === GovernanceProposalStatus.ACTIVE,
+            );
         }
-        await waitUntil(proposal.executeAfter, `${label}: on-chain timelock`, provider);
-        await vault.sendExecute(provider.sender(), {
-            value: toNano('0.05'),
-            proposalId,
-            queryId: BigInt(Date.now()),
-        });
-        await provider.waitForLastTransaction();
-        proposal = await governance.getProposal(proposalId);
+
+        if (proposal.status === GovernanceProposalStatus.ACTIVE) {
+            await waitUntil(proposal.voteEndsAt, `${label}: voting period`, provider);
+            await governance.sendFinalize(provider.sender(), {
+                value: toNano('0.05'),
+                proposalId,
+                queryId: BigInt(Date.now()),
+            });
+            proposal = await waitForState(
+                `${label}: finalization`,
+                () => governance.getProposal(proposalId),
+                (current) => current.status !== GovernanceProposalStatus.ACTIVE,
+            );
+        }
+
+        if (proposal.status === GovernanceProposalStatus.ACCEPTED_PENDING) {
+            try {
+                proposal = await waitForState(
+                    `${label}: vault scheduling receipt`,
+                    () => governance.getProposal(proposalId),
+                    (current) =>
+                        current.status === GovernanceProposalStatus.SCHEDULED ||
+                        current.status === GovernanceProposalStatus.REJECTED,
+                    45_000,
+                );
+            } catch {
+                provider.ui().write(`${label}: retry scheduling proposal ${proposalId}`);
+                await governance.sendRetrySchedule(provider.sender(), {
+                    value: toNano('0.05'),
+                    proposalId,
+                    queryId: BigInt(Date.now()),
+                });
+                proposal = await waitForState(
+                    `${label}: retried vault scheduling receipt`,
+                    () => governance.getProposal(proposalId),
+                    (current) =>
+                        current.status === GovernanceProposalStatus.SCHEDULED ||
+                        current.status === GovernanceProposalStatus.REJECTED,
+                );
+            }
+        }
+
+        if (proposal.status === GovernanceProposalStatus.SCHEDULED) {
+            await waitUntil(proposal.executeAfter, `${label}: on-chain timelock`, provider);
+            await vault.sendExecute(provider.sender(), {
+                value: toNano('0.05'),
+                proposalId,
+                queryId: BigInt(Date.now()),
+            });
+            proposal = await waitForState(
+                `${label}: execution receipt`,
+                () => governance.getProposal(proposalId),
+                (current) => current.status === GovernanceProposalStatus.EXECUTED,
+            );
+        }
+
         if (proposal.status !== GovernanceProposalStatus.EXECUTED) {
             throw new Error(`${label}: execution receipt was not confirmed, status ${proposal.status}.`);
         }
