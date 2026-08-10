@@ -37,7 +37,6 @@ export function CouncilHologramPanel({ participantName, sessionToken, visible, o
   const connectionRestored = useIsConnectionRestored();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<CouncilPanelTab>("wallet");
-  const [collapsed, setCollapsed] = useState(false);
   const [projectorVisible, setProjectorVisible] = useState(true);
   const [walletBusy, setWalletBusy] = useState(false);
   const [walletMessage, setWalletMessage] = useState("");
@@ -62,7 +61,6 @@ export function CouncilHologramPanel({ participantName, sessionToken, visible, o
   useEffect(() => {
     if (!visible) {
       setActiveTab("wallet");
-      setCollapsed(false);
       setProjectorVisible(true);
       setWalletMessage("");
     }
@@ -109,21 +107,17 @@ export function CouncilHologramPanel({ participantName, sessionToken, visible, o
       aria-label="Личная консоль участника"
       className="council-hologram"
       data-active-tab={activeTab}
-      data-collapsed={collapsed}
+      data-collapsed="false"
       data-projector-visible={projectorVisible}
       data-world-visible="false"
       ref={(node) => {
         panelRef.current = node;
       }}
-      style={{
-        width: collapsed
-          ? "min(27rem, calc(100vw - 0.75rem))"
-          : "min(70rem, calc(100vw - 0.75rem))"
-      }}
+      style={{ width: "min(70rem, calc(100vw - 0.75rem))" }}
     >
       <div
         className="council-hologram__surface"
-        style={collapsed ? undefined : {
+        style={{
           display: "grid",
           gridTemplateRows: "auto auto minmax(0, 1fr) auto",
           height: "min(42rem, calc(100dvh - 8.5rem))"
@@ -136,98 +130,109 @@ export function CouncilHologramPanel({ participantName, sessionToken, visible, o
           </div>
           <div className="council-hologram__header-actions">
             <span>Место активно</span>
-            <button
-              aria-label={collapsed ? "Развернуть личную консоль" : "Свернуть личную консоль"}
-              onClick={() => setCollapsed((value) => !value)}
-              type="button"
-            >
-              {collapsed ? "◇" : "—"}
-            </button>
           </div>
         </header>
 
-        {!collapsed ? (
-          <>
-            <nav aria-label="Разделы личной консоли" className="council-hologram__tabs">
-              {PANEL_TABS.map((tab) => (
-                <button
-                  aria-selected={activeTab === tab.id}
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  role="tab"
-                  type="button"
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-
-            <div
-              className="council-hologram__content"
-              style={{
-                minHeight: 0,
-                overflowY: "auto",
-                overscrollBehavior: "contain",
-                scrollbarGutter: "stable"
-              }}
+        <nav aria-label="Разделы личной консоли" className="council-hologram__tabs">
+          {PANEL_TABS.map((tab) => (
+            <button
+              aria-selected={activeTab === tab.id}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              role="tab"
+              type="button"
             >
-              {activeTab === "wallet" ? (
-                <div className="council-hologram__wallet" data-connected={Boolean(wallet)} role="tabpanel">
-                  <div className="council-hologram__orb" aria-hidden="true">TON</div>
-                  <div className="council-hologram__wallet-copy">
-                    <p className="council-hologram__eyebrow">{wallet ? walletName : "TON Connect"}</p>
-                    <h2>{wallet ? compactAddress : "Кошелёк не подключён"}</h2>
-                    <p>
-                      {wallet
-                        ? `${walletNetwork}. Соединение восстановится при следующем входе.`
-                        : "Подключение проходит напрямую через TON Connect. Приложение не получает доступ к ключам."}
-                    </p>
-                    {walletMessage ? <small role="status">{walletMessage}</small> : null}
-                  </div>
-                  <div className="council-hologram__wallet-actions">
-                    {wallet ? (
-                      <>
-                        <button onClick={() => void copyAddress()} title={walletAddress} type="button">Копировать</button>
-                        <button disabled={walletBusy} onClick={() => void disconnectWallet()} type="button">
-                          {walletBusy ? "Отключаю..." : "Отключить"}
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        disabled={!connectionRestored || walletBusy}
-                        onClick={() => void connectWallet()}
-                        type="button"
-                      >
-                        {!connectionRestored ? "Восстанавливаю..." : walletBusy ? "Открываю..." : "Подключить кошелёк"}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : null}
+              {tab.label}
+            </button>
+          ))}
+        </nav>
 
-              {activeTab === "votes" ? (
-                <CouncilGovernancePanel
-                  onManagementChange={setCanManageGovernance}
-                  sessionToken={sessionToken}
-                />
-              ) : null}
-
-              {activeTab === "profile" ? (
-                <div className="council-hologram__profile" role="tabpanel">
-                  <div><span>Статус</span><strong>Присутствует</strong></div>
-                  <div><span>Роль</span><strong>{canManageGovernance ? "Управляющий" : "Участник совета"}</strong></div>
-                  <div><span>Сила голоса</span><strong>Не определена</strong></div>
-                </div>
-              ) : null}
+        <div
+          className="council-hologram__content"
+          style={{
+            minHeight: 0,
+            overflowY: "auto",
+            overscrollBehavior: "contain",
+            scrollbarGutter: "stable"
+          }}
+        >
+          {activeTab === "wallet" ? (
+            <div className="council-hologram__wallet" data-connected={Boolean(wallet)} role="tabpanel">
+              <div className="council-hologram__orb" aria-hidden="true">TON</div>
+              <div className="council-hologram__wallet-copy">
+                <p className="council-hologram__eyebrow">{wallet ? walletName : "TON Connect"}</p>
+                <h2>{wallet ? compactAddress : "Кошелёк не подключён"}</h2>
+                <p>
+                  {wallet
+                    ? `${walletNetwork}. Соединение восстановится при следующем входе.`
+                    : "Подключение проходит напрямую через TON Connect. Приложение не получает доступ к ключам."}
+                </p>
+                {walletMessage ? <small role="status">{walletMessage}</small> : null}
+              </div>
+              <div className="council-hologram__wallet-actions">
+                {wallet ? (
+                  <>
+                    <button onClick={() => void copyAddress()} title={walletAddress} type="button">Копировать</button>
+                    <button disabled={walletBusy} onClick={() => void disconnectWallet()} type="button">
+                      {walletBusy ? "Отключаю..." : "Отключить"}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    disabled={!connectionRestored || walletBusy}
+                    onClick={() => void connectWallet()}
+                    type="button"
+                  >
+                    {!connectionRestored ? "Восстанавливаю..." : walletBusy ? "Открываю..." : "Подключить кошелёк"}
+                  </button>
+                )}
+              </div>
             </div>
+          ) : null}
 
-            <footer className="council-hologram__footer">
-              <span>Данные консоли видны только владельцу места</span>
-              <button onClick={onLeave} type="button">Выйти из-за стола</button>
-            </footer>
-          </>
-        ) : null}
+          {activeTab === "votes" ? (
+            <CouncilGovernancePanel
+              onManagementChange={setCanManageGovernance}
+              sessionToken={sessionToken}
+            />
+          ) : null}
+
+          {activeTab === "profile" ? (
+            <div className="council-hologram__profile" role="tabpanel">
+              <div><span>Статус</span><strong>Присутствует</strong></div>
+              <div><span>Роль</span><strong>{canManageGovernance ? "Управляющий" : "Участник совета"}</strong></div>
+              <div><span>Сила голоса</span><strong>Не определена</strong></div>
+            </div>
+          ) : null}
+        </div>
+
+        <footer className="council-hologram__footer">
+          <span>Данные консоли видны только владельцу места</span>
+          <button onClick={onLeave} type="button">Выйти из-за стола</button>
+        </footer>
       </div>
+
+      <button
+        aria-label={projectorVisible ? "Скрыть консоль кристаллом" : "Открыть консоль кристаллом"}
+        aria-pressed={projectorVisible}
+        onClick={() => setProjectorVisible((value) => !value)}
+        style={{
+          position: "absolute",
+          zIndex: 4,
+          bottom: "-5rem",
+          left: "50%",
+          width: "14rem",
+          height: "14rem",
+          border: 0,
+          background: "transparent",
+          padding: 0,
+          cursor: "pointer",
+          pointerEvents: "auto",
+          transform: "translateX(-50%)"
+        }}
+        title={projectorVisible ? "Скрыть консоль" : "Открыть консоль"}
+        type="button"
+      />
     </section>,
     document.body
   );
