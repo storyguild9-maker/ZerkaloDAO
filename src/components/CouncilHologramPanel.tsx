@@ -115,8 +115,20 @@ export function CouncilHologramPanel({ participantName, sessionToken, visible, o
       ref={(node) => {
         panelRef.current = node;
       }}
+      style={{
+        width: collapsed
+          ? "min(27rem, calc(100vw - 0.75rem))"
+          : "min(70rem, calc(100vw - 0.75rem))"
+      }}
     >
-      <div className="council-hologram__surface">
+      <div
+        className="council-hologram__surface"
+        style={collapsed ? undefined : {
+          display: "grid",
+          gridTemplateRows: "auto auto minmax(0, 1fr) auto",
+          height: "min(42rem, calc(100dvh - 8.5rem))"
+        }}
+      >
         <header className="council-hologram__header">
           <div>
             <p>Личный контур</p>
@@ -150,7 +162,15 @@ export function CouncilHologramPanel({ participantName, sessionToken, visible, o
               ))}
             </nav>
 
-            <div className="council-hologram__content">
+            <div
+              className="council-hologram__content"
+              style={{
+                minHeight: 0,
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+                scrollbarGutter: "stable"
+              }}
+            >
               {activeTab === "wallet" ? (
                 <div className="council-hologram__wallet" data-connected={Boolean(wallet)} role="tabpanel">
                   <div className="council-hologram__orb" aria-hidden="true">TON</div>
