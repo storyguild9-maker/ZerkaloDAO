@@ -3383,6 +3383,9 @@ body:has(.telegram-mini-app) .dao-video-backdrop {
   .meshy-telegram-hud { justify-content: stretch; }
   .meshy-telegram-hud select { min-width: 0; flex: 1; }
   .meshy-telegram-hud button { font-size: 0.78rem; }
+  .meshy-touch-controls {
+    bottom: calc(max(0.75rem, env(safe-area-inset-bottom)) + 4.65rem);
+  }
   .meshy-constructor--telegram .meshy-seat-prompt {
     right: max(0.75rem, env(safe-area-inset-right));
     bottom: max(5.2rem, env(safe-area-inset-bottom));
@@ -5394,4 +5397,67 @@ main:has(.animate-page)::after {
 
 
 
+.council-hologram[data-active-tab="votes"] {
+  width: min(70rem, calc(100vw - 2rem));
+}
 
+.council-hologram[data-active-tab="votes"] .council-hologram__content {
+  min-height: 22rem;
+}
+
+@media (max-width: 680px) {
+  .council-hologram[data-active-tab="votes"] {
+    width: calc(100vw - 0.75rem);
+  }
+
+  .council-hologram[data-active-tab="votes"] .council-hologram__content {
+    min-height: 21rem;
+    padding: 0.75rem;
+  }
+
+  .council-hologram[data-active-tab="votes"] .council-hologram__footer span {
+    display: none;
+  }
+
+  .council-hologram[data-active-tab="votes"] .council-hologram__footer button {
+    width: 100%;
+  }
+}
+
+/* Recent Telegram nicknames */
+.telegram-nickname-history {
+  display: grid;
+  width: min(28rem, 100%);
+  gap: 0.5rem;
+}
+
+.telegram-nickname-history > span {
+  color: rgba(240, 217, 156, 0.7);
+  font-size: 0.75rem;
+}
+
+.telegram-nickname-history > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.telegram-entry .telegram-nickname-history button {
+  min-height: 2.25rem;
+  margin: 0;
+  border-color: rgba(236, 205, 135, 0.25);
+  border-radius: 999px;
+  background: rgba(5, 13, 10, 0.74);
+  color: rgba(255, 253, 244, 0.88);
+  padding: 0.42rem 0.78rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.telegram-entry .telegram-nickname-history button:hover,
+.telegram-entry .telegram-nickname-history button[aria-pressed="true"] {
+  border-color: rgba(240, 217, 156, 0.72);
+  background: rgba(38, 43, 27, 0.94);
+  color: #fff5cb;
+}

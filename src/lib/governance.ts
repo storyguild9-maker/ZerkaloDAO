@@ -1,4 +1,4 @@
-import { createHmac, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { Buffer } from "node:buffer";
 import {
   Address,
@@ -26,6 +26,31 @@ const PROPOSAL_LIMIT = 30;
 const CHALLENGE_TTL_SECONDS = 8 * 60;
 const SIGNATURE_MAX_AGE_SECONDS = 15 * 60;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const VAULT_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{1,47}$/;
+const FINANCIAL_OPTIONS = ["За", "Против", "Воздержаться"] as const;
+
+export type FinancialActionType =
+  | "stake"
+  | "unstake"
+  | "allocate"
+  | "withdraw"
+  | "external_transfer"
+  | "policy_change";
+
+type FinancialRule = {
+  capitalQuorumBps: number;
+  approvalThresholdBps: number;
+  memberQuorum: number;
+};
+
+const FINANCIAL_RULES: Record<FinancialActionType, FinancialRule> = {
+  stake: { capitalQuorumBps: 5000, approvalThresholdBps: 5001, memberQuorum: 1 },
+  unstake: { capitalQuorumBps: 5000, approvalThresholdBps: 5001, memberQuorum: 1 },
+  allocate: { capitalQuorumBps: 6000, approvalThresholdBps: 6000, memberQuorum: 2 },
+  withdraw: { capitalQuorumBps: 6000, approvalThresholdBps: 6000, memberQuorum: 2 },
+  external_transfer: { capitalQuorumBps: 6700, approvalThresholdBps: 6667, memberQuorum: 2 },
+  policy_change: { capitalQuorumBps: 7500, approvalThresholdBps: 7500, memberQuorum: 2 }
+};
 
 type GovernanceProposalRow = {
   id: string;
@@ -37,12 +62,37 @@ type GovernanceProposalRow = {
   created_at: string;
   closes_at: string;
   closed_at: string | null;
+  kind: "standard" | "financial";
+  fund_vault_slug: string | null;
+  snapshot_total_share_units: string | null;
+  capital_quorum_bps: number | null;
+  approval_threshold_bps: number | null;
+  decision_status: "pending" | "completed" | "approved" | "rejected" | "cancelled";
+  winning_choice: string | null;
+  finalized_at: string | null;
+  action_type: FinancialActionType | null;
+  amount_raw: string | null;
+  destination: string | null;
+  action_hash: string | null;
 };
 
 type GovernanceVoteRow = {
   proposal_id: string;
   voter_key: string;
   choice: string;
+  weight_units: string;
+};
+
+type GovernanceSnapshotRow = {
+  proposal_id: string;
+  voter_key: string;
+  share_units: string;
+};
+
+type GovernanceState = {
+  proposals: GovernanceProposalRow[];
+  votes: GovernanceVoteRow[];
+  snapshots: GovernanceSnapshotRow[];
 };
 
 type GovernanceChallengeRow = {
@@ -58,19 +108,68 @@ type GovernanceChallengeRow = {
   consumed_at: string | null;
 };
 
+type FundVaultRow = {
+  slug: string;
+  display_name: string;
+  asset_symbol: string;
+  asset_decimals: number;
+  network: "-239" | "-3";
+  status: "active" | "paused" | "closed";
+  total_share_units: string;
+  my_share_units: string;
+};
+
+type FundShareSnapshot = {
+  vault: Omit<FundVaultRow, "my_share_units">;
+  balances: Array<{ subject_hash: string; share_units: string }>;
+};
+
+export type PublicFundVault = {
+  slug: string;
+  displayName: string;
+  assetSymbol: string;
+  assetDecimals: number;
+  network: "-239" | "-3";
+  status: "active" | "paused" | "closed";
+  totalShareUnits: string;
+  myShareUnits: string;
+  myShareBps: number;
+};
+
 export type PublicGovernanceProposal = {
   id: string;
   title: string;
   description: string;
   options: string[];
   quorum: number;
+  kind: "standard" | "financial";
   status: "open" | "closed" | "cancelled";
+  decisionStatus: "pending" | "completed" | "approved" | "rejected" | "cancelled";
+  winningChoice: string | null;
   createdAt: string;
   closesAt: string;
   totalVotes: number;
   quorumReached: boolean;
   myChoice: string | null;
-  results: Array<{ choice: string; count: number }>;
+  results: Array<{ choice: string; count: number; weightUnits: string; percentBps: number }>;
+  financial: null | {
+    vaultSlug: string;
+    vaultName: string;
+    assetSymbol: string;
+    assetDecimals: number;
+    actionType: FinancialActionType;
+    amountRaw: string | null;
+    destination: string;
+    actionHash: string;
+    snapshotTotalShareUnits: string;
+    myShareUnits: string;
+    myShareBps: number;
+    participatingShareUnits: string;
+    participationBps: number;
+    capitalQuorumBps: number;
+    approvalBps: number;
+    approvalThresholdBps: number;
+  };
 };
 
 export type TonSignDataResult = {
@@ -156,6 +255,11 @@ function normalizeSingleLine(value: unknown, label: string, minimum: number, max
   return normalized;
 }
 
+function normalizeOptionalSingleLine(value: unknown, label: string, maximum: number) {
+  if (value === undefined || value === null || value === "") return "";
+  return normalizeSingleLine(value, label, 1, maximum);
+}
+
 export function normalizeGovernanceOptions(value: unknown) {
   if (!Array.isArray(value)) throw new Error("Добавьте варианты ответа");
   const options = value.map((option) => normalizeSingleLine(option, "Вариант", 1, 80));
@@ -191,7 +295,53 @@ function normalizeWalletAddress(value: unknown) {
 function normalizeWalletNetwork(value: unknown) {
   const network = String(value ?? "");
   if (network !== "-239" && network !== "-3") throw new Error("Сеть TON не поддерживается");
-  return network;
+  return network as "-239" | "-3";
+}
+
+function normalizeVaultSlug(value: unknown) {
+  if (typeof value !== "string" || !VAULT_SLUG_PATTERN.test(value)) throw new Error("Фонд не найден");
+  return value;
+}
+
+function normalizeFinancialActionType(value: unknown): FinancialActionType {
+  if (typeof value !== "string" || !(value in FINANCIAL_RULES)) {
+    throw new Error("Тип финансового решения не поддерживается");
+  }
+  return value as FinancialActionType;
+}
+
+export function financialGovernanceRule(actionType: FinancialActionType) {
+  return { ...FINANCIAL_RULES[actionType] };
+}
+
+export function parseAssetAmountToRaw(value: unknown, decimals: number) {
+  if (typeof value !== "string") throw new Error("Введите сумму");
+  const normalized = value.trim().replace(",", ".");
+  const pattern = new RegExp(`^(?:0|[1-9]\\d*)(?:\\.(\\d{1,${decimals}}))?$`);
+  const match = normalized.match(pattern);
+  if (!match) throw new Error(`Сумма должна содержать не более ${decimals} знаков после запятой`);
+  const [whole, fraction = ""] = normalized.split(".");
+  return BigInt(whole) * (10n ** BigInt(decimals)) + BigInt((fraction + "0".repeat(decimals)).slice(0, decimals));
+}
+
+function parseIntegerUnits(value: unknown) {
+  const normalized = String(value ?? "");
+  if (!/^\d+$/.test(normalized)) throw new Error("Повреждены данные о долях фонда");
+  return BigInt(normalized);
+}
+
+export function calculateBasisPoints(part: bigint, total: bigint) {
+  if (part <= 0n || total <= 0n) return 0;
+  const result = Number((part * 10000n) / total);
+  return Math.max(0, Math.min(10000, result));
+}
+
+function sumUnits(values: bigint[]) {
+  return values.reduce((total, value) => total + value, 0n);
+}
+
+function formatBasisPoints(value: number) {
+  return `${Math.floor(value / 100)}.${String(value % 100).padStart(2, "0")}`;
 }
 
 export function governanceSignatureDomain() {
@@ -298,87 +448,257 @@ function effectiveStatus(proposal: GovernanceProposalRow) {
     : proposal.status;
 }
 
+async function readGovernanceState() {
+  const state = await supabaseRequest<GovernanceState>("rpc/read_governance_state", {
+    method: "POST",
+    body: JSON.stringify({ p_limit: PROPOSAL_LIMIT })
+  });
+  return {
+    proposals: Array.isArray(state?.proposals) ? state.proposals : [],
+    votes: Array.isArray(state?.votes) ? state.votes : [],
+    snapshots: Array.isArray(state?.snapshots) ? state.snapshots : []
+  };
+}
+
+async function finalizeExpiredProposals(state: GovernanceState) {
+  const expired = state.proposals.filter(
+    (proposal) => proposal.status === "open" && Date.parse(proposal.closes_at) <= Date.now()
+  );
+  if (!expired.length) return state;
+  await Promise.allSettled(expired.map((proposal) => supabaseRequest("rpc/finalize_governance_proposal", {
+    method: "POST",
+    body: JSON.stringify({ p_proposal_id: proposal.id, p_force: false })
+  })));
+  return readGovernanceState();
+}
+
 export async function listGovernanceProposals(token: string) {
   const session = await requirePrivateSession(token);
-  const proposals = await supabaseRequest<GovernanceProposalRow[]>(
-    `governance_proposals?select=id,title,description,options,quorum,status,created_at,closes_at,closed_at&order=created_at.desc&limit=${PROPOSAL_LIMIT}`
-  );
-  const proposalIds = (proposals ?? []).map((proposal) => proposal.id);
-  const votes = proposalIds.length
-    ? await supabaseRequest<GovernanceVoteRow[]>(
-        `governance_votes?select=proposal_id,voter_key,choice&proposal_id=in.(${proposalIds.join(",")})`
-      )
-    : [];
+  const state = await finalizeExpiredProposals(await readGovernanceState());
+  const fundRows = await supabaseRequest<FundVaultRow[]>("rpc/read_fund_vaults", {
+    method: "POST",
+    body: JSON.stringify({ p_subject_hash: session.subject_hash })
+  });
+  const funds: PublicFundVault[] = (Array.isArray(fundRows) ? fundRows : []).map((fund) => {
+    const total = parseIntegerUnits(fund.total_share_units);
+    const mine = parseIntegerUnits(fund.my_share_units);
+    return {
+      slug: fund.slug,
+      displayName: fund.display_name,
+      assetSymbol: fund.asset_symbol,
+      assetDecimals: fund.asset_decimals,
+      network: fund.network,
+      status: fund.status,
+      totalShareUnits: total.toString(),
+      myShareUnits: mine.toString(),
+      myShareBps: calculateBasisPoints(mine, total)
+    };
+  });
+  const fundMap = new Map(funds.map((fund) => [fund.slug, fund]));
 
-  const publicProposals: PublicGovernanceProposal[] = (proposals ?? []).map((proposal) => {
+  const proposals: PublicGovernanceProposal[] = state.proposals.map((proposal) => {
     const options = parseStoredOptions(proposal.options);
     const voterKey = createGovernanceVoterKey(session.subject_hash, proposal.id);
-    const proposalVotes = (votes ?? []).filter((vote) => vote.proposal_id === proposal.id);
+    const votes = state.votes.filter((vote) => vote.proposal_id === proposal.id);
+    const snapshot = state.snapshots.find(
+      (entry) => entry.proposal_id === proposal.id && entry.voter_key === voterKey
+    );
+    const totalShares = proposal.kind === "financial"
+      ? parseIntegerUnits(proposal.snapshot_total_share_units)
+      : BigInt(votes.length);
+    const participatingShares = proposal.kind === "financial"
+      ? sumUnits(votes.map((vote) => parseIntegerUnits(vote.weight_units)))
+      : BigInt(votes.length);
+    const resultRows = options.map((choice) => {
+      const choiceVotes = votes.filter((vote) => vote.choice === choice);
+      const weight = proposal.kind === "financial"
+        ? sumUnits(choiceVotes.map((vote) => parseIntegerUnits(vote.weight_units)))
+        : BigInt(choiceVotes.length);
+      return {
+        choice,
+        count: choiceVotes.length,
+        weightUnits: weight.toString(),
+        percentBps: calculateBasisPoints(weight, totalShares)
+      };
+    });
+    const participationBps = calculateBasisPoints(participatingShares, totalShares);
+    const yesWeight = parseIntegerUnits(resultRows[0]?.weightUnits ?? "0");
+    const noWeight = parseIntegerUnits(resultRows[1]?.weightUnits ?? "0");
+    const approvalBps = calculateBasisPoints(yesWeight, yesWeight + noWeight);
+    const capitalQuorumBps = proposal.capital_quorum_bps ?? 0;
+    const quorumReached = proposal.kind === "financial"
+      ? votes.length >= proposal.quorum && participationBps >= capitalQuorumBps
+      : votes.length >= proposal.quorum;
+    const fund = proposal.fund_vault_slug ? fundMap.get(proposal.fund_vault_slug) : undefined;
+    const myShare = snapshot ? parseIntegerUnits(snapshot.share_units) : 0n;
+
     return {
       id: proposal.id,
       title: proposal.title,
       description: proposal.description,
       options,
       quorum: proposal.quorum,
+      kind: proposal.kind,
       status: effectiveStatus(proposal),
+      decisionStatus: proposal.decision_status,
+      winningChoice: proposal.winning_choice,
       createdAt: proposal.created_at,
       closesAt: proposal.closes_at,
-      totalVotes: proposalVotes.length,
-      quorumReached: proposalVotes.length >= proposal.quorum,
-      myChoice: proposalVotes.find((vote) => vote.voter_key === voterKey)?.choice ?? null,
-      results: options.map((choice) => ({
-        choice,
-        count: proposalVotes.filter((vote) => vote.choice === choice).length
-      }))
+      totalVotes: votes.length,
+      quorumReached,
+      myChoice: votes.find((vote) => vote.voter_key === voterKey)?.choice ?? null,
+      results: resultRows,
+      financial: proposal.kind === "financial" && proposal.fund_vault_slug && proposal.action_type && proposal.action_hash
+        ? {
+            vaultSlug: proposal.fund_vault_slug,
+            vaultName: fund?.displayName ?? proposal.fund_vault_slug,
+            assetSymbol: fund?.assetSymbol ?? "TON",
+            assetDecimals: fund?.assetDecimals ?? 9,
+            actionType: proposal.action_type,
+            amountRaw: proposal.amount_raw,
+            destination: proposal.destination ?? "",
+            actionHash: proposal.action_hash,
+            snapshotTotalShareUnits: totalShares.toString(),
+            myShareUnits: myShare.toString(),
+            myShareBps: calculateBasisPoints(myShare, totalShares),
+            participatingShareUnits: participatingShares.toString(),
+            participationBps,
+            capitalQuorumBps,
+            approvalBps,
+            approvalThresholdBps: proposal.approval_threshold_bps ?? 0
+          }
+        : null
     };
   });
 
-  return { proposals: publicProposals, canManage: isGovernanceAdminSubjectHash(session.subject_hash) };
+  return {
+    proposals,
+    funds,
+    canManage: isGovernanceAdminSubjectHash(session.subject_hash)
+  };
 }
 
 export async function createGovernanceProposal(token: string, input: {
+  kind?: unknown;
   title?: unknown;
   description?: unknown;
   options?: unknown;
   quorum?: unknown;
   durationHours?: unknown;
+  fundVaultSlug?: unknown;
+  financialActionType?: unknown;
+  amount?: unknown;
+  destination?: unknown;
 }) {
   const session = await requirePrivateSession(token);
   assertGovernanceAdmin(session);
   const title = normalizeSingleLine(input.title, "Название", 3, 120);
   const description = normalizeDescription(input.description);
-  const options = normalizeGovernanceOptions(input.options);
-  const quorum = Number(input.quorum);
   const durationHours = Number(input.durationHours);
-  if (!Number.isSafeInteger(quorum) || quorum < 1 || quorum > 1_000_000) throw new Error("Кворум имеет неверное значение");
-  if (!Number.isFinite(durationHours) || durationHours < 1 || durationHours > 720) throw new Error("Срок должен быть от 1 до 720 часов");
+  if (!Number.isFinite(durationHours) || durationHours < 1 || durationHours > 720) {
+    throw new Error("Срок должен быть от 1 до 720 часов");
+  }
   const closesAt = new Date(Date.now() + durationHours * 60 * 60 * 1000).toISOString();
-  const rows = await supabaseRequest<GovernanceProposalRow[]>(
-    "governance_proposals?select=id,title,description,options,quorum,status,created_at,closes_at,closed_at",
-    {
-      method: "POST",
-      headers: { Prefer: "return=representation" },
-      body: JSON.stringify({ title, description, options, quorum, closes_at: closesAt })
+  const kind = input.kind === "financial" ? "financial" : input.kind === undefined || input.kind === "standard"
+    ? "standard"
+    : null;
+  if (!kind) throw new Error("Тип голосования не поддерживается");
+
+  if (kind === "standard") {
+    const options = normalizeGovernanceOptions(input.options);
+    const quorum = Number(input.quorum);
+    if (!Number.isSafeInteger(quorum) || quorum < 1 || quorum > 1_000_000) {
+      throw new Error("Кворум имеет неверное значение");
     }
-  );
-  if (!rows?.[0]) throw new Error("Голосование не было создано");
-  return rows[0];
+    const rows = await supabaseRequest<GovernanceProposalRow[]>(
+      "governance_proposals?select=id,title,description,options,quorum,status,created_at,closes_at,closed_at,kind,fund_vault_slug,snapshot_total_share_units,capital_quorum_bps,approval_threshold_bps,decision_status,winning_choice,finalized_at",
+      {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ title, description, options, quorum, closes_at: closesAt, kind: "standard" })
+      }
+    );
+    if (!rows?.[0]) throw new Error("Голосование не было создано");
+    return rows[0];
+  }
+
+  const proposalId = randomUUID();
+  const vaultSlug = normalizeVaultSlug(input.fundVaultSlug);
+  const actionType = normalizeFinancialActionType(input.financialActionType);
+  const rule = FINANCIAL_RULES[actionType];
+  const snapshot = await supabaseRequest<FundShareSnapshot | null>("rpc/read_fund_share_snapshot", {
+    method: "POST",
+    body: JSON.stringify({ p_vault_slug: vaultSlug })
+  });
+  if (!snapshot?.vault || snapshot.vault.status !== "active") throw new Error("Фонд не найден или временно приостановлен");
+  const balances = (Array.isArray(snapshot.balances) ? snapshot.balances : []).map((balance) => ({
+    subject_hash: balance.subject_hash,
+    share_units: parseIntegerUnits(balance.share_units).toString()
+  })).filter((balance) => BigInt(balance.share_units) > 0n);
+  if (!balances.length) throw new Error("В фонде пока нет подтверждённых долей для голосования");
+  if (balances.length < rule.memberQuorum) {
+    throw new Error(`Для этого решения требуется не менее ${rule.memberQuorum} участников фонда`);
+  }
+  const balanceTotal = sumUnits(balances.map((balance) => BigInt(balance.share_units)));
+  if (balanceTotal !== parseIntegerUnits(snapshot.vault.total_share_units)) {
+    throw new Error("Реестр долей фонда требует сверки перед голосованием");
+  }
+
+  const amountRaw = actionType === "policy_change"
+    ? null
+    : parseAssetAmountToRaw(input.amount, snapshot.vault.asset_decimals);
+  if (amountRaw !== null && amountRaw <= 0n) throw new Error("Сумма финансового решения должна быть больше нуля");
+  let destination = normalizeOptionalSingleLine(input.destination, "Назначение", 240);
+  if (!destination && actionType === "stake") destination = "Tonstakers / tsTON";
+  if (!destination && actionType !== "policy_change") throw new Error("Укажите назначение средств");
+
+  const actionPayload = {
+    version: 1,
+    network: snapshot.vault.network,
+    proposalId,
+    vaultSlug,
+    assetSymbol: snapshot.vault.asset_symbol,
+    actionType,
+    amountRaw: amountRaw?.toString() ?? null,
+    destination
+  };
+  const actionHash = createHash("sha256").update(JSON.stringify(actionPayload)).digest("hex");
+  const snapshots = balances.map((balance) => ({
+    subject_hash: balance.subject_hash,
+    voter_key: createGovernanceVoterKey(balance.subject_hash, proposalId),
+    share_units: balance.share_units
+  }));
+
+  await supabaseRequest("rpc/create_financial_governance_proposal", {
+    method: "POST",
+    body: JSON.stringify({
+      p_proposal_id: proposalId,
+      p_title: title,
+      p_description: description,
+      p_member_quorum: rule.memberQuorum,
+      p_closes_at: closesAt,
+      p_vault_slug: vaultSlug,
+      p_capital_quorum_bps: rule.capitalQuorumBps,
+      p_approval_threshold_bps: rule.approvalThresholdBps,
+      p_action_type: actionType,
+      p_amount_raw: amountRaw?.toString() ?? null,
+      p_destination: destination,
+      p_action_payload: actionPayload,
+      p_action_hash: actionHash,
+      p_snapshots: snapshots
+    })
+  });
+  return { id: proposalId, kind: "financial" as const, actionHash };
 }
 
 export async function closeGovernanceProposal(token: string, proposalIdValue: unknown) {
   const session = await requirePrivateSession(token);
   assertGovernanceAdmin(session);
   const proposalId = normalizeProposalId(proposalIdValue);
-  const rows = await supabaseRequest<GovernanceProposalRow[]>(
-    `governance_proposals?id=eq.${proposalId}&status=eq.open&select=id,title,description,options,quorum,status,created_at,closes_at,closed_at`,
-    {
-      method: "PATCH",
-      headers: { Prefer: "return=representation" },
-      body: JSON.stringify({ status: "closed", closed_at: new Date().toISOString() })
-    }
-  );
-  if (!rows?.[0]) throw new Error("Открытое голосование не найдено");
-  return rows[0];
+  return supabaseRequest("rpc/finalize_governance_proposal", {
+    method: "POST",
+    body: JSON.stringify({ p_proposal_id: proposalId, p_force: true })
+  });
 }
 
 export async function createGovernanceVoteChallenge(token: string, input: {
@@ -392,10 +712,12 @@ export async function createGovernanceVoteChallenge(token: string, input: {
   const choice = normalizeSingleLine(input.choice, "Вариант", 1, 80);
   const walletAddress = normalizeWalletAddress(input.walletAddress);
   const walletNetwork = normalizeWalletNetwork(input.walletNetwork);
-  const proposalRows = await supabaseRequest<GovernanceProposalRow[]>(
-    `governance_proposals?select=id,title,description,options,quorum,status,created_at,closes_at,closed_at&id=eq.${proposalId}&limit=1`
+  const proposalRows = await supabaseRequest<Array<Pick<GovernanceProposalRow,
+    "id" | "title" | "description" | "options" | "quorum" | "status" | "created_at" | "closes_at" |
+    "closed_at" | "kind" | "fund_vault_slug">>>(
+    `governance_proposals?select=id,title,description,options,quorum,status,created_at,closes_at,closed_at,kind,fund_vault_slug&id=eq.${proposalId}&limit=1`
   );
-  const proposal = proposalRows?.[0];
+  const proposal = proposalRows?.[0] as GovernanceProposalRow | undefined;
   if (!proposal || effectiveStatus(proposal) !== "open") throw new Error("Голосование уже закрыто");
   const options = parseStoredOptions(proposal.options);
   if (!options.includes(choice)) throw new Error("Выбранный вариант не существует");
@@ -406,12 +728,39 @@ export async function createGovernanceVoteChallenge(token: string, input: {
   );
   if (existingVotes?.[0]) throw new Error("Голос уже подтверждён");
 
+  let financialLines: string[] = [];
+  if (proposal.kind === "financial") {
+    const state = await readGovernanceState();
+    const storedProposal = state.proposals.find((entry) => entry.id === proposalId);
+    const storedSnapshot = state.snapshots.find(
+      (entry) => entry.proposal_id === proposalId && entry.voter_key === voterKey
+    );
+    if (!storedProposal?.action_hash || !storedSnapshot || !storedProposal.snapshot_total_share_units) {
+      throw new Error("На момент открытия голосования у вас не было доли в фонде");
+    }
+    const vaultRows = await supabaseRequest<Array<{ network: "-239" | "-3" }>>(
+      `fund_vaults?select=network&slug=eq.${encodeURIComponent(proposal.fund_vault_slug ?? "")}&limit=1`
+    );
+    if (!vaultRows?.[0] || vaultRows[0].network !== walletNetwork) {
+      throw new Error("Для финансового решения подключите кошелёк нужной сети TON");
+    }
+    const shareBps = calculateBasisPoints(
+      parseIntegerUnits(storedSnapshot.share_units),
+      parseIntegerUnits(storedProposal.snapshot_total_share_units)
+    );
+    financialLines = [
+      `Вес голоса: ${formatBasisPoints(shareBps)}% капитала`,
+      `Хэш финансового действия: ${storedProposal.action_hash}`
+    ];
+  }
+
   const expiresAt = new Date(Date.now() + CHALLENGE_TTL_SECONDS * 1000).toISOString();
   const nonce = randomBytes(16).toString("hex");
   const challengeText = [
     "ЗЕРКАЛО ДАО — ГОЛОСОВАНИЕ",
     `Предложение: ${proposal.title}`,
     `Решение: ${choice}`,
+    ...financialLines,
     `ID предложения: ${proposal.id}`,
     `Одноразовый код: ${nonce}`,
     `Действительно до: ${expiresAt}`

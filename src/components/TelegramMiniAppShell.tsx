@@ -64,6 +64,8 @@ const CHAT_POLL_CLOSED_MS = 9000;
 const AVATAR_MOTION_TOPIC = "room:temple-main:avatar-motion";
 const AVATAR_MOTION_EVENT = "avatar-pose";
 const AVATAR_IDLE_KEYFRAME_MS = 2000;
+const NICKNAME_HISTORY_STORAGE_KEY = "zerkalo-dao:telegram:nickname-history:v1";
+const NICKNAME_HISTORY_LIMIT = 5;
 
 type RealtimeAvatarPoseMessage = {
   participantId: string;
@@ -115,6 +117,7 @@ const formatWorldItem = (url: string) => {
 export function TelegramMiniAppShell() {
   const [session, setSession] = useState<PrivateTelegramSession | null>(null);
   const [nicknameDraft, setNicknameDraft] = useState("");
+  const [recentNicknames, setRecentNicknames] = useState<string[]>([]);
   const [avatarGender, setAvatarGender] = useState<TelegramAvatarGender | null>(null);
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [presenceCount, setPresenceCount] = useState(0);
@@ -144,6 +147,22 @@ export function TelegramMiniAppShell() {
   const [worldItem, setWorldItem] = useState("Открываю пространство");
   const enteredRef = useRef(false);
   const loadingFailedRef = useRef(false);
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(NICKNAME_HISTORY_STORAGE_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) throw new Error("Nickname history is invalid");
+      const nicknames = (parsed as unknown[])
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .slice(0, NICKNAME_HISTORY_LIMIT);
+      setRecentNicknames(nicknames);
+    } catch {
+      window.localStorage.removeItem(NICKNAME_HISTORY_STORAGE_KEY);
+    }
+  }, []);
   const worldLoadOverlayArmedRef = useRef(false);
   const settleTimerRef = useRef<number | null>(null);
   const stallTimerRef = useRef<number | null>(null);
@@ -602,6 +621,13 @@ export function TelegramMiniAppShell() {
         avatarId: payload.presence.avatarId
       } : current);
       setNicknameDraft(payload.presence.nickname);
+      const savedNickname = String(payload.presence.nickname).trim();
+      const nextRecentNicknames = [
+        savedNickname,
+        ...recentNicknames.filter((value) => value.toLocaleLowerCase("ru-RU") !== savedNickname.toLocaleLowerCase("ru-RU"))
+      ].slice(0, NICKNAME_HISTORY_LIMIT);
+      setRecentNicknames(nextRecentNicknames);
+      window.localStorage.setItem(NICKNAME_HISTORY_STORAGE_KEY, JSON.stringify(nextRecentNicknames));
       setStatus("Аватар готов к входу");
       return true;
     } catch (reason) {
@@ -1095,6 +1121,23 @@ export function TelegramMiniAppShell() {
                 value={nicknameDraft}
               />
             </label>
+            {recentNicknames.length ? (
+              <div className="telegram-nickname-history" aria-label="Последние сохранённые имена">
+                <span>Последние имена</span>
+                <div>
+                  {recentNicknames.map((nickname) => (
+                    <button
+                      aria-pressed={nicknameDraft.trim() === nickname}
+                      key={nickname}
+                      onClick={() => setNicknameDraft(nickname)}
+                      type="button"
+                    >
+                      {nickname}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
         <p className="telegram-entry__status" role="status">{error || status}</p>

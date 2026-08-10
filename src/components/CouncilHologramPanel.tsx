@@ -108,6 +108,7 @@ export function CouncilHologramPanel({ participantName, sessionToken, visible, o
     <section
       aria-label="Личная консоль участника"
       className="council-hologram"
+      data-active-tab={activeTab}
       data-collapsed={collapsed}
       data-projector-visible={projectorVisible}
       data-world-visible="false"
