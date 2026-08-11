@@ -9,6 +9,7 @@ import {
 import { useEffect, useMemo, useState, type MutableRefObject } from "react";
 import { createPortal } from "react-dom";
 import { CouncilGovernancePanel } from "@/components/CouncilGovernancePanel";
+import { TestnetGramGrant } from "@/components/TestnetGramGrant";
 
 type CouncilPanelTab = "wallet" | "votes" | "profile";
 
@@ -187,6 +188,7 @@ export function CouncilHologramPanel({ participantName, sessionToken, visible, o
                   </button>
                 )}
               </div>
+              <TestnetGramGrant sessionToken={sessionToken} />
             </div>
           ) : null}
 

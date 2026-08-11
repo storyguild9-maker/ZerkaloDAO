@@ -19,9 +19,11 @@ This directory is a testnet-first prototype. It is not approved for mainnet fund
 - The emergency guardian can pause but cannot unpause or transfer funds.
 - No code-upgrade entrypoint exists.
 
+The separate testnet GRAM distributor accepts only signed, expiring vouchers bound to its own address, one basechain wallet, and one irreversible Telegram subject hash. It fixes the amount at 100 GRAM and checks its reserve before issuing. It is testnet-only; compromise of its server-side authorizer could still redirect the distributor's prefunded test balance to new addresses, so the contract must never hold mainnet funds or unrelated assets.
+
 ## Verified locally
 
-The Sandbox suite covers 17 positive and adversarial scenarios, including forged deposit acknowledgements, forged adapter receipts, unknown adapters, duplicate votes, direct scheduling bypass, immutable policy floors, daily limits, pause behavior, timelock, expiration, and replay.
+The Sandbox suite covers 22 positive and adversarial scenarios, including forged deposit acknowledgements, forged adapter receipts, unknown adapters, duplicate votes, direct scheduling bypass, immutable policy floors, daily limits, pause behavior, timelock, expiration, replay, forged grant vouchers, dual subject/wallet claim guards, and insufficient distributor reserves.
 
 ## Before mainnet
 

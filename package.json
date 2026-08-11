@@ -28,6 +28,7 @@
         "ton:test": "cd ton-contracts && jest --config jest.config.cjs --runInBand",
         "ton:testnet:deploy": "cd ton-contracts && blueprint run deployFundStack --testnet --tonconnect --tonscan",
         "ton:testnet:scenario": "cd ton-contracts && blueprint run runFundScenario --testnet --tonconnect --tonscan",
+        "ton:testnet:grant:deploy": "cd ton-contracts && blueprint run deployTestnetGramDistributor --testnet --tonconnect --tonscan",
         "ton:testnet:connect": "cd ton-contracts && ts-node --project tsconfig.json scripts/connectTonkeeper.ts"
     },
     "dependencies": {
