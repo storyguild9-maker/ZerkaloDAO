@@ -28,7 +28,7 @@ export async function run(provider: NetworkProvider) {
         TestnetGramDistributor.createFromConfig(
             {
                 authorizerPublicKey: BigInt(`0x${keys.publicKey.toString('hex')}`),
-                claimAmount: toNano('100'),
+                claimAmount: toNano('10'),
                 minReserve: toNano('0.1'),
             },
             code,
@@ -47,12 +47,12 @@ export async function run(provider: NetworkProvider) {
     }
 
     const state = await distributor.getDistributorState();
-    if (state.claimAmount !== toNano('100')) throw new Error('Post-deploy claim amount mismatch.');
+    if (state.claimAmount !== toNano('10')) throw new Error('Post-deploy claim amount mismatch.');
     if (state.authorizerPublicKey !== BigInt(`0x${keys.publicKey.toString('hex')}`)) {
         throw new Error('Post-deploy authorizer key mismatch.');
     }
 
     provider.ui().write(`TestnetGramDistributor: ${distributor.address.toString({ testOnly: true })}`);
-    provider.ui().write('Each accepted voucher sends exactly 100 test GRAM once per subject and wallet.');
-    provider.ui().write('Fund the address with 100 GRAM per planned participant plus the 0.1 GRAM reserve.');
+    provider.ui().write('Each accepted voucher sends exactly 10 test GRAM once per subject and wallet.');
+    provider.ui().write('Fund the address with 10 GRAM per planned participant plus the 0.1 GRAM reserve.');
 }

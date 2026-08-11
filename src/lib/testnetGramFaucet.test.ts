@@ -9,8 +9,8 @@ import {
 describe("testnet GRAM grant boundaries", () => {
   const raw = "0:1111111111111111111111111111111111111111111111111111111111111111";
 
-  it("keeps the grant fixed at 100 GRAM on testnet", () => {
-    expect(TESTNET_GRAM_AMOUNT_RAW).toBe(100_000_000_000n);
+  it("keeps the grant fixed at 10 GRAM on testnet", () => {
+    expect(TESTNET_GRAM_AMOUNT_RAW).toBe(10_000_000_000n);
     expect(TESTNET_GRAM_NETWORK).toBe("-3");
   });
 

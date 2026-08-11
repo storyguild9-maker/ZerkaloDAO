@@ -20,9 +20,9 @@ import {
 } from "@/lib/governance";
 import { requirePrivateSession } from "@/lib/privatePresence";
 
-export const TESTNET_GRAM_AMOUNT_RAW = 100_000_000_000n;
+export const TESTNET_GRAM_AMOUNT_RAW = 10_000_000_000n;
 export const TESTNET_GRAM_NETWORK = "-3" as const;
-const TESTNET_GRAM_LABEL = "100";
+const TESTNET_GRAM_LABEL = "10";
 const CLAIM_CHALLENGE_TTL_SECONDS = 8 * 60;
 const CLAIM_VOUCHER_TTL_SECONDS = 5 * 60;
 const MIN_BROADCAST_BUFFER_RAW = 50_000_000n;
@@ -112,7 +112,7 @@ export function normalizeTestnetGramWallet(value: unknown) {
 
 function requireTestnetNetwork(value: unknown) {
   if (String(value) !== TESTNET_GRAM_NETWORK) {
-    throw new Error("Для выдачи 100 test GRAM переключите кошелёк на TON Testnet");
+    throw new Error("Для выдачи 10 test GRAM переключите кошелёк на TON Testnet");
   }
   return TESTNET_GRAM_NETWORK;
 }
@@ -237,7 +237,7 @@ async function inspectDistributor(subjectHash: string, walletAddress: string) {
     subjectClaimed: claimStatus.subjectClaimed,
     walletClaimed: claimStatus.walletClaimed,
     reason: availableClaims > 0
-      ? "100 test GRAM готовы к автоматической выдаче"
+      ? "10 test GRAM готовы к автоматической выдаче"
       : "Раздатчик ожидает пополнения тестовыми GRAM"
   };
 }
@@ -286,9 +286,9 @@ export async function getTestnetGramStatus(token: string, input: {
           ? "available" as const
           : "unavailable" as const;
   const reason = !exactOwner
-    ? "100 test GRAM уже были выданы этому участнику или кошельку"
+    ? "10 test GRAM уже были выданы этому участнику или кошельку"
     : claimed
-      ? "100 test GRAM уже получены"
+      ? "10 test GRAM уже получены"
       : claim?.status === "submitted"
         ? "Выдача отправлена в TON Testnet и ожидает подтверждения"
         : distributor.reason;
@@ -317,7 +317,7 @@ export async function createTestnetGramChallenge(token: string, input: {
   const walletAddress = normalizeTestnetGramWallet(input.walletAddress);
   requireTestnetNetwork(input.walletNetwork);
   const status = await getTestnetGramStatus(token, input);
-  if (status.claimed) throw new Error("100 test GRAM уже были выданы этому участнику или кошельку");
+  if (status.claimed) throw new Error("10 test GRAM уже были выданы этому участнику или кошельку");
   if (!status.ready) throw new Error(status.reason);
 
   const id = randomUUID();
@@ -325,7 +325,7 @@ export async function createTestnetGramChallenge(token: string, input: {
   const nonce = randomBytes(24).toString("hex");
   const challengeText = [
     "Зеркало DAO · тестовая выдача",
-    "Действие: получить 100 test GRAM",
+    "Действие: получить 10 test GRAM",
     "Сеть: TON Testnet (-3)",
     `Кошелёк: ${walletAddress}`,
     `Участник: ${session.subject_hash}`,

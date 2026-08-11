@@ -11,7 +11,7 @@ import {
 
 describe('Testnet GRAM distributor', () => {
     const now = 1_800_000_000;
-    const claimAmount = toNano('100');
+    const claimAmount = toNano('10');
     const minReserve = toNano('1');
     const authorizer = keyPairFromSeed(Buffer.alloc(32, 7));
     const publicKey = BigInt(`0x${authorizer.publicKey.toString('hex')}`);
@@ -56,7 +56,7 @@ describe('Testnet GRAM distributor', () => {
         return buildTestnetGramClaimBody(voucher, sign(voucher.hash(), (options.signer ?? authorizer).secretKey));
     }
 
-    it('sends exactly 100 GRAM and records both replay guards', async () => {
+    it('sends exactly 10 GRAM and records both replay guards', async () => {
         const result = await distributor.sendClaim(signedClaim(1n, alice.address));
 
         expect(result.transactions).toHaveTransaction({
@@ -116,7 +116,7 @@ describe('Testnet GRAM distributor', () => {
                 -1,
             ),
         );
-        await small.sendDeploy(deployer.getSender(), toNano('100'));
+        await small.sendDeploy(deployer.getSender(), toNano('10'));
         const voucher = buildTestnetGramClaimVoucher({
             validUntil: now + 300,
             distributorAddress: small.address,

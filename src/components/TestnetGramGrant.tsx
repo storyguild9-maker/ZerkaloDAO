@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 type GrantStatus = {
   network: "-3";
-  amount: "100";
+  amount: "10";
   amountRaw: string;
   walletAddress: string;
   distributorAddress: string | null;
@@ -128,7 +128,7 @@ export function TestnetGramGrant({ sessionToken }: TestnetGramGrantProps) {
   if (!wallet) {
     return (
       <section className="testnet-gram-grant" aria-label="Тестовая выдача GRAM">
-        <div className="testnet-gram-grant__amount"><strong>100</strong><span>test GRAM</span></div>
+        <div className="testnet-gram-grant__amount"><strong>10</strong><span>test GRAM</span></div>
         <div className="testnet-gram-grant__copy">
           <p>Тестовый баланс участника</p>
           <h3>Подключите TON-кошелёк</h3>
@@ -143,7 +143,7 @@ export function TestnetGramGrant({ sessionToken }: TestnetGramGrantProps) {
   const submitted = status?.state === "submitted";
   return (
     <section className="testnet-gram-grant" data-state={status?.state ?? (isTestnet ? "loading" : "wrong-network")} aria-label="Тестовая выдача GRAM">
-      <div className="testnet-gram-grant__amount"><strong>100</strong><span>test GRAM</span></div>
+      <div className="testnet-gram-grant__amount"><strong>10</strong><span>test GRAM</span></div>
       <div className="testnet-gram-grant__copy">
         <p>Разовая выдача · TON Testnet</p>
         <h3>{!isTestnet ? "Нужна тестовая сеть" : status?.reason || "Проверяю раздатчик…"}</h3>
@@ -169,7 +169,7 @@ export function TestnetGramGrant({ sessionToken }: TestnetGramGrantProps) {
               ? "Получено"
               : submitted
                 ? "Подтверждается…"
-                : "Получить 100"}
+                : "Получить 10"}
         </button>
         {isTestnet && status ? <small>Доступно выдач: {status.availableClaims}</small> : null}
       </div>
