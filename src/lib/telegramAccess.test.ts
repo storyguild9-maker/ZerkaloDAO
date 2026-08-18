@@ -12,11 +12,19 @@ describe("Telegram allowlist", () => {
   });
 
   it("allows only explicitly listed users when configured", () => {
-    expect(isTelegramUserAllowed(77, "42,77")).toBe(true);
-    expect(isTelegramUserAllowed(105, "42,77")).toBe(false);
+    expect(isTelegramUserAllowed(77, "42,77", "")).toBe(true);
+    expect(isTelegramUserAllowed(105, "42,77", "")).toBe(false);
+  });
+
+  it("merges the primary and additional allowlists", () => {
+    expect(isTelegramUserAllowed(77, "42", "77,105")).toBe(true);
+    expect(isTelegramUserAllowed(105, "42", "77,105")).toBe(true);
+    expect(isTelegramUserAllowed(999, "42", "77,105")).toBe(false);
   });
 
   it("rejects malformed IDs instead of silently weakening access", () => {
     expect(() => parseTelegramAllowedUserIds("42,not-an-id")).toThrow(/invalid Telegram user ID/);
+    expect(() => isTelegramUserAllowed(42, "42", "not-an-id"))
+      .toThrow(/TELEGRAM_ADDITIONAL_ALLOWED_USER_IDS/);
   });
 });

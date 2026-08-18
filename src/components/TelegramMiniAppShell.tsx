@@ -42,6 +42,7 @@ type TelegramWebApp = {
   initData: string;
   ready: () => void;
   expand: () => void;
+  close?: () => void;
   requestFullscreen?: () => void;
   lockOrientation?: () => void;
   setHeaderColor?: (color: string) => void;
@@ -139,6 +140,9 @@ export function TelegramMiniAppShell() {
   const [chatNewBelow, setChatNewBelow] = useState(0);
   const [status, setStatus] = useState("Проверяем вход через Telegram...");
   const [error, setError] = useState("");
+  const [authErrorCode, setAuthErrorCode] = useState("");
+  const [authenticating, setAuthenticating] = useState(true);
+  const [authAttempt, setAuthAttempt] = useState(0);
   const [entered, setEntered] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [worldProgress, setWorldProgress] = useState(0);
@@ -415,10 +419,17 @@ export function TelegramMiniAppShell() {
     telegram?.expand();
     telegram?.ready();
 
+    setAuthenticating(true);
+    setAuthErrorCode("");
+    setError("");
+    setStatus("Проверяем вход через Telegram...");
+
     const initData = telegram?.initData ?? "";
     const devMode = process.env.NEXT_PUBLIC_TELEGRAM_DEV_MODE === "true";
     if (!initData && !devMode) {
+      setAuthenticating(false);
       setStatus("");
+      setAuthErrorCode("TELEGRAM_INIT_DATA_MISSING");
       setError("Откройте «Зеркало Дао» кнопкой внутри Telegram-бота.");
       return () => controller.abort();
     }
@@ -432,20 +443,28 @@ export function TelegramMiniAppShell() {
     })
       .then(async (response) => {
         const payload = await response.json();
-        if (!response.ok || !payload.ok) throw new Error(payload.error || "Вход не подтверждён");
+        if (!response.ok || !payload.ok) {
+          setAuthErrorCode(typeof payload.code === "string" ? payload.code : "TELEGRAM_AUTH_FAILED");
+          throw new Error(payload.error || "Вход не подтверждён");
+        }
         const nextSession = payload.session as PrivateTelegramSession;
         setSession(nextSession);
         setNicknameDraft(nextSession.nickname);
+        setAuthErrorCode("");
+        setError("");
         setStatus("Приватная сессия создана");
       })
       .catch((reason) => {
         if (controller.signal.aborted) return;
         setStatus("");
         setError(reason instanceof Error ? reason.message : "Не удалось войти");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setAuthenticating(false);
       });
 
     return () => controller.abort();
-  }, []);
+  }, [authAttempt]);
 
   useEffect(() => {
     if (!entered || !session) return;
@@ -1141,8 +1160,27 @@ export function TelegramMiniAppShell() {
           </div>
         ) : null}
         <p className="telegram-entry__status" role="status">{error || status}</p>
-        <button disabled={!session || !avatarGender || nicknameSaving} type="submit">
-          {session ? (nicknameSaving ? "Подготавливаю аватара..." : "Войти в храм") : "Ожидание Telegram"}
+        <button
+          disabled={session ? (!avatarGender || nicknameSaving) : authenticating}
+          onClick={session ? undefined : () => {
+            if (/^TELEGRAM_AUTH_(?:EXPIRED|INVALID)$/.test(authErrorCode)) {
+              const telegram = window.Telegram?.WebApp;
+              if (telegram?.close) {
+                telegram.close();
+                return;
+              }
+            }
+            setAuthAttempt((current) => current + 1);
+          }}
+          type={session ? "submit" : "button"}
+        >
+          {session
+            ? (nicknameSaving ? "Подготавливаю аватара..." : "Войти в храм")
+            : authenticating
+              ? "Проверяем Telegram..."
+              : /^TELEGRAM_AUTH_(?:EXPIRED|INVALID)$/.test(authErrorCode)
+                ? "Закрыть и открыть заново"
+                : "Повторить вход"}
         </button>
       </form>
     </section>

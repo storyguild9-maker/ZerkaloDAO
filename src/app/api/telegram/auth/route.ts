@@ -56,6 +56,33 @@ export async function POST(request: Request) {
     if (/Presence storage/i.test(message)) {
       return noStore({ ok: false, error: "Хранилище присутствия временно недоступно" }, { status: 503 });
     }
-    return noStore({ ok: false, error: "Не удалось подтвердить вход через Telegram" }, { status: 401 });
+    if (/authorization has expired/i.test(message)) {
+      console.warn("Telegram auth rejected", { reason: "expired" });
+      return noStore({
+        ok: false,
+        code: "TELEGRAM_AUTH_EXPIRED",
+        error: "Сессия Telegram устарела. Полностью закройте это окно и откройте «Зеркало Дао» заново из бота.",
+      }, { status: 401 });
+    }
+    if (/TELEGRAM_(?:ADDITIONAL_)?ALLOWED_USER_IDS/i.test(message)) {
+      console.error("Telegram access configuration is invalid");
+      return noStore({ ok: false, error: "Список доступа временно настроен неверно" }, { status: 503 });
+    }
+    console.warn("Telegram auth rejected", {
+      reason: /signature is invalid/i.test(message)
+        ? "signature"
+        : /hash is missing/i.test(message)
+          ? "hash-missing"
+          : /auth_date/i.test(message)
+            ? "auth-date"
+            : /user/i.test(message)
+              ? "user"
+              : "malformed",
+    });
+    return noStore({
+      ok: false,
+      code: "TELEGRAM_AUTH_INVALID",
+      error: "Не удалось подтвердить вход через Telegram. Закройте Mini App и откройте его заново из бота.",
+    }, { status: 401 });
   }
 }

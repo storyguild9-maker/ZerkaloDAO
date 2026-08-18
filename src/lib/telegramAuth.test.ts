@@ -38,4 +38,15 @@ describe("validateTelegramInitData", () => {
     expect(() => validateTelegramInitData(initData.toString(), botToken))
       .toThrow("Telegram signature is invalid");
   });
+
+  it("rejects initData older than the configured lifetime", () => {
+    const botToken = "123456:test-token";
+    const initData = signedInitData(botToken, {
+      auth_date: String(Math.floor(Date.now() / 1000) - 3601),
+      user: JSON.stringify({ id: 42, first_name: "Test" })
+    });
+
+    expect(() => validateTelegramInitData(initData, botToken, 3600))
+      .toThrow("Telegram authorization has expired");
+  });
 });
