@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  createPrivatePresenceSession,
   createTelegramSubjectHash,
   hashChatRoomPassword,
   hashSessionToken,
@@ -12,6 +13,10 @@ import {
 } from "./privatePresence";
 
 describe("private Telegram presence", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
   it("creates a stable irreversible subject without exposing the Telegram id", () => {
     const subject = createTelegramSubjectHash(123456789, "a".repeat(48));
     expect(subject).toHaveLength(64);
@@ -24,6 +29,15 @@ describe("private Telegram presence", () => {
     const hash = hashSessionToken(token);
     expect(hash).toHaveLength(64);
     expect(hash).not.toContain(token);
+  });
+
+  it("reports network failures as presence storage failures", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://presence.example.test");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-service-role-key");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
+
+    await expect(createPrivatePresenceSession("a".repeat(64)))
+      .rejects.toThrow("Presence storage request failed (network)");
   });
 
   it("normalizes a temporary nickname and rejects profile links", () => {

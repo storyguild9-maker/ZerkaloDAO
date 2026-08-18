@@ -12,6 +12,7 @@ const CHAT_HISTORY_LIMIT = 80;
 const CHAT_MESSAGE_LIMIT = 500;
 const CHAT_RATE_WINDOW_SECONDS = 10;
 const CHAT_RATE_LIMIT = 5;
+const PRESENCE_STORAGE_TIMEOUT_MS = 5000;
 const PRIVATE_ROOM_LIMIT = 12;
 const PRIVATE_ROOM_DIRECTORY_LIMIT = 48;
 const PRIVATE_ROOM_CODE_LENGTH = 8;
@@ -105,20 +106,30 @@ function supabaseConfiguration() {
 
 async function supabaseRequest<T>(path: string, init: RequestInit = {}) {
   const { url, serviceRoleKey } = supabaseConfiguration();
-  const response = await fetch(`${url}/rest/v1/${path}`, {
-    ...init,
-    headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
-      "Content-Type": "application/json",
-      ...(init.headers ?? {})
-    },
-    cache: "no-store"
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${url}/rest/v1/${path}`, {
+      ...init,
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        "Content-Type": "application/json",
+        ...(init.headers ?? {})
+      },
+      cache: "no-store",
+      signal: init.signal ?? AbortSignal.timeout(PRESENCE_STORAGE_TIMEOUT_MS)
+    });
+  } catch {
+    throw new Error("Presence storage request failed (network)");
+  }
   if (!response.ok) throw new Error(`Presence storage request failed (${response.status})`);
   if (response.status === 204) return undefined as T;
   const text = await response.text();
-  return (text ? JSON.parse(text) : undefined) as T;
+  try {
+    return (text ? JSON.parse(text) : undefined) as T;
+  } catch {
+    throw new Error("Presence storage returned an invalid response");
+  }
 }
 
 export function hashSessionToken(token: string) {
